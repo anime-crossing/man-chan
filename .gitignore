@@ -1,1 +1,3 @@
 ./venv
+configs.json
+**__pycache__

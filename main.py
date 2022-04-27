@@ -1,16 +1,19 @@
 from re import L
+import discord
 from discord import Client
+from discord.ext import commands
 import json
 
-class MainClient(Client):
-    async def on_ready(self):
-        print(f"Logged in as {self.user}")
+from client import Client
+from cogs.greetings import Greetings
 
-    async def on_message(self, message):
-        print(f"Message from {message.author}: {message.content}")
+def main():
+    bot = Client(
+        command_prefix='$'
+    )
+    bot.add_cog(Greetings(bot))
+    configs = json.load(open("./configs.json"))
+    bot.run(configs["token"])
 
-
-configs = json.load(open("./configs.json"))
-
-client = MainClient()
-client.run(configs["token"])
+if __name__ == '__main__':
+    main()
