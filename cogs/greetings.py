@@ -8,13 +8,16 @@ class Greetings(discord.ext.commands.Cog, name='Greetings module'):
     @commands.command()
     async def ping(self, ctx):
 	# Sends a message to the channel using the Context object.
-        print("Hello")
         await ctx.channel.send("pong")
 
     @commands.command()
     async def man(self, ctx):
 	# Sends a message to the channel using the Context object.
-        print("Hello")
         await ctx.channel.send("chan")
+
+    @commands.command()
+    async def l(self, ctx):
+	# Sends a message to the channel using the Context object.
+        await ctx.channel.send("L")
 
 

@@ -9,7 +9,7 @@ from cogs.greetings import Greetings
 
 def main():
     bot = Client(
-        command_prefix='$'
+        command_prefix='!'
     )
     bot.add_cog(Greetings(bot))
     configs = json.load(open("./configs.json"))
