@@ -1,5 +1,13 @@
-from black import format_file_contents, FileMode, main
+import os
 
-# Formatting with black
-print("Formatting...")
-print(main(["cogs", "main.py"]))
+from black import main
+
+if __name__ == "__main__":
+    print("Formatting...")
+    try:
+        print(main(["cogs", "main.py", "db"]))
+    except:
+        pass
+
+    print("Sorting imports...")
+    os.system("isort main.py cogs db --profile black")

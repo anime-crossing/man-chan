@@ -1,22 +1,22 @@
-import discord
 from discord.ext import commands
+from discord.ext.commands.context import Context
+
+from .base import CommandBase
 
 
-class Greetings(discord.ext.commands.Cog, name="Greetings module"):
-    def __init__(self, bot):
-        self.bot = bot
-
+class Greetings(CommandBase):
     @commands.command()
-    async def ping(self, ctx):
+    async def ping(self, ctx: Context):
+        print(type(ctx))
         # Sends a message to the channel using the Context object.
         await ctx.channel.send("pong")
 
     @commands.command()
-    async def man(self, ctx):
+    async def man(self, ctx: Context):
         # Sends a message to the channel using the Context object.
         await ctx.channel.send("chan")
 
     @commands.command()
-    async def l(self, ctx):
+    async def l(self, ctx: Context):
         # Sends a message to the channel using the Context object.
         await ctx.channel.send("L")

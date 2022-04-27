@@ -1,18 +1,28 @@
-from discord import Client
-from discord.ext import commands
 import json
 
+from discord.ext.commands import Cog
+
 from client import Client
-from cogs.greetings import Greetings
 
 
-def main():
+def load_commands(bot: Client):
+    import inspect
+
+    import cogs
+
+    for _cls_name, cls in inspect.getmembers(cogs, inspect.isclass):
+        if issubclass(cls, Cog):
+            bot.add_cog(cls(bot))
+
+
+def main(configs: dict):
     bot = Client(command_prefix="!")
 
-    bot.add_cog(Greetings(bot))
-    configs = json.load(open("./configs.json"))
+    load_commands(bot)
+
     bot.run(configs["token"])
 
 
 if __name__ == "__main__":
-    main()
+    configs = json.load(open("./configs.json"))
+    main(configs)
