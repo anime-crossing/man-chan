@@ -2,3 +2,4 @@
 ./venv
 ./env
 configs.json
+test_magi.db
