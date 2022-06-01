@@ -1,12 +1,26 @@
+from typing import Optional, cast
+
 from sqlalchemy import create_engine
-from sqlalchemy.orm import sessionmaker
+from sqlalchemy.engine import Engine
+from sqlalchemy.orm import Session, scoped_session, sessionmaker
 
-session = None
+
+class SessionContainer:
+    session: Optional[Session] = None
+    engine: Optional[Engine] = None
 
 
-def create_db_connection():
+def setup_db_session():
+    """Call this at the beginning of the program."""
     engine = create_engine("sqlite:///test_magi.db")
-    session_maker = sessionmaker(bind=engine)
+    session_maker = scoped_session(sessionmaker(bind=engine))
+    SessionContainer.session = session_maker
+    SessionContainer.engine = engine
 
-    global session
-    session = session_maker()
+
+def get_session() -> Session:
+    return cast(Session, SessionContainer.session)
+
+
+def get_engine() -> Engine:
+    return cast(Engine, SessionContainer.engine)

@@ -3,7 +3,7 @@ import json
 from discord.ext.commands import Cog
 
 from client import Client
-from db.connection import create_db_connection
+from db.connection import setup_db_session
 
 
 def load_commands(bot: Client):
@@ -26,5 +26,5 @@ def main(configs: dict):
 
 if __name__ == "__main__":
     configs = json.load(open("./configs.json"))
-    create_db_connection()
+    setup_db_session()
     main(configs)

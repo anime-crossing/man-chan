@@ -8,6 +8,7 @@ chardet==4.0.0
 click==8.1.2
 colorama==0.4.4
 discord.py==1.7.3
+discord.py-stubs==1.7.3
 greenlet==1.1.2
 idna==3.3
 isort

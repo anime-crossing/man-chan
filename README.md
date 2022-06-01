@@ -31,3 +31,12 @@ Use your favorite method to setup the virtual environment. Here will be a quick 
 A formatting python script has been added to keep formatting consistent. Before pushing up to your branch, make sure you run:
 
 `python fmt.py`
+
+## Alembic
+Run this to update the current db:
+
+`alembic upgrade head`
+
+Run this to create a new revision on changes:
+
+`alembic revision --autogenerate -m "revision name"`
