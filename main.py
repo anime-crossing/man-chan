@@ -1,5 +1,6 @@
-import json
+from typing import cast
 
+import discord
 from discord.ext.commands import Cog
 
 from client import Client
@@ -12,19 +13,26 @@ def load_commands(bot: Client):
     import cogs
 
     for _cls_name, cls in inspect.getmembers(cogs, inspect.isclass):
-        if issubclass(cls, Cog):
+        if issubclass(cls, Cog) and cast(cogs.CommandBase, cls).is_enabled():
             bot.add_cog(cls(bot))
 
 
-def main(configs: dict):
-    bot = Client(command_prefix="!")
+def main():
+    from configs import configs
+
+    intents = discord.Intents.default()
+    intents.reactions = True
+    intents.messages = True
+    intents.guilds = True
+    intents.members = True
+
+    bot = Client(command_prefix="!", intents=intents)
 
     load_commands(bot)
 
-    bot.run(configs["token"])
+    bot.run(configs.DISCORD_TOKEN)
 
 
 if __name__ == "__main__":
-    configs = json.load(open("./configs.json"))
     setup_db_session()
-    main(configs)
+    main()

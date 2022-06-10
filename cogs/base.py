@@ -7,3 +7,7 @@ from client import Client
 class CommandBase(Cog):
     def __init__(self, bot: Client):
         self.bot = bot
+
+    @classmethod
+    def is_enabled(cls):
+        return True
