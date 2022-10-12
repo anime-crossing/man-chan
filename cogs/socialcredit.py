@@ -23,32 +23,34 @@ class SocialCredit(CommandBase):
     @commands.Cog.listener()
     async def on_raw_reaction_add(self, reaction: RawReactionActionEvent):
         emoji = reaction.emoji
+        guild_id = str(reaction.guild_id)
 
         if (
             emoji.name == self.configs["UPVOTE_EMOJI_NAME"]
-            and reaction.channel_id in self.configs["SOCIAL_WHITELIST"]
+            and guild_id in self.configs["SOCIAL_WHITELIST"]
         ):
             await self._process_credit(reaction, 1, ScoreDirection.POSITIVE)
 
         if (
             emoji.name == self.configs["DOWNVOTE_EMOJI_NAME"]
-            and reaction.channel_id in self.configs["SOCIAL_WHITELIST"]
+            and guild_id in self.configs["SOCIAL_WHITELIST"]
         ):
             await self._process_credit(reaction, -1, ScoreDirection.NEGATIVE)
 
     @commands.Cog.listener()
     async def on_raw_reaction_remove(self, reaction: RawReactionActionEvent):
         emoji = reaction.emoji
+        guild_id = str(reaction.guild_id)
 
         if (
             emoji.name == self.configs["UPVOTE_EMOJI_NAME"]
-            and reaction.channel_id in self.configs["SOCIAL_WHITELIST"]
+            and guild_id in self.configs["SOCIAL_WHITELIST"]
         ):
             await self._process_credit(reaction, -1, ScoreDirection.POSITIVE)
 
         if (
             emoji.name == self.configs["DOWNVOTE_EMOJI_NAME"]
-            and reaction.channel_id in self.configs["SOCIAL_BLACKLIST"]
+            and guild_id in self.configs["SOCIAL_BLACKLIST"]
         ):
             await self._process_credit(reaction, 1, ScoreDirection.NEGATIVE)
 
@@ -93,6 +95,11 @@ class SocialCredit(CommandBase):
 
         embed = Embed()
         embed.title = "Leaderboard"
+
+        if len(result) == 0:
+            embed.description = "No users have been scored yet!"
+            return await ctx.channel.send(embed=embed)
+
         left_field = []
         right_field = []
 
