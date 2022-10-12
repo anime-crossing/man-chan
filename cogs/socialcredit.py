@@ -1,16 +1,17 @@
+import logging
 from enum import Enum
-from typing import cast
+from typing import Any, Dict, cast
 
 from discord import Color, Embed
 from discord.ext import commands
 from discord.ext.commands.context import Context
 from discord.raw_models import RawReactionActionEvent
 
-from configs import configs
 from db.socialcredit import UserCredit
+from main import ManChanBot
 from utils.context import get_member
 
-from .base import CommandBase
+from .commandbase import CommandBase
 
 
 class ScoreDirection(Enum):
@@ -24,14 +25,14 @@ class SocialCredit(CommandBase):
         emoji = reaction.emoji
 
         if (
-            emoji.name == configs.UPVOTE_EMOJI_NAME
-            and reaction.channel_id not in configs.SOCIAL_BLACKLIST
+            emoji.name == self.configs["UPVOTE_EMOJI_NAME"]
+            and reaction.channel_id in self.configs["SOCIAL_WHITELIST"]
         ):
             await self._process_credit(reaction, 1, ScoreDirection.POSITIVE)
 
         if (
-            emoji.name == configs.DOWNVOTE_EMOJI_NAME
-            and reaction.channel_id not in configs.SOCIAL_BLACKLIST
+            emoji.name == self.configs["DOWNVOTE_EMOJI_NAME"]
+            and reaction.channel_id in self.configs["SOCIAL_WHITELIST"]
         ):
             await self._process_credit(reaction, -1, ScoreDirection.NEGATIVE)
 
@@ -40,14 +41,14 @@ class SocialCredit(CommandBase):
         emoji = reaction.emoji
 
         if (
-            emoji.name == configs.UPVOTE_EMOJI_NAME
-            and reaction.channel_id not in configs.SOCIAL_BLACKLIST
+            emoji.name == self.configs["UPVOTE_EMOJI_NAME"]
+            and reaction.channel_id in self.configs["SOCIAL_WHITELIST"]
         ):
             await self._process_credit(reaction, -1, ScoreDirection.POSITIVE)
 
         if (
-            emoji.name == configs.DOWNVOTE_EMOJI_NAME
-            and reaction.channel_id not in configs.SOCIAL_BLACKLIST
+            emoji.name == self.configs["DOWNVOTE_EMOJI_NAME"]
+            and reaction.channel_id in self.configs["SOCIAL_BLACKLIST"]
         ):
             await self._process_credit(reaction, 1, ScoreDirection.NEGATIVE)
 
@@ -106,11 +107,12 @@ class SocialCredit(CommandBase):
         await ctx.channel.send(embed=embed)
 
     @classmethod
-    def is_enabled(cls):
+    def is_enabled(cls, configs: Dict[str, Any] = {}):
         return (
-            configs.ENABLE_SOCIAL_CREDIT
-            and configs.UPVOTE_EMOJI_NAME
-            and configs.DOWNVOTE_EMOJI_NAME
+            configs["ENABLE_SOCIAL_CREDIT"]
+            and configs["UPVOTE_EMOJI_NAME"]
+            and configs["DOWNVOTE_EMOJI_NAME"]
+            and configs["db_on"]
         )
 
     async def get_message_author_id(self, channel_id: int, message_id: int) -> int:
@@ -136,3 +138,17 @@ class SocialCredit(CommandBase):
             credit_score.increase_score(change)
         else:
             credit_score.decrease_score(change * -1)
+
+
+async def setup(bot: ManChanBot):
+    if SocialCredit.is_enabled(bot.configs):
+        cleanup_configs(bot)
+        await bot.add_cog(SocialCredit(bot))  # type: ignore
+    else:
+        logging.warn("SKIPPING: cogs.socialcredit")
+
+
+def cleanup_configs(bot: ManChanBot):
+    bot.configs["SOCIAL_WHITELIST"] = (
+        set(bot.configs["SOCIAL_WHITELIST"]) if bot.configs["SOCIAL_WHITELIST"] else {}
+    )
