@@ -40,3 +40,26 @@ Run this to update the current db:
 Run this to create a new revision on changes:
 
 `alembic revision --autogenerate -m "revision name"`
+
+# Config File
+ManChan will read from a provided `configs.yaml` in the root folder that you must fill out yourself. Recommended structure is below:
+
+```
+# Discord Bot Settings
+DISCORD_TOKEN: ""
+COMMAND_PREFIX: "!"
+DATABASE_URL: "sqlite:///test_magi.db"  # Change as needed
+FORCE_DATABASE: true  # If true, won't start without a database
+ADMIN_USERS:
+  - 
+
+# Event listeners
+ENABLE_SOCIAL_CREDIT: false
+UPVOTE_EMOJI_NAME: ""  # Can use custom guild emojis
+DOWNVOTE_EMOJI_NAME: ""  # But both must be provided
+SOCIAL_WHITELIST: # Guilds to enable this function
+  - 
+
+# Misc Settings
+
+```

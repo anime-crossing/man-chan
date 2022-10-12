@@ -1,10 +1,9 @@
-from sqlalchemy import Integer, String
+from sqlalchemy import Integer
 from sqlalchemy.ext.declarative import declarative_base
-from sqlalchemy.orm import Session, Query
+from sqlalchemy.orm import Query, Session
 from sqlalchemy.schema import Column
 
 from .connection import get_session
-from typing import List, Type, TypeVar, Any
 
 
 class Base(object):
@@ -29,11 +28,11 @@ class Base(object):
             session.commit()
         except:
             session.rollback()
-        finally:
-            session.close()
+
+        return base
 
     @classmethod
-    def _query(cls, entities = []) -> Query:
+    def _query(cls, entities=[]) -> Query:
         """
         Creates a query object from session.
 
@@ -42,16 +41,14 @@ class Base(object):
 
         Returns:
         [(Class.id, Class.name), ...]
-
         """
         if not entities:
             entities = [cls]
-        
+
         return cls._session.query(*entities)
 
     @classmethod
     def _list(cls, **filter):
-        # type: (Type[TQuery], Any) -> List[TQuery]
         """
         Gives a list of objects from a certain table filtered.
 
@@ -63,5 +60,13 @@ class Base(object):
         """
         return cls._session.query(cls).filter_by(**filter).all()
 
+    def _save(self):
+        session = self._session
+
+        try:
+            session.commit()
+        except:
+            session.rollback()
+
+
 Base = declarative_base(cls=Base)  # type: ignore
-TQuery = TypeVar("TQuery", bound=Base)

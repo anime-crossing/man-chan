@@ -5,17 +5,22 @@ from sqlalchemy.engine import Engine
 from sqlalchemy.orm import Session, scoped_session, sessionmaker
 
 
+class DatabaseException(Exception):
+    pass
+
+
 class SessionContainer:
     session: Optional[Session] = None
     engine: Optional[Engine] = None
 
 
-def setup_db_session():
+def setup_db_session(database: str) -> bool:
     """Call this at the beginning of the program."""
-    engine = create_engine("sqlite:///test_magi.db")
+    engine = create_engine(database)
     session_maker = scoped_session(sessionmaker(bind=engine))
     SessionContainer.session = session_maker
     SessionContainer.engine = engine
+    return True
 
 
 def get_session() -> Session:
