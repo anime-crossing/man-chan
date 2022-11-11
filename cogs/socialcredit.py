@@ -2,7 +2,7 @@ import logging
 from enum import Enum
 from typing import Any, Dict, cast
 
-from discord import Color, Embed
+from discord import Color, Embed, Guild
 from discord.ext import commands
 from discord.ext.commands.context import Context
 from discord.raw_models import RawReactionActionEvent
@@ -14,9 +14,9 @@ from utils.context import get_member
 from .commandbase import CommandBase
 
 
-class ScoreDirection(Enum):
+class ScoreCategory(Enum):
     POSITIVE = 1
-    NEGATIVE = 0
+    NEGATIVE = -1
 
 
 class SocialCredit(CommandBase):
@@ -25,37 +25,35 @@ class SocialCredit(CommandBase):
         emoji = reaction.emoji
         guild_id = str(reaction.guild_id)
 
-        if (
-            emoji.name == self.configs["UPVOTE_EMOJI_NAME"]
-            and guild_id in self.configs["SOCIAL_WHITELIST"]
-        ):
-            await self._process_credit(reaction, 1, ScoreDirection.POSITIVE)
+        if guild_id not in self.configs["SOCIAL_WHITELIST"]:
+            return
 
-        if (
-            emoji.name == self.configs["DOWNVOTE_EMOJI_NAME"]
-            and guild_id in self.configs["SOCIAL_WHITELIST"]
-        ):
-            await self._process_credit(reaction, -1, ScoreDirection.NEGATIVE)
+        if emoji.name == self.configs["UPVOTE_EMOJI_NAME"]:
+            await self._process_credit(reaction, ScoreCategory.POSITIVE, 1)
+
+        if emoji.name == self.configs["DOWNVOTE_EMOJI_NAME"]:
+            await self._process_credit(reaction, ScoreCategory.NEGATIVE, 1)
 
     @commands.Cog.listener()
     async def on_raw_reaction_remove(self, reaction: RawReactionActionEvent):
         emoji = reaction.emoji
         guild_id = str(reaction.guild_id)
 
-        if (
-            emoji.name == self.configs["UPVOTE_EMOJI_NAME"]
-            and guild_id in self.configs["SOCIAL_WHITELIST"]
-        ):
-            await self._process_credit(reaction, -1, ScoreDirection.POSITIVE)
+        if guild_id not in self.configs["SOCIAL_WHITELIST"]:
+            return
 
-        if (
-            emoji.name == self.configs["DOWNVOTE_EMOJI_NAME"]
-            and guild_id in self.configs["SOCIAL_BLACKLIST"]
-        ):
-            await self._process_credit(reaction, 1, ScoreDirection.NEGATIVE)
+        if emoji.name == self.configs["UPVOTE_EMOJI_NAME"]:
+            await self._process_credit(reaction, ScoreCategory.POSITIVE, -1)
+
+        if emoji.name == self.configs["DOWNVOTE_EMOJI_NAME"]:
+            await self._process_credit(reaction, ScoreCategory.NEGATIVE, -1)
 
     @commands.command()
     async def score(self, ctx: Context, *args: str):
+        guild_id = str(cast(Guild, ctx.guild).id)
+        if guild_id not in self.configs["SOCIAL_WHITELIST"]:
+            return
+
         author = ctx.author
         if len(args) > 0:
             member = get_member(ctx, args[0])
@@ -91,6 +89,10 @@ class SocialCredit(CommandBase):
 
     @commands.command(aliases=["lb"])
     async def leaderboard(self, ctx: Context):
+        guild_id = str(cast(Guild, ctx.guild).id)
+        if guild_id not in self.configs["SOCIAL_WHITELIST"]:
+            return
+
         result = UserCredit.leaderboard()
 
         embed = Embed()
@@ -100,17 +102,17 @@ class SocialCredit(CommandBase):
             embed.description = "No users have been scored yet!"
             return await ctx.channel.send(embed=embed)
 
-        left_field = []
-        right_field = []
+        score_fields = []
 
         for num, user in enumerate(result, start=1):
             name = get_member(ctx, str(user.id))
-            left_field.append(f"{num}. {name.display_name if name else 'Unknown'}")
-            right_field.append(str(user.current_score))
+            score_fields.append(
+                f"{num}. [{str(user.current_score)}] {name.display_name if name else 'Unknown'}"
+            )
 
-        embed.add_field(name="User", value="\n".join(left_field), inline=True)
-        embed.add_field(name="Score", value="\n".join(right_field), inline=True)
-
+        embed.add_field(
+            name="Ranking [Score] User", value="\n".join(score_fields), inline=True
+        )
         await ctx.channel.send(embed=embed)
 
     @classmethod
@@ -128,8 +130,12 @@ class SocialCredit(CommandBase):
         return message.author.id
 
     async def _process_credit(
-        self, reaction: RawReactionActionEvent, change: int, direction: ScoreDirection
+        self,
+        reaction: RawReactionActionEvent,
+        direction: ScoreCategory,
+        weight: int = 1,
     ):
+        """The weight is how much we will add to the points, can be negative or positive."""
         discord_id = await self.get_message_author_id(
             reaction.channel_id, reaction.message_id
         )
@@ -141,10 +147,10 @@ class SocialCredit(CommandBase):
         if not credit_score:
             credit_score = UserCredit.create(discord_id)
 
-        if direction == ScoreDirection.POSITIVE:
-            credit_score.increase_score(change)
+        if direction == ScoreCategory.POSITIVE:
+            credit_score.increase_score(weight)
         else:
-            credit_score.decrease_score(change * -1)
+            credit_score.decrease_score(weight)
 
 
 async def setup(bot: ManChanBot):
