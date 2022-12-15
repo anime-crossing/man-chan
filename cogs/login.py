@@ -1,9 +1,12 @@
 import logging
 from typing import Any, Dict, cast
 
+import discord
+from discord.ui import Select, View
 from discord import Color, Embed, Guild
 from discord.ext import commands
 from discord.ext.commands.context import Context
+
 
 from main import ManChanBot
 
@@ -21,7 +24,7 @@ class Login(CommandBase):
         embed=Embed()
         embed.title = "Various Login Information"
         embed.description = "Please do not share this information with anyone else!"
-        embed.set_footer(text="* = Disney+ and Hulu now share the same login because of the merger.")
+        embed.set_footer(text="For Mobile Friendly, copy the password using the Selection Menu below")
         embed.color = Color.blue()
 
         embed.add_field(
@@ -74,7 +77,61 @@ class Login(CommandBase):
             value = "u: " + config["Showtime"]["login"] + "\np: " + config["Showtime"]["password"], 
             inline=True
         )
-        await ctx.channel.send(embed=embed)
+
+        select = Select(                                        # Select Method that Creates Selection Menu for Embed
+            placeholder= "Choose a streaming service...",       # Placeholder Text
+            options=[                                           # Selection Options
+                discord.SelectOption(
+                    label="Crunchyroll", 
+                    emoji="🟠", 
+                    description="Crunchyroll Login"),
+                discord.SelectOption(
+                    label="Disney+", 
+                    emoji="🔵", 
+                    description="Disney+ Login"),
+                discord.SelectOption(
+                    label="HBO Max", 
+                    emoji="⚫", 
+                    description="HBO Max Login"),
+                discord.SelectOption(
+                    label="Hulu", 
+                    emoji="🟢", 
+                    description="Hulu Login"),          
+                discord.SelectOption(
+                    label="Netflix", 
+                    emoji="🔴", 
+                    description="Netflix Login"),
+                discord.SelectOption(
+                    label="NFL+", 
+                    emoji="🏈", 
+                    description="NFL+ Login"),
+                discord.SelectOption(
+                    label="Paramount+", 
+                    emoji="🗻", 
+                    description="Paramount+ Login"),
+                discord.SelectOption(
+                    label="Peacock", 
+                    emoji="🦚", 
+                    description="Peacock Login"),
+                discord.SelectOption(
+                    label="Viki", 
+                    emoji="🧿", 
+                    description="Viki Login"),
+                discord.SelectOption(
+                    label="Showtime", 
+                    emoji="🟤", 
+                    description="Showtime Login")           
+            ]
+        )
+
+        async def my_callback(interaction):
+            if interaction.user == ctx.author:      # Interaction Author Must be Original Sender
+                await interaction.response.send_message(config[select.values[0]]["password"])
+
+        select.callback = my_callback
+        view = View(timeout=15)             # Disables after  15 Second
+        view.add_item(select)
+        await ctx.channel.send(embed=embed, view=view)
     
     @classmethod
     def is_enabled(cls, configs: Dict[str, Any] = {}):
