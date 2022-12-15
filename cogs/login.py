@@ -75,9 +75,15 @@ class Login(CommandBase):
             inline=True
         )
         await ctx.channel.send(embed=embed)
+    
+    @classmethod
+    def is_enabled(cls, configs: Dict[str, Any] = {}):
+        return (
+            configs["ENABLE_LOGIN"]
+        )
 
 async def setup(bot: ManChanBot):
-    if Login.is_enabled():
+    if Login.is_enabled(bot.configs):
         await bot.add_cog(Login(bot))
     else:
         logging.warn("SKIPPING: cogs.login")

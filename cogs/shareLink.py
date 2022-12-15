@@ -41,8 +41,6 @@ class ShareLink(CommandBase):
     def is_enabled(cls, configs: Dict[str, Any] = {}):
         return (
             configs["ENABLE_SHARE_LINK"]
-            and configs["SPOTIFY_CLIENT_ID"]
-            and configs["SPOTIFY_CLIENT_SECRET"]
         )
 
 
