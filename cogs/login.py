@@ -18,4 +18,4 @@ async def setup(bot: ManChanBot):
     if Login.is_enabled():
         await bot.add_cog(Login(bot))
     else:
-        logging.warn("SKIPPING: cogs.greetings")
+        logging.warn("SKIPPING: cogs.login")
