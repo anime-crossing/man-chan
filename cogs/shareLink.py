@@ -40,12 +40,15 @@ class ShareLink(CommandBase):
     @classmethod
     def is_enabled(cls, configs: Dict[str, Any] = {}):
         return (
-            configs["ENABLE_SHARE_LINK"]
+            configs["ENABLE_SHARE_LINK"]        
+            and configs["SPOTIFY_CLIENT_ID"]
+            and configs["SPOTIFY_CLIENT_SECRET"]
         )
 
 
 async def setup(bot: ManChanBot):
     if ShareLink.is_enabled(bot.configs):
         await bot.add_cog(ShareLink(bot))  # type: ignore
+
     else:
         logging.warn("SKIPPING: cogs.sharelink")
