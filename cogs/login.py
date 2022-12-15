@@ -14,7 +14,11 @@ from .commandbase import CommandBase
 
 import json
 
-with open("login.json") as f:
+def get_password(data: Any, site: str) -> str:
+    entries = list(filter(lambda entry: entry['site'] == site, data['login_info']))
+    return entries[0]['password']
+
+with open("login.json", "r") as f:
         config = json.load(f)
 
 class Login(CommandBase):
@@ -26,107 +30,27 @@ class Login(CommandBase):
         embed.description = "Please do not share this information with anyone else!"
         embed.set_footer(text="For Mobile Friendly, copy the password using the Selection Menu below")
         embed.color = Color.blue()
-
-        embed.add_field(
-            name = ":orange_circle: Crunchyroll :orange_circle:",
-            value = "u: " + config["Crunchyroll"]["login"] + "\np: " + config["Crunchyroll"]["password"], 
-            inline=True
-        )
-        embed.add_field(
-            name = ":blue_circle: Disney+* :blue_circle:",
-            value = "u: " + config["Disney+"]["login"] + "\np: " + config["Disney+"]["password"], 
-            inline=True
-        )
-        embed.add_field(
-            name = ":black_circle: HBO Max :black_circle:",
-            value = "u: " + config["HBO Max"]["login"] + "\np: " + config["HBO Max"]["password"], 
-            inline=True
-        )
-        embed.add_field(
-            name = ":green_circle: Hulu* :green_circle:",
-            value = "u: " + config["Hulu"]["login"] + "\np: " + config["Hulu"]["password"], 
-            inline=True
-        )
-        embed.add_field(
-            name = ":red_circle: Netflix :red_circle:",
-            value = "u: " + config["Netflix"]["login"] + "\np: " + config["Netflix"]["password"], 
-            inline=True
-        )
-        embed.add_field(
-            name = ":football: NFL+ :football:",
-            value = "u: " + config["NFL+"]["login"] + "\np: " + config["NFL+"]["password"], 
-            inline=True
-        )
-        embed.add_field(
-            name = ":white_circle: Paramount+ :white_circle:",
-            value = "u: " + config["Paramount+"]["login"] + "\np: " + config["Paramount+"]["password"], 
-            inline=True
-        )
-        embed.add_field(
-            name = ":yellow_circle: Peacock :yellow_circle:",
-            value = "u: " + config["Peacock"]["login"] + "\np: " + config["Peacock"]["password"], 
-            inline=True
-        )
-        embed.add_field(
-            name = ":nazar_amulet: Viki (KDramas) :nazar_amulet:",
-            value = "u: " + config["Viki"]["login"] + "\np: " + config["Viki"]["password"], 
-            inline=True
-        )
-        embed.add_field(
-            name = ":brown_circle: Showtime :brown_circle:",
-            value = "u: " + config["Showtime"]["login"] + "\np: " + config["Showtime"]["password"], 
-            inline=True
-        )
-
+        
         select = Select(                                        # Select Method that Creates Selection Menu for Embed
-            placeholder= "Choose a streaming service...",       # Placeholder Text
-            options=[                                           # Selection Options
-                discord.SelectOption(
-                    label="Crunchyroll", 
-                    emoji="🟠", 
-                    description="Crunchyroll Login"),
-                discord.SelectOption(
-                    label="Disney+", 
-                    emoji="🔵", 
-                    description="Disney+ Login"),
-                discord.SelectOption(
-                    label="HBO Max", 
-                    emoji="⚫", 
-                    description="HBO Max Login"),
-                discord.SelectOption(
-                    label="Hulu", 
-                    emoji="🟢", 
-                    description="Hulu Login"),          
-                discord.SelectOption(
-                    label="Netflix", 
-                    emoji="🔴", 
-                    description="Netflix Login"),
-                discord.SelectOption(
-                    label="NFL+", 
-                    emoji="🏈", 
-                    description="NFL+ Login"),
-                discord.SelectOption(
-                    label="Paramount+", 
-                    emoji="🗻", 
-                    description="Paramount+ Login"),
-                discord.SelectOption(
-                    label="Peacock", 
-                    emoji="🦚", 
-                    description="Peacock Login"),
-                discord.SelectOption(
-                    label="Viki", 
-                    emoji="🧿", 
-                    description="Viki Login"),
-                discord.SelectOption(
-                    label="Showtime", 
-                    emoji="🟤", 
-                    description="Showtime Login")           
-            ]
+            placeholder= "Choose a streaming service..."       # Placeholder Text
         )
+
+        for i in config['login_info']: 
+            embed.add_field(
+                name = i["emoji_text"] + i["site"] + i["emoji_text"],
+                value = "u: " + i["email"] + "\np: " + i["password"],
+                inline=True
+            )
+
+            select.add_option(
+                label=i["site"],
+                emoji=None,
+                description=i["site"] + " Login"
+            )
 
         async def my_callback(interaction):
             if interaction.user == ctx.author:      # Interaction Author Must be Original Sender
-                await interaction.response.send_message(config[select.values[0]]["password"])
+                await interaction.response.send_message(get_password(config, select.values[0]))
 
         select.callback = my_callback
         view = View(timeout=15)             # Disables after  15 Second
