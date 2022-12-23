@@ -53,7 +53,7 @@ class Login(CommandBase):
         gen_button = Button(
             label="Generate Password", style=discord.ButtonStyle.green, emoji="🔁"
         )
-        gen_button.callback = gen_callback()
+        gen_button.callback = gen_callback
 
         view = View(timeout=30)
 
