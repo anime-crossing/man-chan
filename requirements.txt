@@ -7,8 +7,7 @@ cffi==1.15.0
 chardet==4.0.0
 click==8.1.2
 colorama==0.4.4
-discord.py==2.0.1
-discord.py-stubs==1.7.3
+discord.py==2.1.0
 greenlet==1.1.2
 idna==3.3
 isort
@@ -19,6 +18,7 @@ pathspec==0.9.0
 platformdirs==2.5.2
 pycparser==2.21
 PyNaCl==1.4.0
+pyright==1.1.285
 PyYAML==6.0
 six==1.16.0
 spotipy==2.22.0

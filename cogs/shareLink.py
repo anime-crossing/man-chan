@@ -49,5 +49,6 @@ class ShareLink(CommandBase):
 async def setup(bot: ManChanBot):
     if ShareLink.is_enabled(bot.configs):
         await bot.add_cog(ShareLink(bot))  # type: ignore
+
     else:
         logging.warn("SKIPPING: cogs.sharelink")
