@@ -1,3 +1,5 @@
+from typing import Any, Dict, List
+
 from sqlalchemy import Integer
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import Query, Session
@@ -10,7 +12,7 @@ class Base(object):
 
     id = Column(Integer, autoincrement=True, primary_key=True)
 
-    def __init__(self, **kwargs):
+    def __init__(self, **kwargs: Any):
         ...
 
     @classmethod
@@ -19,7 +21,7 @@ class Base(object):
         return get_session()
 
     @classmethod
-    def _create(cls, **kwargs):
+    def _create(cls, **kwargs: Any):
         base = cls(**kwargs)
         session = cls._session
 
@@ -32,7 +34,7 @@ class Base(object):
         return base
 
     @classmethod
-    def _query(cls, entities=[]) -> Query:
+    def _query(cls, entities: List[Any] = []) -> Query:
         """
         Creates a query object from session.
 
@@ -48,7 +50,7 @@ class Base(object):
         return cls._session.query(*entities)
 
     @classmethod
-    def _list(cls, **filter):
+    def _list(cls, **filter: Dict[str, Any]):
         """
         Gives a list of objects from a certain table filtered.
 
