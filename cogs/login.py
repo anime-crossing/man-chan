@@ -3,18 +3,21 @@ import logging
 from pathlib import Path
 from typing import Any, Dict
 
-from discord import Color, Embed, ButtonStyle, Message, Interaction      #type: ignore - Button Style Exists but PyLance Yells
+from discord import ButtonStyle  # type: ignore - Button Style Exists but PyLance Yells
+from discord import Interaction  # type: ignore - Interaction Exists but PyLance Yells
+from discord import Color, Embed, Message
 from discord.ext import commands
 from discord.ext.commands.context import Context
-from discord.ui import Button, Select, View                 #type: ignore
+from discord.ui import Button, Select, View  # type: ignore
 
 from main import ManChanBot
 
 from .commandbase import CommandBase
 
+
 class Login(CommandBase):
     @staticmethod
-    def open_json():                                       
+    def open_json():
         # Checks to see if File Exists
         path = "login.json"
         obj = Path(path)
@@ -32,24 +35,24 @@ class Login(CommandBase):
                 logging.warn(f"Error opening {path}")
 
     async def create_selection_embed(
-        self, current_message: Message, site_name: str, login_dictionary: Dict[str, str], old_embed: Embed, old_view: View # type: ignore - Pylance doesn't know what a view is
+        self, current_message: Message, site_name: str, login_dictionary: Dict[str, str], old_embed: Embed, old_view: View  # type: ignore - Pylance doesn't know what a view is
     ):
         selection_embed = Embed()
         selection_embed.title = "Login information for " + site_name
-        selection_embed.color = Color.from_str(login_dictionary["hex"])        # type: ignore
+        selection_embed.color = Color.from_str(login_dictionary["hex"])  # type: ignore
         selection_embed.description = login_dictionary["description"]
         selection_embed.set_footer(text="Password will be auto deleted in 15 seconds")
 
-        async def return_callback(interaction: Interaction):            # type: ignore - Interaction exists...
+        async def return_callback(interaction: Interaction):  # type: ignore - Interaction exists...
             await current_message.edit(embed=old_embed, view=old_view)  # type: ignore - Pylance doesn't know what a view is
             await interaction.response.defer()
 
-        async def password_callback(interaction: Interaction):          # type: ignore - Interaction exists...
+        async def password_callback(interaction: Interaction):  # type: ignore - Interaction exists...
             await interaction.response.send_message(
                 content=login_dictionary["password"], ephemeral=True, delete_after=15
             )
 
-        async def email_callback(interaction: Interaction):             # type: ignore - Interaction exists...
+        async def email_callback(interaction: Interaction):  # type: ignore - Interaction exists...
             await interaction.response.send_message(
                 content=login_dictionary["email"], ephemeral=True, delete_after=15
             )
@@ -60,12 +63,12 @@ class Login(CommandBase):
         selection_link = Button(label="Go to Site", url=login_dictionary["link"])
 
         password_button = Button(
-            label="Generate Password", style=ButtonStyle.green, emoji="🔐"  #type: ignore
+            label="Generate Password", style=ButtonStyle.green, emoji="🔐"  # type: ignore
         )
         password_button.callback = password_callback
 
         email_button = Button(
-            label="Generate Email", style=ButtonStyle.green, emoji="👤"     #type: ignore
+            label="Generate Email", style=ButtonStyle.green, emoji="👤"  # type: ignore
         )
         email_button.callback = email_callback
 
@@ -76,7 +79,7 @@ class Login(CommandBase):
         view.add_item(email_button)
         view.add_item(password_button)
 
-        await current_message.edit(embed=selection_embed, view=view)   # type: ignore - Pylance doesn't know what a view is
+        await current_message.edit(embed=selection_embed, view=view)  # type: ignore - Pylance doesn't know what a view is
 
     @commands.command()
     async def login(self, ctx: Context):
@@ -108,33 +111,31 @@ class Login(CommandBase):
                 inline=True,
             )
 
-            select.add_option(
-                label=key, emoji=None, description=key + " Login"
-            )
+            select.add_option(label=key, emoji=None, description=key + " Login")
 
-        async def my_callback(interaction: Interaction):        # type: ignore - Interaction exists...
+        async def my_callback(interaction: Interaction):  # type: ignore - Interaction exists...
             # Interaction Author Must be Original Sender
-            if interaction.user == ctx.author:  
+            if interaction.user == ctx.author:
                 # Returns list of Account Info of selection
-                account_info = config[select.values[0]]  
+                account_info = config[select.values[0]]
 
-                await self.create_selection_embed(message, select.values[0], account_info, embed, view)
+                await self.create_selection_embed(
+                    message, select.values[0], account_info, embed, view
+                )
                 await interaction.response.defer()
 
         select.callback = my_callback
         view = View(timeout=20)  # Disables after 20 Second
         view.add_item(select)
-        message = await ctx.channel.send(embed=embed, view=view) # type: ignore
+        message = await ctx.channel.send(embed=embed, view=view)  # type: ignore
 
     @classmethod
     def is_enabled(cls, configs: Dict[str, Any] = {}):
-        return (
-            configs["ENABLE_LOGIN"]
-            and Login.open_json()
-        )
+        return configs["ENABLE_LOGIN"] and Login.open_json()
+
 
 async def setup(bot: ManChanBot):
     if Login.is_enabled(bot.configs):
-        await bot.add_cog(Login(bot)) # type: ignore
+        await bot.add_cog(Login(bot))  # type: ignore
     else:
         logging.warn("SKIPPING: cogs.login")
