@@ -3,8 +3,7 @@ import logging
 from pathlib import Path
 from typing import Any, Dict
 
-import discord
-from discord import Color, Embed
+from discord import Color, Embed, ButtonStyle, Message, Interaction      #type: ignore - Button Style Exists but PyLance Yells
 from discord.ext import commands
 from discord.ext.commands.context import Context
 from discord.ui import Button, Select, View                 #type: ignore
@@ -14,7 +13,8 @@ from main import ManChanBot
 from .commandbase import CommandBase
 
 class Login(CommandBase):
-    def open_json():                                        # type: ignore
+    @staticmethod
+    def open_json():                                       
         # Checks to see if File Exists
         path = "login.json"
         obj = Path(path)
@@ -26,54 +26,46 @@ class Login(CommandBase):
                     return json.loads(f.read())
                 # Error decoding JSON File, File Invalid
             except json.decoder.JSONDecodeError:
-                print("JSON File is not valid")
-                return
+                logging.warn("JSON File is not valid")
                 # Opening Error
             except IOError:
-                print(f"Error opening {path}")
-                return
-        else:
-            return
+                logging.warn(f"Error opening {path}")
 
-    def get_account_info(self, data: Any, site: str) -> str:
-        entries = list(filter(lambda entry: entry["site"] == site, data["login_info"]))
-        return entries[0]
-
-    async def create_selection_embed(self,
-        previous: Any, selection: Any, home: Any, old_view: Any
+    async def create_selection_embed(
+        self, current_message: Message, site_name: str, login_dictionary: Dict[str, str], old_embed: Embed, old_view: View # type: ignore - Pylance doesn't know what a view is
     ):
         selection_embed = Embed()
-        selection_embed.title = "Login information for " + selection["site"]
-        selection_embed.color = Color.from_str(selection["hex"])        # type: ignore
-        selection_embed.description = selection["description"]
+        selection_embed.title = "Login information for " + site_name
+        selection_embed.color = Color.from_str(login_dictionary["hex"])        # type: ignore
+        selection_embed.description = login_dictionary["description"]
         selection_embed.set_footer(text="Password will be auto deleted in 15 seconds")
 
-        async def return_callback(interaction: Any):
-            await previous.edit(embed=home, view=old_view)
+        async def return_callback(interaction: Interaction):            # type: ignore - Interaction exists...
+            await current_message.edit(embed=old_embed, view=old_view)  # type: ignore - Pylance doesn't know what a view is
             await interaction.response.defer()
 
-        async def gen_callback(interaction: Any):
+        async def password_callback(interaction: Interaction):          # type: ignore - Interaction exists...
             await interaction.response.send_message(
-                content=selection["password"], ephemeral=True, delete_after=15
+                content=login_dictionary["password"], ephemeral=True, delete_after=15
             )
 
-        async def email_callback(interaction: Any):
+        async def email_callback(interaction: Interaction):             # type: ignore - Interaction exists...
             await interaction.response.send_message(
-                content=selection["email"], ephemeral=True, delete_after=15
+                content=login_dictionary["email"], ephemeral=True, delete_after=15
             )
 
         return_button = Button(label="Return", emoji="⬅")
         return_button.callback = return_callback
 
-        selection_link = Button(label="Go to Site", url=selection["link"])
+        selection_link = Button(label="Go to Site", url=login_dictionary["link"])
 
-        gen_button = Button(
-            label="Generate Password", style=discord.ButtonStyle.green, emoji="🔐"  #type: ignore
+        password_button = Button(
+            label="Generate Password", style=ButtonStyle.green, emoji="🔐"  #type: ignore
         )
-        gen_button.callback = gen_callback
+        password_button.callback = password_callback
 
         email_button = Button(
-            label="Generate Email", style=discord.ButtonStyle.green, emoji="👤"     #type: ignore
+            label="Generate Email", style=ButtonStyle.green, emoji="👤"     #type: ignore
         )
         email_button.callback = email_callback
 
@@ -82,17 +74,17 @@ class Login(CommandBase):
         view.add_item(return_button)
         view.add_item(selection_link)
         view.add_item(email_button)
-        view.add_item(gen_button)
+        view.add_item(password_button)
 
-        await previous.edit(embed=selection_embed, view=view)
+        await current_message.edit(embed=selection_embed, view=view)   # type: ignore - Pylance doesn't know what a view is
 
     @commands.command()
     async def login(self, ctx: Context):
         # Create Embed with Python, reads from json config file
         config = Login.open_json()
+        embed = Embed()
 
         if config is None:
-            embed = Embed()
             embed.title = "JSON File Broken"
             embed.description = "Please contact Bot Admins to Fix"
             embed.color = Color.red()
@@ -109,39 +101,37 @@ class Login(CommandBase):
             placeholder="Choose a streaming service..."  # Placeholder Text
         )
 
-        for i in config["login_info"]:
+        for key, value in config.items():
             embed.add_field(
-                name=i["emoji_text"] + i["site"] + i["emoji_text"],
-                value="Provider: " + i["provider"],
+                name=value["emoji_text"] + key + value["emoji_text"],
+                value="Provider: " + value["provider"],
                 inline=True,
             )
 
             select.add_option(
-                label=i["site"], emoji=None, description=i["site"] + " Login"
+                label=key, emoji=None, description=key + " Login"
             )
 
-        async def my_callback(interaction: Any):
-            if (
-                interaction.user == ctx.author
-            ):  # Interaction Author Must be Original Sender
-                account_info = Login.get_account_info(self,
-                    config, select.values[0]
-                )  # Returns list of Account Info of selection
+        async def my_callback(interaction: Interaction):        # type: ignore - Interaction exists...
+            # Interaction Author Must be Original Sender
+            if interaction.user == ctx.author:  
+                # Returns list of Account Info of selection
+                account_info = config[select.values[0]]  
 
-                await Login.create_selection_embed(self, msg, account_info, embed, view)
+                await self.create_selection_embed(message, select.values[0], account_info, embed, view)
                 await interaction.response.defer()
 
         select.callback = my_callback
         view = View(timeout=20)  # Disables after 20 Second
         view.add_item(select)
-        msg = await ctx.channel.send(embed=embed, view=view) # type: ignore
+        message = await ctx.channel.send(embed=embed, view=view) # type: ignore
 
     @classmethod
     def is_enabled(cls, configs: Dict[str, Any] = {}):
-        if not Login.open_json():
-            return False
-        return configs["ENABLE_LOGIN"]
-
+        return (
+            configs["ENABLE_LOGIN"]
+            and Login.open_json()
+        )
 
 async def setup(bot: ManChanBot):
     if Login.is_enabled(bot.configs):
