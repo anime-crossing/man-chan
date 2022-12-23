@@ -44,22 +44,36 @@ Run this to create a new revision on changes:
 # Config File
 ManChan will read from a provided `configs.yaml` in the root folder that you must fill out yourself. Recommended structure is below:
 
-```
+```yaml
 # Discord Bot Settings
 DISCORD_TOKEN: ""
 COMMAND_PREFIX: "!"
 DATABASE_URL: "sqlite:///test_magi.db"  # Change as needed
 FORCE_DATABASE: true  # If true, won't start without a database
 ADMIN_USERS:
-  - 
+  - Add User ID Here
 
 # Event listeners
 ENABLE_SOCIAL_CREDIT: false
 UPVOTE_EMOJI_NAME: ""  # Can use custom guild emojis
 DOWNVOTE_EMOJI_NAME: ""  # But both must be provided
 SOCIAL_WHITELIST: # Guilds to enable this function
-  - 
+  - Add Guild ID Here
 
-# Misc Settings
-
+# Login Settings
+ENABLE_LOGIN: true
 ```
+
+# Login format
+When adding a source to the `login.json` be sure to follow this format:
+```json
+    "Site-Name" : {
+        "email": "johndoe@gmail.com",
+        "password": "password1234",
+        "emoji_text": ":emoji_name",
+        "emoji" : "🟠",
+        "description" : "Description of Streaming Service",
+        "link" : "Link to Streaming Service",
+        "hex" : "Site Color in Hex Form #111111",
+        "provider" : "Login Provider"
+    }
