@@ -9,7 +9,7 @@ from discord.raw_models import RawReactionActionEvent
 
 from db.socialcredit import UserCredit
 from main import ManChanBot
-from utils.context import get_member, get_message
+from utils.context import get_member, get_message_no_context
 
 from .commandbase import CommandBase
 
@@ -22,9 +22,13 @@ class ScoreCategory(Enum):
 class SocialCredit(CommandBase):
     @commands.Cog.listener()
     async def on_raw_reaction_add(self, reaction: RawReactionActionEvent):
-        print(reaction)
-        message = get_message(reaction.message_id)
-        print(reaction.message_id)
+        message = get_message_no_context(
+            self.bot,
+            cast(int, reaction.guild_id),
+            reaction.channel_id,
+            reaction.message_id
+        )
+        print("MESSAGE:", message)
         emoji = reaction.emoji
         guild_id = str(reaction.guild_id)
 

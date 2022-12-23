@@ -1,8 +1,11 @@
-from discord.ext.commands.context import Context
-from typing import Optional, Union
-from discord import Member, Message, NotFound, HTTPException, TextChannel
 import logging
+from typing import Optional, Union, cast
+
+from discord import HTTPException, Member, Message, NotFound, TextChannel
+from discord.ext.commands.context import Context
+
 from client import Client
+
 
 def get_member(ctx: Context, mention: Union[int, str]) -> Optional[Member]:
     if not ctx.guild:
@@ -14,17 +17,23 @@ def get_member(ctx: Context, mention: Union[int, str]) -> Optional[Member]:
 
     return ctx.guild.get_member(int(user_id))
 
-async def get_message_no_context(bot: Client, guild_id: int, channel_id: int, message_id: int) -> Optional[Message]:
+
+async def get_message_no_context(
+    bot: Client, guild_id: int, channel_id: int, message_id: int
+) -> Optional[Message]:
+    if not (guild_id and channel_id and message_id):
+        return
+
     guild = bot.get_guild(guild_id)
     if not guild:
         return None
 
-    channel = guild.get_channel(channel_id)
+    channel = cast(TextChannel, guild.get_channel(channel_id))
     if not channel:
         return None
 
     try:
-        message = channel.fetch_message(message_id)
+        message = await channel.fetch_message(message_id)
     except NotFound:
         return None
     except HTTPException:
