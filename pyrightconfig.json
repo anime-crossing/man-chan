@@ -1,0 +1,38 @@
+{
+    "include": [
+        "main.py",
+        "cogs/*",
+        "utils/*",
+        "db/*"
+    ],
+    
+    "exclude": [
+        "**/__pycache__",
+    ],
+
+    "venv": "env",
+    "venvPath": "./",
+
+    "typeCheckingMode": "basic", 
+
+    "reportMissingImports": true,
+    "reportUnusedImport": true,
+    "reportDuplicateImport": true,
+    "reportUnnecessaryCast": true,
+    "reportGeneralTypeIssues": true,
+    "reportUnknownParameterType": true,
+    "reportOptionalSubscript": "error",
+    "reportOptionalOperand": "warning",
+    "reportOptionalMemberAccess": "warning",
+    "reportOptionalCall": "warning",
+    "reportOptionalIterable": "warning",
+    "reportOptionalContextManager": "warning",
+
+    "pythonVersion": "3.10",
+    "pythonPlatform": "Linux",
+
+
+    "executionEnvironments": [
+        {"root": "."}
+    ]
+}
