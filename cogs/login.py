@@ -7,15 +7,14 @@ import discord
 from discord import Color, Embed
 from discord.ext import commands
 from discord.ext.commands.context import Context
-from discord.ui import Button, Select, View
+from discord.ui import Button, Select, View                 #type: ignore
 
 from main import ManChanBot
 
 from .commandbase import CommandBase
 
-
 class Login(CommandBase):
-    def open_json():
+    def open_json():                                        # type: ignore
         # Checks to see if File Exists
         path = "login.json"
         obj = Path(path)
@@ -36,29 +35,29 @@ class Login(CommandBase):
         else:
             return
 
-    def get_account_info(data: Any, site: str) -> str:
+    def get_account_info(self, data: Any, site: str) -> str:
         entries = list(filter(lambda entry: entry["site"] == site, data["login_info"]))
         return entries[0]
 
-    async def create_selection_embed(
+    async def create_selection_embed(self,
         previous: Any, selection: Any, home: Any, old_view: Any
     ):
         selection_embed = Embed()
         selection_embed.title = "Login information for " + selection["site"]
-        selection_embed.color = Color.from_str(selection["hex"])
+        selection_embed.color = Color.from_str(selection["hex"])        # type: ignore
         selection_embed.description = selection["description"]
         selection_embed.set_footer(text="Password will be auto deleted in 15 seconds")
 
-        async def return_callback(interaction):
+        async def return_callback(interaction: Any):
             await previous.edit(embed=home, view=old_view)
             await interaction.response.defer()
 
-        async def gen_callback(interaction):
+        async def gen_callback(interaction: Any):
             await interaction.response.send_message(
                 content=selection["password"], ephemeral=True, delete_after=15
             )
 
-        async def email_callback(interaction):
+        async def email_callback(interaction: Any):
             await interaction.response.send_message(
                 content=selection["email"], ephemeral=True, delete_after=15
             )
@@ -69,12 +68,12 @@ class Login(CommandBase):
         selection_link = Button(label="Go to Site", url=selection["link"])
 
         gen_button = Button(
-            label="Generate Password", style=discord.ButtonStyle.green, emoji="🔐"
+            label="Generate Password", style=discord.ButtonStyle.green, emoji="🔐"  #type: ignore
         )
         gen_button.callback = gen_callback
 
         email_button = Button(
-            label="Generate Email", style=discord.ButtonStyle.green, emoji="👤"
+            label="Generate Email", style=discord.ButtonStyle.green, emoji="👤"     #type: ignore
         )
         email_button.callback = email_callback
 
@@ -121,21 +120,21 @@ class Login(CommandBase):
                 label=i["site"], emoji=None, description=i["site"] + " Login"
             )
 
-        async def my_callback(interaction):
+        async def my_callback(interaction: Any):
             if (
                 interaction.user == ctx.author
             ):  # Interaction Author Must be Original Sender
-                account_info = Login.get_account_info(
+                account_info = Login.get_account_info(self,
                     config, select.values[0]
                 )  # Returns list of Account Info of selection
 
-                await Login.create_selection_embed(msg, account_info, embed, view)
+                await Login.create_selection_embed(self, msg, account_info, embed, view)
                 await interaction.response.defer()
 
         select.callback = my_callback
         view = View(timeout=20)  # Disables after 20 Second
         view.add_item(select)
-        msg = await ctx.channel.send(embed=embed, view=view)
+        msg = await ctx.channel.send(embed=embed, view=view) # type: ignore
 
     @classmethod
     def is_enabled(cls, configs: Dict[str, Any] = {}):
@@ -146,6 +145,6 @@ class Login(CommandBase):
 
 async def setup(bot: ManChanBot):
     if Login.is_enabled(bot.configs):
-        await bot.add_cog(Login(bot))
+        await bot.add_cog(Login(bot)) # type: ignore
     else:
         logging.warn("SKIPPING: cogs.login")
