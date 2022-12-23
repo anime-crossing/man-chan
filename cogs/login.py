@@ -1,10 +1,10 @@
 import json
 import logging
 from pathlib import Path
-from typing import Any, Dict, cast
+from typing import Any, Dict
 
 import discord
-from discord import Color, Embed, Guild
+from discord import Color, Embed
 from discord.ext import commands
 from discord.ext.commands.context import Context
 from discord.ui import Button, Select, View
