@@ -1,5 +1,5 @@
 import logging
-from typing import Any, Dict, cast
+from typing import Any, Dict
 
 import spotipy
 from discord.ext import commands
