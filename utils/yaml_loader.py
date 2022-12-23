@@ -1,8 +1,11 @@
-from yaml import load, Loader
 from typing import cast
+
+from yaml import Loader, load
+
 
 class YamlReadError(Exception):
     pass
+
 
 def load_yaml() -> dict:
     configs = {}
