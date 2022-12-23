@@ -1,4 +1,5 @@
 import logging
+from datetime import datetime, timezone
 from enum import Enum
 from typing import Any, Dict, cast
 
@@ -22,13 +23,6 @@ class ScoreCategory(Enum):
 class SocialCredit(CommandBase):
     @commands.Cog.listener()
     async def on_raw_reaction_add(self, reaction: RawReactionActionEvent):
-        message = get_message_no_context(
-            self.bot,
-            cast(int, reaction.guild_id),
-            reaction.channel_id,
-            reaction.message_id
-        )
-        print("MESSAGE:", message)
         emoji = reaction.emoji
         guild_id = str(reaction.guild_id)
 
@@ -43,7 +37,6 @@ class SocialCredit(CommandBase):
 
     @commands.Cog.listener()
     async def on_raw_reaction_remove(self, reaction: RawReactionActionEvent):
-        print(reaction)
         emoji = reaction.emoji
         guild_id = str(reaction.guild_id)
 
@@ -151,6 +144,9 @@ class SocialCredit(CommandBase):
         if discord_id == reaction.user_id:
             return
 
+        if await self.is_passed_time_limit(reaction):
+            return
+
         credit_score = UserCredit.get(discord_id)
         if not credit_score:
             credit_score = UserCredit.create(discord_id)
@@ -159,6 +155,30 @@ class SocialCredit(CommandBase):
             credit_score.increase_score(weight)
         else:
             credit_score.decrease_score(weight)
+
+    async def is_passed_time_limit(self, reaction: RawReactionActionEvent) -> bool:
+        if (
+            "SOCIAL_TIME_LIMIT" not in self.configs
+            or not (time_limit := self.configs["SOCIAL_TIME_LIMIT"])
+            or type(time_limit) is not int
+        ):
+            return False
+
+        message = await get_message_no_context(
+            self.bot,
+            cast(int, reaction.guild_id),
+            reaction.channel_id,
+            reaction.message_id,
+        )
+
+        if not message:
+            return True
+
+        # Discord messages supposed to be in UTC, but still returns in PST time.
+        message_time = (
+            message.created_at.replace(tzinfo=timezone.utc).timestamp() + 28800
+        )
+        return message_time < (datetime.utcnow().timestamp() - time_limit)
 
 
 async def setup(bot: ManChanBot):
