@@ -34,8 +34,15 @@ class Login(CommandBase):
             except IOError:
                 logging.warn(f"Error opening {path}")
 
+    async def send_invalid_message(self, interaction: Interaction):  # type: ignore - Interaction Exists
+        await interaction.response.send_message(
+            content="Command Ignored. User did not initiate command. Please run `!login` yourself.",
+            ephemeral=True,
+            delete_after=10,
+        )
+
     async def create_selection_embed(
-        self, current_message: Message, site_name: str, login_dictionary: Dict[str, str], old_embed: Embed, old_view: View  # type: ignore - Pylance doesn't know what a view is
+        self, current_message: Message, site_name: str, login_dictionary: Dict[str, str], old_embed: Embed, old_view: View, ctx: Context  # type: ignore - Pylance doesn't know what a view is
     ):
         selection_embed = Embed()
         selection_embed.title = "Login information for " + site_name
@@ -48,14 +55,22 @@ class Login(CommandBase):
             await interaction.response.defer()
 
         async def password_callback(interaction: Interaction):  # type: ignore - Interaction exists...
-            await interaction.response.send_message(
-                content=login_dictionary["password"], ephemeral=True, delete_after=15
-            )
+            if ctx.author == interaction.user:
+                await interaction.response.send_message(
+                    content=login_dictionary["password"],
+                    ephemeral=True,
+                    delete_after=15,
+                )
+            else:
+                await self.send_invalid_message(interaction)
 
         async def email_callback(interaction: Interaction):  # type: ignore - Interaction exists...
-            await interaction.response.send_message(
-                content=login_dictionary["email"], ephemeral=True, delete_after=15
-            )
+            if ctx.author == interaction.user:
+                await interaction.response.send_message(
+                    content=login_dictionary["email"], ephemeral=True, delete_after=15
+                )
+            else:
+                await self.send_invalid_message(interaction)
 
         return_button = Button(label="Return", emoji="⬅")
         return_button.callback = return_callback
@@ -120,9 +135,11 @@ class Login(CommandBase):
                 account_info = config[select.values[0]]
 
                 await self.create_selection_embed(
-                    message, select.values[0], account_info, embed, view
+                    message, select.values[0], account_info, embed, view, ctx
                 )
                 await interaction.response.defer()
+            else:
+                await self.send_invalid_message(interaction)
 
         select.callback = my_callback
         view = View(timeout=20)  # Disables after 20 Second
