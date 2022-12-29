@@ -33,26 +33,23 @@ class Anilist(CommandBase):
         embed.set_footer(text="hi")
 
         async def magnifying_callback(interaction: Interaction):  # type: ignore - Interaction Exists
-            embed.set_thumbnail(url=None)  # type: ignore - None is valid
-            embed.set_image(url=image_url)
+            if interaction.user == ctx.author:
+                embed.set_thumbnail(url=None)  # type: ignore - None is valid
+                embed.set_image(url=image_url)
 
-            stats_button = Button(emoji="📊")
-            stats_button.callback = stat_callback
-            stat_view = View()
-            stat_view.add_item(stats_button)
+                stats_button = Button(emoji="📊")
+                stats_button.callback = stat_callback
+                stat_view = View()
+                stat_view.add_item(stats_button)
 
-            await interaction.response.edit_message(embed=embed, view=stat_view)
+                await interaction.response.edit_message(embed=embed, view=stat_view)
 
         async def stat_callback(interaction: Interaction):  # type: ignore - Interaction Exists
-            embed.set_image(url=None)  # type: ignore - None is valid
-            embed.set_thumbnail(url=image_url)
+            if interaction.user == ctx.author:
+                embed.set_image(url=None)  # type: ignore - None is valid
+                embed.set_thumbnail(url=image_url)
 
-            new_magnifying_button = Button(emoji="🔍")
-            new_magnifying_button.callback = magnifying_callback
-            magni_view = View()
-            magni_view.add_item(new_magnifying_button)
-
-            await interaction.response.edit_message(embed=embed, view=magni_view)
+                await interaction.response.edit_message(embed=embed, view=view)
 
         magnifying_button = Button(emoji="🔍")
         magnifying_button.callback = magnifying_callback
