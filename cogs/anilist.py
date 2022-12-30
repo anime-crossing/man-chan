@@ -18,7 +18,10 @@ class Anilist(CommandBase):
     @staticmethod
     def convert_date(date: Dict[str, Any]) -> str:
         if date["month"] is None:
+            if date["day"] is None:
+                return date["year"] if date["year"] != None else "?"
             return "?"
+
         month_num = str(date["month"])
         datetime_object = datetime.datetime.strptime(month_num, "%m")
         month_name = datetime_object.strftime("%b")
@@ -66,34 +69,40 @@ class Anilist(CommandBase):
         if format is not None:
             variables = {"type": type, "search": media, "format": format}
 
-        return requests.post(anilist_url, json={"query": query, "variables": variables})
+        json_response = requests.post(
+            anilist_url, json={"query": query, "variables": variables}
+        ).json()
+        return json_response["data"]["Media"]
 
-    @commands.command(aliases=["ani"])
-    async def anime(self, ctx: Context, *, arg: str):
-
-        json_response = self.media_search("ANIME", str(arg), None)
-
-        data = json_response.json()
-        data = data["data"]["Media"]
-
+    async def create_message(self, ctx: Context, type: str, media_json: Dict[str, Any]):
         embed = Embed()
         embed.color = Color.blue()
 
-        # Do Stuff to get Query Here
-        image_url = data["coverImage"]["extraLarge"]
-        embed.title = data["title"]["romaji"]
-        embed.url = data["coverImage"]["extraLarge"]
-        embed.description = data["description"]
+        image_url = media_json["coverImage"]["extraLarge"]
+        embed.title = media_json["title"]["romaji"]
+        embed.url = media_json["siteUrl"]
+        embed.description = media_json["description"]
         embed.set_thumbnail(url=image_url)
+
+        information_string = f"Type: {media_json['type'] if media_json['format'] != 'NOVEL' else 'NOVEL'}\nStatus: {media_json['status']}\n"
+
+        if type == "ANIME":
+            information_string += f"AIRED: {Anilist.convert_date(media_json['startDate'])} to {Anilist.convert_date(media_json['endDate'])}\n"
+            information_string += f"Episodes: {media_json['episodes'] if media_json['episodes'] != None else '?'}\n"
+        else:
+            information_string += f"From: {Anilist.convert_date(media_json['startDate'])} to {Anilist.convert_date(media_json['endDate'])}\n"
+            information_string += f"Chapters: {media_json['chapters'] if media_json['chapters'] != None else '?'}\n"
+            information_string += f"Volumes: {media_json['volumes'] if media_json['volumes'] != None else '?'}\n"
+
+        information_string += f"Score: {media_json['averageScore']}"
+
+        embed.add_field(name="Information", value=information_string, inline=True)
+
         embed.add_field(
-            name="Information",
-            value=(
-                f"Type: {data['type']}\nStatus: {data['status']}\nAIRED: {Anilist.convert_date(data['startDate'])} to {Anilist.convert_date(data['endDate'])}\nEpisodes: {data['episodes'] if data['episodes'] != None else '?'}\nScore: {data['averageScore']}"
-            ),
-            inline=True,
+            name="Genre", value=("\n".join(media_json["genres"])), inline=True
         )
-        embed.add_field(name="Genre", value="Comedy\nMusic\nSlice of Life", inline=True)
-        embed.set_footer(text="hi")
+
+        embed.set_footer(text="Stats and information provided by Anilist")
 
         async def magnifying_callback(interaction: Interaction):  # type: ignore - Interaction Exists
             if interaction.user == ctx.author:
@@ -120,7 +129,34 @@ class Anilist(CommandBase):
         view = View()
         view.add_item(magnifying_button)
 
-        await ctx.reply(embed=embed, view=view, mention_author=False)  # type: ignore - View exists
+        await ctx.reply(embed=embed, view=view, mention_author=False)  # type: ignore - View is Valid
+
+    @commands.command(aliases=["ani"])
+    async def anime(self, ctx: Context, *, arg: str = None):  # type: ignore - yes i can
+        if arg is None:
+            await ctx.reply("Please provide search for command")
+        else:
+            await self.create_message(
+                ctx, "ANIME", self.media_search("ANIME", str(arg), None)
+            )
+
+    @commands.command(aliases=["man"])
+    async def manga(self, ctx: Context, *, arg: str = None):  # type: ignore - yes i can
+        if arg is None:
+            await ctx.reply("Please provide search for command")
+        else:
+            await self.create_message(
+                ctx, "MANGA", self.media_search("MANGA", str(arg), "MANGA")
+            )
+
+    @commands.command(aliases=["nov"])
+    async def novel(self, ctx: Context, *, arg: str = None):  # type: ignore - yes i can
+        if arg is None:
+            await ctx.reply("Please provide search for command")
+        else:
+            await self.create_message(
+                ctx, "MANGA", self.media_search("MANGA", str(arg), "NOVEL")
+            )
 
     @classmethod
     def is_enabled(cls, configs: Dict[str, Any] = {}):
