@@ -1,5 +1,6 @@
 import datetime
 import logging
+import operator
 from typing import Any, Dict
 
 import requests
@@ -73,6 +74,69 @@ class Anilist(CommandBase):
             anilist_url, json={"query": query, "variables": variables}
         ).json()
         return json_response["data"]["Media"]
+
+    async def search_embed(self, ctx: Context, type: str, media: str, format: Any):
+        anilist_url = self.configs["ANILIST_URL"]
+        query = '''
+        query($type: MediaType, $format: MediaFormat $page: Int, $perPage: Int, $search: String){
+            Page(page: $page, perPage: $perPage){
+                pageInfo{
+                    total
+                    currentPage
+                    lastPage
+                    hasNextPage
+                    perPage
+                }
+                media(search: $search, type: $type, format: $format){
+                    id
+                    title{
+                        romaji
+                    }
+                    studios(isMain: true){
+                        nodes{
+                            name
+                        }
+                    }
+                    popularity
+                }
+            }
+        }
+        '''
+        variables = {"type": type, "search": media}
+        if format is not None:
+            variables = {"type": type, "search": media, "format": format}
+        json_response = requests.post(anilist_url, json={"query": query, "variables": variables}).json()
+
+        search_number = json_response['data']['Page']['pageInfo']['total']
+        search_query = json_response['data']['Page']['media']
+        search_query.sort(key=operator.itemgetter('popularity'), reverse=True)
+        
+        selection_embed = Embed()
+        selection_embed.title = "Search Results"
+        selection_embed.description = "Please select the entry using the menu below."
+        
+        field_value = ""
+        
+        select = Select(
+            placeholder="Select an entry"
+        )
+
+        for i, item in enumerate(search_query):
+            field_value += f"`{i+1}`.`♡{item['popularity']}` · {item['studios']['nodes'][0]['name']} · {'*' * 2}{item['title']['romaji']}{'*' * 2}\n"
+            select.add_option(
+                label=f"{i+1}. {item['title']['romaji']}",
+                description=item['studios']['nodes'][0]['name'])
+
+        selection_embed.add_field(
+            name=f"Showing entries of 1-{search_number} of {search_number}",
+            value=field_value,
+            inline = True
+        )
+
+        view = View()
+        view.add_item(select)
+
+        await ctx.reply(content=f"Total results: {search_number}",embed=selection_embed, view=view, mention_author=False) #type: ignore
 
     async def create_message(self, ctx: Context, type: str, media_json: Dict[str, Any]):
         embed = Embed()
@@ -157,6 +221,9 @@ class Anilist(CommandBase):
             await self.create_message(
                 ctx, "MANGA", self.media_search("MANGA", str(arg), "NOVEL")
             )
+    @commands.command()
+    async def search(self, ctx: Context):    #type:ignore - yes i can
+        await self.search_embed(ctx, "ANIME", "Sound Euphonium", None)
 
     @classmethod
     def is_enabled(cls, configs: Dict[str, Any] = {}):
