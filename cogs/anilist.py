@@ -1,6 +1,8 @@
+import datetime
 import logging
 from typing import Any, Dict
 
+import requests
 from discord import Interaction  # type: ignore - Interaction exists
 from discord import Color, Embed
 from discord.ext import commands
@@ -13,20 +15,81 @@ from .commandbase import CommandBase
 
 
 class Anilist(CommandBase):
-    @commands.command()
-    async def anime(self, ctx: Context):
+    @staticmethod
+    def convert_date(date: Dict[str, Any]) -> str:
+        if date["month"] is None:
+            return "?"
+        month_num = str(date["month"])
+        datetime_object = datetime.datetime.strptime(month_num, "%m")
+        month_name = datetime_object.strftime("%b")
+
+        return f"{month_name} {date['day']}, {date['year']}"
+
+    def media_search(self, type: str, media: str, format: Any):
+        anilist_url = self.configs["ANILIST_URL"]
+
+        query = """
+        query ($type: MediaType, $search: String, $format: MediaFormat){
+            Media(search: $search, type: $type, format: $format){
+                id
+                title{
+                    romaji
+                }
+                type
+                format
+                status
+                description
+                episodes
+                coverImage {
+                    extraLarge
+                }
+                siteUrl
+                averageScore
+                genres
+                startDate {
+                    year
+                    month
+                    day
+                }
+                endDate {
+                    year
+                    month
+                    day
+                }
+                chapters
+                volumes
+            }
+        }
+        """
+
+        variables = {"type": type, "search": media}
+        if format is not None:
+            variables = {"type": type, "search": media, "format": format}
+
+        return requests.post(anilist_url, json={"query": query, "variables": variables})
+
+    @commands.command(aliases=["ani"])
+    async def anime(self, ctx: Context, *, arg: str):
+
+        json_response = self.media_search("ANIME", str(arg), None)
+
+        data = json_response.json()
+        data = data["data"]["Media"]
+
         embed = Embed()
         embed.color = Color.blue()
 
         # Do Stuff to get Query Here
-        image_url = "https://s4.anilist.co/file/anilistcdn/media/anime/cover/large/bx130003-5Y8rYzg982sq.png"
-        embed.title = "BOCCHI THE ROCK"
-        embed.url = "https://anilist.co/anime/130003/Bocchi-the-Rock"
-        embed.description = "My anxious gorl"
+        image_url = data["coverImage"]["extraLarge"]
+        embed.title = data["title"]["romaji"]
+        embed.url = data["coverImage"]["extraLarge"]
+        embed.description = data["description"]
         embed.set_thumbnail(url=image_url)
         embed.add_field(
             name="Information",
-            value="Type: ANIME TV\nStatus: FINISHED\nAIRED: Oct 09, 2022 to Dec 25, 2022\nEpisodes: 12\nScore: 88",
+            value=(
+                f"Type: {data['type']}\nStatus: {data['status']}\nAIRED: {Anilist.convert_date(data['startDate'])} to {Anilist.convert_date(data['endDate'])}\nEpisodes: {data['episodes'] if data['episodes'] != None else '?'}\nScore: {data['averageScore']}"
+            ),
             inline=True,
         )
         embed.add_field(name="Genre", value="Comedy\nMusic\nSlice of Life", inline=True)
@@ -61,7 +124,7 @@ class Anilist(CommandBase):
 
     @classmethod
     def is_enabled(cls, configs: Dict[str, Any] = {}):
-        return configs["ENABLE_ANILIST"]
+        return configs["ENABLE_ANILIST"] and configs["ANILIST_URL"]
 
 
 async def setup(bot: ManChanBot):
