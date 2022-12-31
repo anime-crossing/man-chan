@@ -29,13 +29,12 @@ class Anilist(CommandBase):
 
         return f"{month_name} {date['day']}, {date['year']}"
 
-    def media_search(self, type: str, media: str, format: Any):
+    def media_fetch(self, media_id: int):
         anilist_url = self.configs["ANILIST_URL"]
 
         query = """
-        query ($type: MediaType, $search: String, $format: MediaFormat){
-            Media(search: $search, type: $type, format: $format){
-                id
+        query ($id: Int){
+            Media(id: $id){
                 title{
                     romaji
                 }
@@ -66,9 +65,7 @@ class Anilist(CommandBase):
         }
         """
 
-        variables = {"type": type, "search": media}
-        if format is not None:
-            variables = {"type": type, "search": media, "format": format}
+        variables = {"id" : media_id}
 
         json_response = requests.post(
             anilist_url, json={"query": query, "variables": variables}
@@ -78,23 +75,33 @@ class Anilist(CommandBase):
     async def search_embed(self, ctx: Context, type: str, media: str, format: Any):
         anilist_url = self.configs["ANILIST_URL"]
         query = '''
-        query($type: MediaType, $format: MediaFormat $page: Int, $perPage: Int, $search: String){
-            Page(page: $page, perPage: $perPage){
-                pageInfo{
+        query ($type: MediaType, $format: MediaFormat, $page: Int, $perPage: Int, $search: String) {
+            Page(page: $page, perPage: $perPage) {
+                pageInfo {
                     total
                     currentPage
                     lastPage
                     hasNextPage
                     perPage
                 }
-                media(search: $search, type: $type, format: $format){
+                media(search: $search, type: $type, format: $format) {
                     id
-                    title{
+                    title {
                         romaji
                     }
-                    studios(isMain: true){
-                        nodes{
+                    studios(isMain: true) {
+                        nodes {
                             name
+                        }
+                    }
+                    staff(perPage: 2){
+                        edges{
+                            role
+                        }
+                        nodes{
+                            name {
+                                full
+                            }
                         }
                     }
                     popularity
@@ -102,12 +109,12 @@ class Anilist(CommandBase):
             }
         }
         '''
-        variables = {"type": type, "search": media}
+        variables = {"type": type, "search": media, "page" : 1, "perPage" : 10} 
         if format is not None:
-            variables = {"type": type, "search": media, "format": format}
+            variables = {"type": type, "search": media,  "page" : 1, "perPage" : 10, "format": format}
         json_response = requests.post(anilist_url, json={"query": query, "variables": variables}).json()
 
-        search_number = json_response['data']['Page']['pageInfo']['total']
+        search_number = json_response['data']['Page']['pageInfo']['perPage']
         search_query = json_response['data']['Page']['media']
         search_query.sort(key=operator.itemgetter('popularity'), reverse=True)
         
@@ -122,10 +129,25 @@ class Anilist(CommandBase):
         )
 
         for i, item in enumerate(search_query):
-            field_value += f"`{i+1}`.`♡{item['popularity']}` · {item['studios']['nodes'][0]['name']} · {'*' * 2}{item['title']['romaji']}{'*' * 2}\n"
+            if type == "ANIME":
+                staff_name = item.get('studios', {}).get('nodes', [])
+                if staff_name:
+                    staff_name = staff_name[0].get('name', 'Unknown Studio')
+                else:
+                    staff_name = 'Unknown Studio'
+            else:
+                if item['staff']['nodes']:
+                    staff_name = item['staff']['nodes'][0]['name']['full']
+                    if item['staff']['edges'][0]['role'] != "Story & Art":
+                        staff_name += f", {item['staff']['nodes'][1]['name']['full']}"
+                else:
+                    staff_name = 'Unknown Author'    
+
+            field_value += f"`{i+1}`.`♡{item['popularity']}` · {staff_name} · {'*' * 2}{item['title']['romaji']}{'*' * 2}\n"
             select.add_option(
                 label=f"{i+1}. {item['title']['romaji']}",
-                description=item['studios']['nodes'][0]['name'])
+                value=item['id'],
+                description=staff_name)
 
         selection_embed.add_field(
             name=f"Showing entries of 1-{search_number} of {search_number}",
@@ -133,12 +155,20 @@ class Anilist(CommandBase):
             inline = True
         )
 
+        async def selection_callback(interaction: Interaction):     #type: ignore - Interaction Exists
+            if interaction.user == ctx.author:
+                await self.create_message(ctx, interaction, select.values[0])
+
+        select.callback = selection_callback
+
         view = View()
         view.add_item(select)
 
-        await ctx.reply(content=f"Total results: {search_number}",embed=selection_embed, view=view, mention_author=False) #type: ignore
+        await ctx.reply(embed=selection_embed, view=view, mention_author=False) #type: ignore
 
-    async def create_message(self, ctx: Context, type: str, media_json: Dict[str, Any]):
+    async def create_message(self, ctx: Context, interaction: Interaction, media_id: int):    #type: ignore - Interaction Exists
+        media_json = self.media_fetch(media_id)
+        
         embed = Embed()
         embed.color = Color.blue()
 
@@ -150,7 +180,7 @@ class Anilist(CommandBase):
 
         information_string = f"Type: {media_json['type'] if media_json['format'] != 'NOVEL' else 'NOVEL'}\nStatus: {media_json['status']}\n"
 
-        if type == "ANIME":
+        if media_json['type'] == "ANIME":
             information_string += f"AIRED: {Anilist.convert_date(media_json['startDate'])} to {Anilist.convert_date(media_json['endDate'])}\n"
             information_string += f"Episodes: {media_json['episodes'] if media_json['episodes'] != None else '?'}\n"
         else:
@@ -193,37 +223,28 @@ class Anilist(CommandBase):
         view = View()
         view.add_item(magnifying_button)
 
-        await ctx.reply(embed=embed, view=view, mention_author=False)  # type: ignore - View is Valid
+        await interaction.response.edit_message(embed=embed, view=view)  # type: ignore - View is Valid
 
     @commands.command(aliases=["ani"])
     async def anime(self, ctx: Context, *, arg: str = None):  # type: ignore - yes i can
         if arg is None:
             await ctx.reply("Please provide search for command")
         else:
-            await self.create_message(
-                ctx, "ANIME", self.media_search("ANIME", str(arg), None)
-            )
+            await self.search_embed(ctx, "ANIME", arg, None)
 
     @commands.command(aliases=["man"])
     async def manga(self, ctx: Context, *, arg: str = None):  # type: ignore - yes i can
         if arg is None:
             await ctx.reply("Please provide search for command")
         else:
-            await self.create_message(
-                ctx, "MANGA", self.media_search("MANGA", str(arg), "MANGA")
-            )
+            await self.search_embed(ctx, "MANGA", arg, "MANGA")
 
     @commands.command(aliases=["nov"])
     async def novel(self, ctx: Context, *, arg: str = None):  # type: ignore - yes i can
         if arg is None:
             await ctx.reply("Please provide search for command")
         else:
-            await self.create_message(
-                ctx, "MANGA", self.media_search("MANGA", str(arg), "NOVEL")
-            )
-    @commands.command()
-    async def search(self, ctx: Context):    #type:ignore - yes i can
-        await self.search_embed(ctx, "ANIME", "Sound Euphonium", None)
+            await self.search_embed(ctx, "MANGA", arg, "NOVEL")
 
     @classmethod
     def is_enabled(cls, configs: Dict[str, Any] = {}):
