@@ -1,16 +1,18 @@
 import datetime
 import logging
 import operator
-from typing import Any, Dict
+from typing import Any, Dict, Optional
 
 import requests
 from discord import Interaction  # type: ignore - Interaction exists
 from discord import Color, Embed
 from discord.ext import commands
 from discord.ext.commands.context import Context
-from discord.ui import Button, Select, View  # type: ignore - These libraries exist
+from discord.ui import Button, Select, View, Modal, TextInput  # type: ignore - These libraries exist
 
+from db.anilist_users import AnilistUsers
 from main import ManChanBot
+# from utils.context import get_member
 
 from .commandbase import CommandBase
 
@@ -73,9 +75,12 @@ class Anilist(CommandBase):
 
         return json_response["data"]["Media"]
 
-    def fetch_score(self, media_id: int, user_id: int):
+    def fetch_score(self, media_id: int, user_id: Optional[int]):
         anilist_url = self.configs["ANILIST_URL"]
 
+        if not user_id:
+            return
+            
         query = """
         query ($user: Int, $id: Int){
             MediaList(userId: $user, mediaId: $id){
@@ -97,6 +102,87 @@ class Anilist(CommandBase):
 
         if "errors" not in json_response:
             return json_response["data"]["MediaList"]
+
+    async def create_setup_embed(self, ctx: Context):
+        account_embed = Embed(
+            title="Anilist Account Setup", 
+            description="Please use the button below to enter your Anilist Username",
+            color=Color.blue()
+        )
+
+        modal = Modal(title="Enter Anilist Username")
+        text_input = TextInput(label='username')
+        
+        async def modal_callback(interaction: Interaction):
+            await self.profile_query(ctx, interaction, text_input)
+
+        modal.add_item(text_input)
+        modal.on_submit = modal_callback
+
+        async def test_callback(interaction: Interaction):
+           await interaction.response.send_modal(modal)
+
+        button = Button(emoji='✏️')
+        button.callback = test_callback
+
+        view = View()
+        view.add_item(button)
+
+        await ctx.send(embed=account_embed, view=view)
+
+    async def profile_query(self, ctx: Context, interaction: Interaction, anilist_id: str):
+        anilist_url = self.configs["ANILIST_URL"]
+        query = '''
+        query ($name: String){
+            User(name: $name){
+                id
+                name
+                avatar{
+                    large
+                }
+                siteUrl
+            }
+        }
+        '''
+
+        variables = {"name" : str(anilist_id)}
+
+        json_response = requests.post(url=anilist_url, json={"query" : query, "variables" : variables}).json()
+        account_info = json_response['data']['User']
+
+        profile_embed = Embed(
+            title="User Found",
+            description=f"Is this your account: {account_info['name']}",
+            color=Color.blue(),
+            url=account_info['siteUrl']
+        )
+        profile_embed.set_thumbnail(url=account_info['avatar']['large'])
+
+        yes_button = Button(emoji="✅")
+
+        async def yes_callback(interaction: Interaction):
+            profile_embed.color = Color.green()
+            profile_embed.description = "Account Info Saved to Bot."
+
+            await interaction.response.edit_message(embed=profile_embed, view=None)
+            await self.save_anilist_id(ctx, account_info['id'])
+            
+
+        yes_button.callback = yes_callback
+
+        view = View()
+        view.add_item(yes_button)
+
+        await interaction.response.edit_message(embed=profile_embed, view=view)
+    
+    async def save_anilist_id(self, ctx: Context, anilist_id: int):
+        discord_id = ctx.author.id
+        table_entry = AnilistUsers.get(discord_id)
+
+        if not table_entry:
+            table_entry = AnilistUsers.create(discord_id)
+        
+        table_entry.set_anilist_id(anilist_id)
 
     async def search_embed(self, ctx: Context, type: str, media: str, format: Any):
         anilist_url = self.configs["ANILIST_URL"]
@@ -231,7 +317,9 @@ class Anilist(CommandBase):
             name="Genre", value=("\n".join(media_json["genres"])), inline=True
         )
 
-        anilist_stats = self.fetch_score(media_id, 479854)
+        discord_id = ctx.author.id
+
+        anilist_stats = self.fetch_score(media_id, AnilistUsers.get_anilist_id(discord_id))
 
         if anilist_stats is not None:
             embed.add_field(
@@ -298,6 +386,10 @@ class Anilist(CommandBase):
             await ctx.reply("Please provide search for command")
         else:
             await self.search_embed(ctx, "MANGA", arg, "NOVEL")
+
+    @commands.command(aliases=["acc"])
+    async def account(self, ctx: Context):
+        await self.create_setup_embed(ctx)
 
     @classmethod
     def is_enabled(cls, configs: Dict[str, Any] = {}):
