@@ -4,7 +4,7 @@ import operator
 from typing import Any, Dict, Optional
 
 import requests
-from discord import Interaction  # type: ignore - Interaction exists
+from discord import Interaction, ButtonStyle  # type: ignore - Interaction exists
 from discord import Color, Embed
 from discord.ext import commands
 from discord.ext.commands.context import Context
@@ -12,13 +12,13 @@ from discord.ui import Button, Select, View, Modal, TextInput  # type: ignore - 
 
 from db.anilist_users import AnilistUsers
 from main import ManChanBot
-# from utils.context import get_member
 
 from .commandbase import CommandBase
 
 
 class Anilist(CommandBase):
     @staticmethod
+    # Converts Date to Readable Format from Anilist JSON
     def convert_date(date: Dict[str, Any]) -> str:
         if date["month"] is None:
             if date["day"] is None:
@@ -31,6 +31,7 @@ class Anilist(CommandBase):
 
         return f"{month_name} {date['day']}, {date['year']}"
 
+    # Fetches Media Information For Embed
     def media_fetch(self, media_id: int):
         anilist_url = self.configs["ANILIST_URL"]
 
@@ -75,10 +76,11 @@ class Anilist(CommandBase):
 
         return json_response["data"]["Media"]
 
+    # Fetches Score of Media if User ID has associated Anilist ID
     def fetch_score(self, media_id: int, user_id: Optional[int]):
         anilist_url = self.configs["ANILIST_URL"]
 
-        if not user_id:
+        if not user_id or user_id == 0:
             return
             
         query = """
@@ -103,6 +105,7 @@ class Anilist(CommandBase):
         if "errors" not in json_response:
             return json_response["data"]["MediaList"]
 
+    # Creates Account Setup Embed, Sends Modal for username entry
     async def create_setup_embed(self, ctx: Context):
         account_embed = Embed(
             title="Anilist Account Setup", 
@@ -110,27 +113,58 @@ class Anilist(CommandBase):
             color=Color.blue()
         )
 
-        modal = Modal(title="Enter Anilist Username")
-        text_input = TextInput(label='username')
+        prompt = Modal(title="Enter Anilist Username")
+        answer = TextInput(label='username')
         
-        async def modal_callback(interaction: Interaction):
-            await self.profile_query(ctx, interaction, text_input)
+        async def modal_callback(interaction: Interaction):     # type: ignore - Interaction Exists
+            await self.profile_query(ctx, interaction, answer)
 
-        modal.add_item(text_input)
-        modal.on_submit = modal_callback
+        prompt.add_item(answer)
+        prompt.on_submit = modal_callback
 
-        async def test_callback(interaction: Interaction):
-           await interaction.response.send_modal(modal)
+        async def entry_callback(interaction: Interaction):      # type: ignore - Interaction Exists
+           await interaction.response.send_modal(prompt)
 
-        button = Button(emoji='✏️')
-        button.callback = test_callback
+        answer_button = Button(emoji='✏️')
+        answer_button.callback = entry_callback
 
         view = View()
-        view.add_item(button)
+        view.add_item(answer_button)
 
-        await ctx.send(embed=account_embed, view=view)
+        if AnilistUsers.get_anilist_id(ctx.author.id) is not None and not AnilistUsers.get_anilist_id(ctx.author.id) == 0:
+            already_registered = Embed(
+                title="Account already registered",
+                description="To bypass and link a new account, please use the button below.",
+                color=Color.blue()
+            )
 
-    async def profile_query(self, ctx: Context, interaction: Interaction, anilist_id: str):
+            async def remove_callback(interaction: Interaction):   # type: ignore - Interaction Exists
+                already_registered.title = "Account Info Removed"
+                already_registered.description = "Account Info has been removed from bot database, please re-run `!acc` to setup your account."
+                already_registered.color = Color.red()
+
+                await self.remove_anilist_id(ctx)
+                await interaction.response.edit_message(embed=already_registered, view=None)    # type: ignore - View Exists
+
+            repeat_button = Button(emoji="🔁")
+            repeat_button.callback = entry_callback
+            remove_button = Button(
+                label="Remove Account",
+                emoji="🗑️",
+                style=ButtonStyle.danger
+            )
+            remove_button.callback = remove_callback
+            registered_view = View()
+            registered_view.add_item(repeat_button)
+            registered_view.add_item(remove_button)
+
+            await ctx.send(embed=already_registered, view=registered_view) # type: ignore - view Exists
+
+        else:
+            await ctx.send(embed=account_embed, view=view)          # type: ignore - view Exists
+
+    # Used by Account Setup to obtain initial profile information 
+    async def profile_query(self, ctx: Context, interaction: Interaction, anilist_id: str): # type: ignore - Interaction Exists
         anilist_url = self.configs["ANILIST_URL"]
         query = '''
         query ($name: String){
@@ -148,6 +182,16 @@ class Anilist(CommandBase):
         variables = {"name" : str(anilist_id)}
 
         json_response = requests.post(url=anilist_url, json={"query" : query, "variables" : variables}).json()
+        
+        if 'errors' in json_response:
+            not_found = Embed(
+                title="User not found",
+                description="Please re-run the command and be aware of any spelling mistakes.  Enter username as seen on Anilist",
+                color=Color.red()
+            )
+            await interaction.response.send_message(embed=not_found)
+            return
+        
         account_info = json_response['data']['User']
 
         profile_embed = Embed(
@@ -158,23 +202,37 @@ class Anilist(CommandBase):
         )
         profile_embed.set_thumbnail(url=account_info['avatar']['large'])
 
+        no_button = Button(emoji="❌")
         yes_button = Button(emoji="✅")
 
-        async def yes_callback(interaction: Interaction):
+        async def no_callback(interaction: Interaction): # type: ignore - Interaction Exists
+            profile_embed.title = "User Not Found"
+            profile_embed.url = None                    # type: ignore - Takes Optional[str]
+            profile_embed.color = Color.red()
+            profile_embed.description = "Account not Linked, please be more specific with name when re-running `!acc`"
+
+            profile_embed.set_thumbnail(url=None)       # type: ignore - Takes Optional[str]
+
+            await interaction.response.edit_message(embed=profile_embed, view=None)
+
+        async def yes_callback(interaction: Interaction): # type: ignore - Interaction Exists
+            profile_embed.title = "Profiles Linked"
             profile_embed.color = Color.green()
             profile_embed.description = "Account Info Saved to Bot."
 
             await interaction.response.edit_message(embed=profile_embed, view=None)
             await self.save_anilist_id(ctx, account_info['id'])
             
-
+        no_button.callback = no_callback
         yes_button.callback = yes_callback
 
         view = View()
+        view.add_item(no_button)
         view.add_item(yes_button)
 
         await interaction.response.edit_message(embed=profile_embed, view=view)
     
+    # If empty, create table entry then save anilist_id to row
     async def save_anilist_id(self, ctx: Context, anilist_id: int):
         discord_id = ctx.author.id
         table_entry = AnilistUsers.get(discord_id)
@@ -184,6 +242,13 @@ class Anilist(CommandBase):
         
         table_entry.set_anilist_id(anilist_id)
 
+    # "Removes" Anilist ID by setting it back to it's default, 0
+    async def remove_anilist_id(self, ctx: Context):
+        discord_id = ctx.author.id
+        
+        await self.save_anilist_id(ctx, 0)
+    
+    # Searches for Anime, presents as embed with a selection menu
     async def search_embed(self, ctx: Context, type: str, media: str, format: Any):
         anilist_url = self.configs["ANILIST_URL"]
         query = """
@@ -246,7 +311,7 @@ class Anilist(CommandBase):
 
         select = Select(placeholder="Select an entry")
 
-        for i, item in enumerate(search_query):
+        for i, item in enumerate(search_query, start=1):
             if type == "ANIME":
                 staff_name = item.get("studios", {}).get("nodes", [])
                 if staff_name:
@@ -261,9 +326,9 @@ class Anilist(CommandBase):
                 else:
                     staff_name = "Unknown Author"
 
-            field_value += f"`{i+1}`.`♡{item['popularity']}` · {staff_name} · {'*' * 2}{item['title']['romaji']}{'*' * 2}\n"
+            field_value += f"`{i}`.`♡{item['popularity']}` · {staff_name} · {'*' * 2}{item['title']['romaji']}{'*' * 2}\n"
             select.add_option(
-                label=f"{i+1}. {item['title']['romaji']}",
+                label=f"{i}. {item['title']['romaji']}",
                 value=item["id"],
                 description=staff_name,
             )
@@ -287,6 +352,7 @@ class Anilist(CommandBase):
 
         await ctx.reply(embed=selection_embed, view=view, mention_author=False)  # type: ignore
 
+    # Creates Message after Search is Completed, Combines all Parts (Content + Score)
     async def create_message(self, ctx: Context, interaction: Interaction, media_id: int, prev_embed: Embed, old_view: View):  # type: ignore - Interaction Exists
         media_json = self.media_fetch(media_id)
 
