@@ -1,17 +1,25 @@
 import datetime
 import logging
 import operator
-from typing import Any, Dict, Optional
+from typing import Any, Dict, List, Optional
 
 import requests
-from discord import Interaction, ButtonStyle  # type: ignore - Interaction exists
+from discord import ButtonStyle  # type: ignore - Exists
+from discord import Interaction  # type: ignore - Exists
 from discord import Color, Embed
 from discord.ext import commands
 from discord.ext.commands.context import Context
-from discord.ui import Button, Select, View, Modal, TextInput  # type: ignore - These libraries exist
+from discord.ui import (  # type: ignore - These libraries exist
+    Button,
+    Modal,
+    Select,
+    TextInput,
+    View,
+)
 
 from db.anilist_users import AnilistUsers
 from main import ManChanBot
+from utils.context import get_member
 
 from .commandbase import CommandBase
 
@@ -82,7 +90,7 @@ class Anilist(CommandBase):
 
         if not user_id or user_id == 0:
             return
-            
+
         query = """
         query ($user: Int, $id: Int){
             MediaList(userId: $user, mediaId: $id){
@@ -108,65 +116,66 @@ class Anilist(CommandBase):
     # Creates Account Setup Embed, Sends Modal for username entry
     async def create_setup_embed(self, ctx: Context):
         account_embed = Embed(
-            title="Anilist Account Setup", 
+            title="Anilist Account Setup",
             description="Please use the button below to enter your Anilist Username",
-            color=Color.blue()
+            color=Color.blue(),
         )
 
         prompt = Modal(title="Enter Anilist Username")
-        answer = TextInput(label='username')
-        
-        async def modal_callback(interaction: Interaction):     # type: ignore - Interaction Exists
+        answer = TextInput(label="username")
+
+        async def modal_callback(interaction: Interaction):  # type: ignore - Interaction Exists
             await self.profile_query(ctx, interaction, answer)
 
         prompt.add_item(answer)
         prompt.on_submit = modal_callback
 
-        async def entry_callback(interaction: Interaction):      # type: ignore - Interaction Exists
-           await interaction.response.send_modal(prompt)
+        async def entry_callback(interaction: Interaction):  # type: ignore - Interaction Exists
+            await interaction.response.send_modal(prompt)
 
-        answer_button = Button(emoji='✏️')
+        answer_button = Button(emoji="✏️")
         answer_button.callback = entry_callback
 
         view = View()
         view.add_item(answer_button)
 
-        if AnilistUsers.get_anilist_id(ctx.author.id) is not None and not AnilistUsers.get_anilist_id(ctx.author.id) == 0:
+        if (
+            AnilistUsers.get_anilist_id(ctx.author.id) is not None
+            and not AnilistUsers.get_anilist_id(ctx.author.id) == 0
+        ):
             already_registered = Embed(
                 title="Account already registered",
                 description="To bypass and link a new account, please use the button below.",
-                color=Color.blue()
+                color=Color.blue(),
             )
 
-            async def remove_callback(interaction: Interaction):   # type: ignore - Interaction Exists
+            async def remove_callback(interaction: Interaction):  # type: ignore - Interaction Exists
                 already_registered.title = "Account Info Removed"
                 already_registered.description = "Account Info has been removed from bot database, please re-run `!acc` to setup your account."
                 already_registered.color = Color.red()
 
                 await self.remove_anilist_id(ctx)
-                await interaction.response.edit_message(embed=already_registered, view=None)    # type: ignore - View Exists
+                await interaction.response.edit_message(embed=already_registered, view=None)  # type: ignore - View Exists
 
             repeat_button = Button(emoji="🔁")
             repeat_button.callback = entry_callback
             remove_button = Button(
-                label="Remove Account",
-                emoji="🗑️",
-                style=ButtonStyle.danger
+                label="Remove Account", emoji="🗑️", style=ButtonStyle.danger
             )
             remove_button.callback = remove_callback
             registered_view = View()
             registered_view.add_item(repeat_button)
             registered_view.add_item(remove_button)
 
-            await ctx.send(embed=already_registered, view=registered_view) # type: ignore - view Exists
+            await ctx.send(embed=already_registered, view=registered_view)  # type: ignore - view Exists
 
         else:
-            await ctx.send(embed=account_embed, view=view)          # type: ignore - view Exists
+            await ctx.send(embed=account_embed, view=view)  # type: ignore - view Exists
 
-    # Used by Account Setup to obtain initial profile information 
-    async def profile_query(self, ctx: Context, interaction: Interaction, anilist_id: str): # type: ignore - Interaction Exists
+    # Used by Account Setup to obtain initial profile information
+    async def profile_query(self, ctx: Context, interaction: Interaction, anilist_id: str):  # type: ignore - Interaction Exists
         anilist_url = self.configs["ANILIST_URL"]
-        query = '''
+        query = """
         query ($name: String){
             User(name: $name){
                 id
@@ -177,52 +186,54 @@ class Anilist(CommandBase):
                 siteUrl
             }
         }
-        '''
+        """
 
-        variables = {"name" : str(anilist_id)}
+        variables = {"name": str(anilist_id)}
 
-        json_response = requests.post(url=anilist_url, json={"query" : query, "variables" : variables}).json()
-        
-        if 'errors' in json_response:
+        json_response = requests.post(
+            url=anilist_url, json={"query": query, "variables": variables}
+        ).json()
+
+        if "errors" in json_response:
             not_found = Embed(
                 title="User not found",
                 description="Please re-run the command and be aware of any spelling mistakes.  Enter username as seen on Anilist",
-                color=Color.red()
+                color=Color.red(),
             )
             await interaction.response.send_message(embed=not_found)
             return
-        
-        account_info = json_response['data']['User']
+
+        account_info = json_response["data"]["User"]
 
         profile_embed = Embed(
             title="User Found",
             description=f"Is this your account: {account_info['name']}",
             color=Color.blue(),
-            url=account_info['siteUrl']
+            url=account_info["siteUrl"],
         )
-        profile_embed.set_thumbnail(url=account_info['avatar']['large'])
+        profile_embed.set_thumbnail(url=account_info["avatar"]["large"])
 
         no_button = Button(emoji="❌")
         yes_button = Button(emoji="✅")
 
-        async def no_callback(interaction: Interaction): # type: ignore - Interaction Exists
+        async def no_callback(interaction: Interaction):  # type: ignore - Interaction Exists
             profile_embed.title = "User Not Found"
-            profile_embed.url = None                    # type: ignore - Takes Optional[str]
+            profile_embed.url = None  # type: ignore - Takes Optional[str]
             profile_embed.color = Color.red()
             profile_embed.description = "Account not Linked, please be more specific with name when re-running `!acc`"
 
-            profile_embed.set_thumbnail(url=None)       # type: ignore - Takes Optional[str]
+            profile_embed.set_thumbnail(url=None)  # type: ignore - Takes Optional[str]
 
             await interaction.response.edit_message(embed=profile_embed, view=None)
 
-        async def yes_callback(interaction: Interaction): # type: ignore - Interaction Exists
+        async def yes_callback(interaction: Interaction):  # type: ignore - Interaction Exists
             profile_embed.title = "Profiles Linked"
             profile_embed.color = Color.green()
             profile_embed.description = "Account Info Saved to Bot."
 
             await interaction.response.edit_message(embed=profile_embed, view=None)
-            await self.save_anilist_id(ctx, account_info['id'])
-            
+            await self.save_anilist_id(ctx, account_info["id"])
+
         no_button.callback = no_callback
         yes_button.callback = yes_callback
 
@@ -231,7 +242,7 @@ class Anilist(CommandBase):
         view.add_item(yes_button)
 
         await interaction.response.edit_message(embed=profile_embed, view=view)
-    
+
     # If empty, create table entry then save anilist_id to row
     async def save_anilist_id(self, ctx: Context, anilist_id: int):
         discord_id = ctx.author.id
@@ -239,15 +250,15 @@ class Anilist(CommandBase):
 
         if not table_entry:
             table_entry = AnilistUsers.create(discord_id)
-        
+
         table_entry.set_anilist_id(anilist_id)
 
     # "Removes" Anilist ID by setting it back to it's default, 0
     async def remove_anilist_id(self, ctx: Context):
         discord_id = ctx.author.id
-        
+
         await self.save_anilist_id(ctx, 0)
-    
+
     # Searches for Anime, presents as embed with a selection menu
     async def search_embed(self, ctx: Context, type: str, media: str, format: Any):
         anilist_url = self.configs["ANILIST_URL"]
@@ -385,7 +396,9 @@ class Anilist(CommandBase):
 
         discord_id = ctx.author.id
 
-        anilist_stats = self.fetch_score(media_id, AnilistUsers.get_anilist_id(discord_id))
+        anilist_stats = self.fetch_score(
+            media_id, AnilistUsers.get_anilist_id(discord_id)
+        )
 
         if anilist_stats is not None:
             embed.add_field(
@@ -432,6 +445,64 @@ class Anilist(CommandBase):
 
         await interaction.response.edit_message(embed=embed, view=view)  # type: ignore - View is Valid
 
+    def update_leaderboard(self, fetch: List["AnilistUsers"]):
+        anilist_url = self.configs["ANILIST_URL"]
+
+        query = """
+        query($id: Int){
+            User(id: $id){
+                statistics{
+                    anime{
+                        minutesWatched
+                        chaptersRead
+                    }
+                }
+            }
+        }
+        """
+
+        for user in fetch:
+            if user.anilist_id is not None and user.anilist_id != 0:
+                variables = {"id": user.anilist_id}
+                stats = requests.post(
+                    anilist_url, json={"query": query, "variables": variables}
+                ).json()
+                stats = stats["data"]["User"]["statistics"]["anime"]
+                user.update_stats(stats["minutesWatched"], stats["chaptersRead"])
+
+    async def create_leaderboard(self, ctx: Context):
+        lb = Embed(title="Leaderboards")
+
+        fetch = AnilistUsers.get_all()
+
+        if len(fetch) == 0:
+            lb.description = "No Users Associated with Bot"
+            lb.color = Color.red()
+
+            return await ctx.send(embed=lb)
+
+        self.update_leaderboard(fetch)
+
+        anime_field = []
+        manga_field = []
+
+        for i, users in enumerate(AnilistUsers.anime_leaderboard(), start=1):
+            name = get_member(ctx, str(users.id))
+            anime_field.append(
+                f"{i}. {name.display_name if name else 'Unknown'} - {str(round(users.minutes_watched/float(1440), 2))} Days"
+            )
+
+        for i, users in enumerate(AnilistUsers.manga_leaderboard(), start=1):
+            name = get_member(ctx, str(users.id))
+            manga_field.append(
+                f"{i}. {name.display_name if name else 'Unknown'} - {str(users.chapters_read)} Chapters"
+            )
+
+        lb.add_field(name="Anime", value="\n".join(anime_field), inline=True)
+        lb.add_field(name="Manga", value="\n".join(manga_field), inline=True)
+
+        await ctx.send(embed=lb)
+
     @commands.command(aliases=["ani"])
     async def anime(self, ctx: Context, *, arg: str = None):  # type: ignore - yes i can
         if arg is None:
@@ -456,6 +527,10 @@ class Anilist(CommandBase):
     @commands.command(aliases=["acc"])
     async def account(self, ctx: Context):
         await self.create_setup_embed(ctx)
+
+    @commands.command(aliases=["anilb", "alb"])
+    async def anime_leaderboard(self, ctx: Context):
+        await self.create_leaderboard(ctx)
 
     @classmethod
     def is_enabled(cls, configs: Dict[str, Any] = {}):
