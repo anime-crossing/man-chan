@@ -121,12 +121,12 @@ class Login(CommandBase):
 
         for key, value in config.items():
             embed.add_field(
-                name=value["emoji_text"] + key + value["emoji_text"],
-                value="Provider: " + value["provider"],
+                name=f"{value['emoji_text']} {key} {value['emoji_text']}",
+                value=f"Provider: {value['provider']}",
                 inline=True,
             )
 
-            select.add_option(label=key, emoji=None, description=key + " Login")
+            select.add_option(label=key, emoji=None, description=f"{key} Login")
 
         async def my_callback(interaction: Interaction):  # type: ignore - Interaction exists...
             # Interaction Author Must be Original Sender
