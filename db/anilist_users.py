@@ -17,7 +17,7 @@ class AnilistUsers(Base):
     def create(cls, discord_id: int) -> "AnilistUsers":
         new_user = cls._create(id=discord_id)
         return new_user
-    
+
     @classmethod
     def get(cls, discord_id: int) -> Optional["AnilistUsers"]:
         return cls._query().filter_by(id=discord_id).first()

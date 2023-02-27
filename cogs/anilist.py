@@ -18,9 +18,9 @@ from discord.ui import (  # type: ignore - These libraries exist
 )
 
 from db.anilist_users import AnilistUsers
+from fetcher.anilist_queries import AnilistQueries
 from main import ManChanBot
 from utils.context import get_member
-from fetcher.anilist_queries import AnilistQueries
 
 from .commandbase import CommandBase
 
@@ -101,7 +101,7 @@ class Anilist(CommandBase):
         if AnilistUsers.get_anilist_id(ctx.author.id) is None:
             await ctx.send(embed=account_embed, view=view)  # type: ignore - view Exists
             return
-        
+
         already_registered = Embed(
             title="Account already registered",
             description="To bypass and link a new account, please use the button below.",
@@ -224,7 +224,7 @@ class Anilist(CommandBase):
 
         search_number = json_response["data"]["Page"]["pageInfo"]["perPage"]
         search_query = json_response["data"]["Page"]["media"]
-        
+
         if not search_query:
             not_found = Embed(
                 title="Media not found",
@@ -233,7 +233,7 @@ class Anilist(CommandBase):
             )
             await ctx.reply(embed=not_found, mention_author=False)
             return
-        
+
         search_query.sort(key=operator.itemgetter("popularity"), reverse=True)
 
         selection_embed = Embed()
