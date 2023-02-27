@@ -1,8 +1,8 @@
-"""Added Anilist Table
+"""anilist_users
 
-Revision ID: d8fb58840a71
+Revision ID: 32656ad0b5aa
 Revises: 298629fea1bc
-Create Date: 2023-01-03 00:10:01.041199
+Create Date: 2023-02-27 11:59:09.458450
 
 """
 from alembic import op
@@ -10,7 +10,7 @@ import sqlalchemy as sa
 
 
 # revision identifiers, used by Alembic.
-revision = 'd8fb58840a71'
+revision = '32656ad0b5aa'
 down_revision = '298629fea1bc'
 branch_labels = None
 depends_on = None
@@ -21,6 +21,8 @@ def upgrade():
     op.create_table('anilist_users',
     sa.Column('id', sa.Integer(), autoincrement=True, nullable=False),
     sa.Column('anilist_id', sa.Integer(), nullable=True),
+    sa.Column('minutes_watched', sa.Integer(), nullable=True),
+    sa.Column('chapters_read', sa.Integer(), nullable=True),
     sa.PrimaryKeyConstraint('id')
     )
     # ### end Alembic commands ###

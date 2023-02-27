@@ -20,6 +20,7 @@ from discord.ui import (  # type: ignore - These libraries exist
 from db.anilist_users import AnilistUsers
 from main import ManChanBot
 from utils.context import get_member
+from fetcher.anilist_queries import AnilistQueries
 
 from .commandbase import CommandBase
 
@@ -43,38 +44,7 @@ class Anilist(CommandBase):
     def media_fetch(self, media_id: int):
         anilist_url = self.configs["ANILIST_URL"]
 
-        query = """
-        query ($id: Int){
-            Media(id: $id){
-                title{
-                    romaji
-                }
-                type
-                format
-                status
-                description
-                episodes
-                coverImage {
-                    extraLarge
-                }
-                siteUrl
-                averageScore
-                genres
-                startDate {
-                    year
-                    month
-                    day
-                }
-                endDate {
-                    year
-                    month
-                    day
-                }
-                chapters
-                volumes
-            }
-        }
-        """
+        query = AnilistQueries.media
 
         variables = {"id": media_id}
 
@@ -88,21 +58,10 @@ class Anilist(CommandBase):
     def fetch_score(self, media_id: int, user_id: Optional[int]):
         anilist_url = self.configs["ANILIST_URL"]
 
-        if not user_id or user_id == 0:
+        if not user_id:
             return
 
-        query = """
-        query ($user: Int, $id: Int){
-            MediaList(userId: $user, mediaId: $id){
-                user{
-                    name
-                }
-                score(format: POINT_10_DECIMAL)
-                status
-                progress
-            }
-        }
-        """
+        query = AnilistQueries.score
 
         variables = {"user": user_id, "id": media_id}
 
@@ -139,54 +98,40 @@ class Anilist(CommandBase):
         view = View()
         view.add_item(answer_button)
 
-        if (
-            AnilistUsers.get_anilist_id(ctx.author.id) is not None
-            and not AnilistUsers.get_anilist_id(ctx.author.id) == 0
-        ):
-            already_registered = Embed(
-                title="Account already registered",
-                description="To bypass and link a new account, please use the button below.",
-                color=Color.blue(),
-            )
-
-            async def remove_callback(interaction: Interaction):  # type: ignore - Interaction Exists
-                already_registered.title = "Account Info Removed"
-                already_registered.description = "Account Info has been removed from bot database, please re-run `!acc` to setup your account."
-                already_registered.color = Color.red()
-
-                await self.remove_anilist_id(ctx)
-                await interaction.response.edit_message(embed=already_registered, view=None)  # type: ignore - View Exists
-
-            repeat_button = Button(emoji="🔁")
-            repeat_button.callback = entry_callback
-            remove_button = Button(
-                label="Remove Account", emoji="🗑️", style=ButtonStyle.danger
-            )
-            remove_button.callback = remove_callback
-            registered_view = View()
-            registered_view.add_item(repeat_button)
-            registered_view.add_item(remove_button)
-
-            await ctx.send(embed=already_registered, view=registered_view)  # type: ignore - view Exists
-
-        else:
+        if AnilistUsers.get_anilist_id(ctx.author.id) is None:
             await ctx.send(embed=account_embed, view=view)  # type: ignore - view Exists
+            return
+        
+        already_registered = Embed(
+            title="Account already registered",
+            description="To bypass and link a new account, please use the button below.",
+            color=Color.blue(),
+        )
+
+        async def remove_callback(interaction: Interaction):  # type: ignore - Interaction Exists
+            already_registered.title = "Account Info Removed"
+            already_registered.description = "Account Info has been removed from bot database, please re-run `!acc` to setup your account."
+            already_registered.color = Color.red()
+
+            await self.remove_anilist_id(ctx)
+            await interaction.response.edit_message(embed=already_registered, view=None)  # type: ignore - View Exists
+
+        repeat_button = Button(emoji="🔁")
+        repeat_button.callback = entry_callback
+        remove_button = Button(
+            label="Remove Account", emoji="🗑️", style=ButtonStyle.danger
+        )
+        remove_button.callback = remove_callback
+        registered_view = View()
+        registered_view.add_item(repeat_button)
+        registered_view.add_item(remove_button)
+
+        await ctx.send(embed=already_registered, view=registered_view)  # type: ignore - view Exists
 
     # Used by Account Setup to obtain initial profile information
     async def profile_query(self, ctx: Context, interaction: Interaction, anilist_id: str):  # type: ignore - Interaction Exists
         anilist_url = self.configs["ANILIST_URL"]
-        query = """
-        query ($name: String){
-            User(name: $name){
-                id
-                name
-                avatar{
-                    large
-                }
-                siteUrl
-            }
-        }
-        """
+        query = AnilistQueries.account
 
         variables = {"name": str(anilist_id)}
 
@@ -262,41 +207,8 @@ class Anilist(CommandBase):
     # Searches for Anime, presents as embed with a selection menu
     async def search_embed(self, ctx: Context, type: str, media: str, format: Any):
         anilist_url = self.configs["ANILIST_URL"]
-        query = """
-        query ($type: MediaType, $format: MediaFormat, $page: Int, $perPage: Int, $search: String) {
-            Page(page: $page, perPage: $perPage) {
-                pageInfo {
-                    total
-                    currentPage
-                    lastPage
-                    hasNextPage
-                    perPage
-                }
-                media(search: $search, type: $type, format: $format) {
-                    id
-                    title {
-                        romaji
-                    }
-                    studios(isMain: true) {
-                        nodes {
-                            name
-                        }
-                    }
-                    staff(perPage: 2){
-                        edges{
-                            role
-                        }
-                        nodes{
-                            name {
-                                full
-                            }
-                        }
-                    }
-                    popularity
-                }
-            }
-        }
-        """
+        query = AnilistQueries.search
+
         variables = {"type": type, "search": media, "page": 1, "perPage": 10}
         if format is not None:
             variables = {
@@ -312,6 +224,16 @@ class Anilist(CommandBase):
 
         search_number = json_response["data"]["Page"]["pageInfo"]["perPage"]
         search_query = json_response["data"]["Page"]["media"]
+        
+        if not search_query:
+            not_found = Embed(
+                title="Media not found",
+                description="Please re-run the command and refine your search parameters",
+                color=Color.red(),
+            )
+            await ctx.reply(embed=not_found, mention_author=False)
+            return
+        
         search_query.sort(key=operator.itemgetter("popularity"), reverse=True)
 
         selection_embed = Embed()
@@ -448,21 +370,10 @@ class Anilist(CommandBase):
     def update_leaderboard(self, fetch: List["AnilistUsers"]):
         anilist_url = self.configs["ANILIST_URL"]
 
-        query = """
-        query($id: Int){
-            User(id: $id){
-                statistics{
-                    anime{
-                        minutesWatched
-                        chaptersRead
-                    }
-                }
-            }
-        }
-        """
+        query = AnilistQueries.leaderboard
 
         for user in fetch:
-            if user.anilist_id is not None and user.anilist_id != 0:
+            if user.anilist_id is not None:
                 variables = {"id": user.anilist_id}
                 stats = requests.post(
                     anilist_url, json={"query": query, "variables": variables}
