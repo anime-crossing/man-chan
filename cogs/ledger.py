@@ -6,34 +6,60 @@ from discord.ext.commands.context import Context
 from discord.ui import Button, View #type: ignore
 
 from main import ManChanBot
+from utils.uuid_gen import gen_uuid
+from db.invoices import Invoice
+from db.invoice_participants import Invoice_Participant
 
 from .commandbase import CommandBase
 
 class Ledger(CommandBase):
+    @staticmethod
+    def store_in_database(uuid: str, pay_id: int, payee_id: int, cost: float):
+        table_entry = Invoice.get(uuid)
+
+        if not table_entry:
+            table_entry = Invoice.create(uuid)
+        
+        table_entry.set_values(pay_id, cost)
+
+        participant_entry = Invoice_Participant.create(table_entry.id, payee_id, cost, False)
+
+
     @commands.command()
     async def bill(self, ctx: Context, member: Member, amount: float):
+        bill_id = gen_uuid(4)
         bill_embed = Embed(
-            title="Bill",
-            description=f"Participants: {member.mention}\nTotal Bill: **${amount}**",
+            title="New Bill",
+            description=f"`Bill ID: {bill_id}`\nDate: `02/28/2023`\nPaid by {ctx.author.mention}\nBill to{member.mention}\nTotal Bill: **${amount}**",
             color=Color.blue()
         )
         message = f'{member.mention} please confirm the bill from {ctx.author.mention}'
         
         async def x_callback(interaction: Interaction):  #type: ignore
-            bill_embed.description="Bill Cancelled.  Please re-run commands to fix errors if they exist"
-            bill_embed.color = Color.red()
-            await interaction.response.edit_message(embed=bill_embed, view=None)
+            if interaction.user == ctx.author or interaction.user == member:
+                bill_embed.description="Bill Cancelled.  Please re-run commands to fix errors if they exist"
+                bill_embed.color = Color.red()
+                await interaction.response.edit_message(embed=bill_embed, view=None)
+            else:
+                await interaction.response.defer()
 
         async def check_callback(interaction: Interaction): #type: ignore
-            bill_embed.color = Color.gold()
-            check_button.disabled = True
-            view.add_item(confirm_button)
-            await interaction.response.edit_message(embed=bill_embed, view=view)
+            if interaction.user == member:
+                bill_embed.color = Color.gold()
+                check_button.disabled = True
+                view.add_item(confirm_button)
+                await interaction.response.edit_message(embed=bill_embed, view=view)
+            else:
+                await interaction.response.defer()
 
         async def confirm_callback(interaction: Interaction): #type: ignore
-            bill_embed.color = Color.green()
-            bill_embed.set_footer(text='Bill confirmed. Charge was added into database.')
-            await interaction.response.edit_message(embed=bill_embed, view=None)
+            if interaction.user == member:
+                bill_embed.color = Color.green()
+                bill_embed.set_footer(text=f'Bill confirmed. Charge was added into database with ID #{bill_id}')
+                Ledger.store_in_database(bill_id, ctx.author.id, member.id, amount)
+                await interaction.response.edit_message(embed=bill_embed, view=None)
+            else:
+                await interaction.response.defer()
 
         x_button = Button(emoji="❌")
         x_button.callback = x_callback
@@ -56,6 +82,25 @@ class Ledger(CommandBase):
             color=Color.purple()
         )
         await ctx.reply(embed=form_embed, mention_author=False)
+    
+    @commands.command(aliases=["bi"])
+    async def billinfo(self, ctx: Context, *, arg: str = None): #type: ignore
+        if arg is None:
+            bill = Invoice_Participant.get_latest(ctx.author.id)
+        else:
+            bill = Invoice_Participant.get(ctx.author.id, arg)
+
+        if bill is not None:
+            invoice_info = Invoice.get(bill.invoice_id)
+            if invoice_info is not None:
+                bill_embed = Embed(
+                    title="Bill Info",
+                    description=f'`{bill.invoice_id} · `02/28/23`\n\nPay to: <@{invoice_info.payer_id}>\nAmount: {bill.amount_owed}'
+                )
+                bill_embed.color = Color.green() if bill.paid == True else Color.red()
+                await ctx.reply(embed=bill_embed)
+            else:
+                await ctx.reply("Invalid Code. Please re-run command", mention_author=False)
 
 async def setup(bot: ManChanBot):
     if Ledger.is_enabled(bot.configs):
