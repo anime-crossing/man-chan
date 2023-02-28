@@ -1,8 +1,8 @@
 """invoices
 
-Revision ID: 0484fd8d3b0f
+Revision ID: 15f83e2d0412
 Revises: 298629fea1bc
-Create Date: 2023-02-28 15:00:39.506531
+Create Date: 2023-02-28 15:18:42.017058
 
 """
 from alembic import op
@@ -10,7 +10,7 @@ import sqlalchemy as sa
 
 
 # revision identifiers, used by Alembic.
-revision = '0484fd8d3b0f'
+revision = '15f83e2d0412'
 down_revision = '298629fea1bc'
 branch_labels = None
 depends_on = None

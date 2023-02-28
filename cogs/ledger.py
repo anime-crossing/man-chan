@@ -30,7 +30,7 @@ class Ledger(CommandBase):
         bill_id = gen_uuid(4)
         bill_embed = Embed(
             title="New Bill",
-            description=f"`Bill ID: {bill_id}`\nDate: `02/28/2023`\nPaid by {ctx.author.mention}\nBill to{member.mention}\nTotal Bill: **${amount}**",
+            description=f"Bill ID: `{bill_id}`\nDate: `02/28/2023`\nPaid by {ctx.author.mention}\nBill to{member.mention}\nTotal Bill: **${amount}**",
             color=Color.blue()
         )
         message = f'{member.mention} please confirm the bill from {ctx.author.mention}'
@@ -95,7 +95,7 @@ class Ledger(CommandBase):
             if invoice_info is not None:
                 bill_embed = Embed(
                     title="Bill Info",
-                    description=f'`{bill.invoice_id} · `02/28/23`\n\nPay to: <@{invoice_info.payer_id}>\nAmount: {bill.amount_owed}'
+                    description=f'`{bill.invoice_id}` · `02/28/23`\n\nPay to: <@{invoice_info.payer_id}>\nAmount: **${bill.amount_owed}**'
                 )
                 bill_embed.color = Color.green() if bill.paid == True else Color.red()
                 await ctx.reply(embed=bill_embed)

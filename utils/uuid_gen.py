@@ -4,9 +4,7 @@ import string
 from db.invoices import Invoice
 
 def verify_unique(uid: str) -> bool:
-    check_db = Invoice.get(uid)
-    
-    return bool(check_db)
+    return not Invoice.get(uid)
 
 def gen_uuid(string_length: int) -> str:
     while True:

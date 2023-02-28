@@ -20,7 +20,7 @@ class Invoice_Participant(Base):
 
     @classmethod
     def get(cls, pid: int, iid: str) -> Optional["Invoice_Participant"]:
-        return cls._query.filter_by(partipant_id=pid).filter_by(invoice_id=iid).first()
+        return cls._query().filter_by(participant_id=pid, invoice_id=iid).first()
     
     @classmethod
     def get_latest(cls, pid: int) -> Optional["Invoice_Participant"]:
