@@ -107,6 +107,60 @@ class Ledger(CommandBase):
         else:
             bill = Invoice_Participant.get(ctx.author.id, arg.upper())
 
+        async def button_callback(interaction: Interaction):
+            if interaction.user == ctx.author:
+                bill_embed.title = f'Pay Bill `{bill.invoice_id}`?'
+                bill_embed.color = Color.blue()
+                content = f'{get_member(ctx, invoice_info.payer_id).mention} please confirm payment from {ctx.author.mention}'
+
+                await interaction.response.edit_message(content=content, embed=bill_embed, view=confirm_view)
+
+            else:
+                await interaction.response.defer()
+
+        pay_button = Button(label="Pay Bill", emoji='💸', style=ButtonStyle.success)
+        pay_button.callback = button_callback
+
+        pay_view = View()
+        pay_view.add_item(pay_button)
+
+        async def x_callback(interaction: Interaction):  #type: ignore
+            if interaction.user == ctx.author or interaction.user == get_member(ctx, invoice_info.payer_id):
+                bill_embed.description="Payment Cancelled.  Please re-run commands to fix errors if they exist"
+                bill_embed.color = Color.red()
+                await interaction.response.edit_message(embed=bill_embed, view=None)
+            else:
+                await interaction.response.defer()
+
+        async def check_callback(interaction: Interaction): #type: ignore
+            if interaction.user == get_member(ctx, invoice_info.payer_id):
+                bill_embed.color = Color.gold()
+                check_button.disabled = True
+                confirm_view.add_item(confirm_button)
+                await interaction.response.edit_message(embed=bill_embed, view=confirm_view)
+            else:
+                await interaction.response.defer()
+
+        async def confirm_callback(interaction: Interaction): #type: ignore
+            if interaction.user == get_member(ctx, invoice_info.payer_id):
+                bill_embed.color = Color.green()
+                bill_embed.set_footer(text=f'Bill paid. Charge was updated in database')
+                bill.set_paid()
+                await interaction.response.edit_message(embed=bill_embed, view=None)
+            else:
+                await interaction.response.defer()
+
+        x_button = Button(emoji="❌")
+        x_button.callback = x_callback
+        check_button = Button(emoji="☑")
+        check_button.callback = check_callback
+        confirm_button = Button(emoji="☑", style = ButtonStyle.success)
+        confirm_button.callback = confirm_callback
+
+        confirm_view = View()
+        confirm_view.add_item(x_button)
+        confirm_view.add_item(check_button)
+
         if bill is not None:
             invoice_info = Invoice.get(bill.invoice_id)
             if invoice_info is not None:
@@ -115,7 +169,7 @@ class Ledger(CommandBase):
                     description=f'`{bill.invoice_id}` · `02/28/23`\n\nReason: **{invoice_info.desc}**\n\nPay to: <@{invoice_info.payer_id}>\nAmount: **${bill.amount_owed: .2f}**'
                 )
                 bill_embed.color = Color.green() if bill.paid == True else Color.red()
-                await ctx.reply(embed=bill_embed, mention_author=False)
+                await ctx.reply(embed=bill_embed, view=pay_view, mention_author=False)
             else:
                 await ctx.reply("Invalid Code. Please re-run command", mention_author=False)
 
