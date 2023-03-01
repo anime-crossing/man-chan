@@ -11,6 +11,7 @@ class Invoice(Base):
     payer_id = Column(Integer, default=0)
     total_cost = Column(Float, default=0.00)
     desc = Column(String, default=None)
+    date = Column(Integer)
 
     @classmethod
     def create(cls, uuid: str) -> "Invoice":
@@ -25,8 +26,9 @@ class Invoice(Base):
     def get_latest(cls) -> Optional["Invoice"]:
         return cls._query().order_by(cls.id.desc()).first()
 
-    def set_values(self, pay_id: int, amount: float, arg: str):
+    def set_values(self, pay_id: int, amount: float, arg: str, timestamp: int):
         self.payer_id = pay_id
         self.total_cost = amount
         self.desc = arg
+        self.date = timestamp
         self._save()

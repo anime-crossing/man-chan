@@ -1,12 +1,14 @@
 import logging
+import typing
 
 from discord import Color, Embed, Member, ButtonStyle, Interaction   #type: ignore
 from discord.ext import commands
 from discord.ext.commands.context import Context
 from discord.ui import Button, View #type: ignore
+from datetime import datetime
 
 from main import ManChanBot
-from utils.ledger_utils import gen_uuid
+from utils.ledger_utils import gen_uuid, create_confirmation_buttons, already_paid, get_pst_time
 from utils.context import get_member
 from db.invoices import Invoice
 from db.invoice_participants import Invoice_Participant
@@ -15,16 +17,15 @@ from .commandbase import CommandBase
 
 class Ledger(CommandBase):
     @staticmethod
-    def store_in_database(uuid: str, pay_id: int, payee_id: int, cost: float, arg: str):
+    def store_in_database(uuid: str, pay_id: int, payee_id: int, cost: float, arg: str, timestamp: int):
         table_entry = Invoice.get(uuid)
 
         if not table_entry:
             table_entry = Invoice.create(uuid)
         
-        table_entry.set_values(pay_id, cost, arg)
+        table_entry.set_values(pay_id, cost, arg, timestamp)
 
         participant_entry = Invoice_Participant.create(table_entry.id, payee_id, cost, False)
-
 
     @commands.command()
     async def bill(self, ctx: Context, member: Member, amount: float, *, description: str = None): #type: ignore
@@ -37,6 +38,14 @@ class Ledger(CommandBase):
         if len(description) > 25:
             await ctx.reply("The description must be 25 characters or less")
             return
+        
+        if ctx.author == member:
+            fraud_embed = Embed(
+                title="Fraud Warning",
+                description="The authorities are on their way.  Stop trying to charge yourself!",
+                color=Color.red()
+            )
+            return await ctx.reply(embed=fraud_embed, mention_author=False)
             
         amount = round(amount, 2)
         if amount < 0:
@@ -45,49 +54,28 @@ class Ledger(CommandBase):
         
         bill_id = gen_uuid(4)
         formatted_amount = "{:.2f}".format(amount)
+        timestamp = get_pst_time()
         bill_embed = Embed(
             title="New Bill",
-            description=f"Bill ID: `{bill_id}`\nDate: `02/28/2023`\n\nReason: **{description}**\n\nPaid by {ctx.author.mention}\nBill to{member.mention}\nTotal Bill: **${formatted_amount}**",
+            description=f"Bill ID: `{bill_id}`\nDate: <t:{timestamp}:D>\n\nReason: **{description}**\n\nPay to {ctx.author.mention}\nBill to{member.mention}\n\nTotal Bill: **${formatted_amount}**",
             color=Color.blue()
         )
         message = f'{member.mention} please confirm the bill from {ctx.author.mention}'
-        
-        async def x_callback(interaction: Interaction):  #type: ignore
-            if interaction.user == ctx.author or interaction.user == member:
-                bill_embed.description="Bill Cancelled.  Please re-run commands to fix errors if they exist"
-                bill_embed.color = Color.red()
-                await interaction.response.edit_message(embed=bill_embed, view=None)
-            else:
-                await interaction.response.defer()
-
-        async def check_callback(interaction: Interaction): #type: ignore
-            if interaction.user == member:
-                bill_embed.color = Color.gold()
-                check_button.disabled = True
-                view.add_item(confirm_button)
-                await interaction.response.edit_message(embed=bill_embed, view=view)
-            else:
-                await interaction.response.defer()
 
         async def confirm_callback(interaction: Interaction): #type: ignore
             if interaction.user == member:
                 bill_embed.color = Color.green()
                 bill_embed.set_footer(text=f'Bill confirmed. Charge was added into database with ID #{bill_id}')
-                Ledger.store_in_database(bill_id, ctx.author.id, member.id, amount, str(description))
+
+                Ledger.store_in_database(bill_id, ctx.author.id, member.id, amount, str(description), timestamp)
                 await interaction.response.edit_message(embed=bill_embed, view=None)
             else:
                 await interaction.response.defer()
 
-        x_button = Button(emoji="❌")
-        x_button.callback = x_callback
-        check_button = Button(emoji="☑")
-        check_button.callback = check_callback
         confirm_button = Button(emoji="☑", style = ButtonStyle.success)
         confirm_button.callback = confirm_callback
 
-        view = View()
-        view.add_item(x_button)
-        view.add_item(check_button)
+        view = create_confirmation_buttons(ctx, member, bill_embed, 1, confirm_button)
 
         await ctx.reply(content=message, embed=bill_embed, view=view, mention_author=False) #type: ignore
 
@@ -107,12 +95,17 @@ class Ledger(CommandBase):
         else:
             bill = Invoice_Participant.get(ctx.author.id, arg.upper())
 
-        async def button_callback(interaction: Interaction):
-            if interaction.user == ctx.author:
-                bill_embed.title = f'Pay Bill `{bill.invoice_id}`?'
-                bill_embed.color = Color.blue()
-                content = f'{get_member(ctx, invoice_info.payer_id).mention} please confirm payment from {ctx.author.mention}'
 
+        async def button_callback(interaction: Interaction):        # type: ignore
+            if interaction.user == ctx.author:               
+                if bill.paid:                                   # type: ignore - Bill will not be empty checked later
+                    return await interaction.response.edit_message(embed=already_paid(bill), view=None) # type: ignore - Bill will not be empty checked later
+                bill_embed.title = f'Pay Bill `{bill.invoice_id}`?'  # type: ignore - Bill will not be empty checked later
+                bill_embed.color = Color.blue()
+                member = get_member(ctx, invoice_info.payer_id)     # type: ignore - Bill will not be empty checked later
+                member = typing.cast(Member, member)
+                content = f'{member.mention} please confirm payment from {ctx.author.mention}'
+                confirm_view = create_confirmation_buttons(ctx, member, bill_embed, 1, confirm_button)
                 await interaction.response.edit_message(content=content, embed=bill_embed, view=confirm_view)
 
             else:
@@ -124,53 +117,41 @@ class Ledger(CommandBase):
         pay_view = View()
         pay_view.add_item(pay_button)
 
-        async def x_callback(interaction: Interaction):  #type: ignore
-            if interaction.user == ctx.author or interaction.user == get_member(ctx, invoice_info.payer_id):
-                bill_embed.description="Payment Cancelled.  Please re-run commands to fix errors if they exist"
-                bill_embed.color = Color.red()
-                await interaction.response.edit_message(embed=bill_embed, view=None)
-            else:
-                await interaction.response.defer()
-
-        async def check_callback(interaction: Interaction): #type: ignore
-            if interaction.user == get_member(ctx, invoice_info.payer_id):
-                bill_embed.color = Color.gold()
-                check_button.disabled = True
-                confirm_view.add_item(confirm_button)
-                await interaction.response.edit_message(embed=bill_embed, view=confirm_view)
-            else:
-                await interaction.response.defer()
-
         async def confirm_callback(interaction: Interaction): #type: ignore
-            if interaction.user == get_member(ctx, invoice_info.payer_id):
+            if interaction.user == get_member(ctx, invoice_info.payer_id):  # type: ignore - Bill will not be empty checked later
                 bill_embed.color = Color.green()
                 bill_embed.set_footer(text=f'Bill paid. Charge was updated in database')
-                bill.set_paid()
+                timestamp = get_pst_time()
+                new_description = unpaid_description.replace("Pay", "Paid", 1)
+                new_description += f'\nPaid: <t:{timestamp}:f>'
+                bill_embed.description = new_description
+                bill.set_paid(timestamp)     # type: ignore - Bill will not be empty checked later   
                 await interaction.response.edit_message(embed=bill_embed, view=None)
             else:
                 await interaction.response.defer()
 
-        x_button = Button(emoji="❌")
-        x_button.callback = x_callback
-        check_button = Button(emoji="☑")
-        check_button.callback = check_callback
         confirm_button = Button(emoji="☑", style = ButtonStyle.success)
         confirm_button.callback = confirm_callback
 
-        confirm_view = View()
-        confirm_view.add_item(x_button)
-        confirm_view.add_item(check_button)
-
-        if bill is not None:
+        if bill is not None:            
             invoice_info = Invoice.get(bill.invoice_id)
+            member = get_member(ctx, invoice_info.payer_id)     # type: ignore - Bill will not be empty checked later
+            member = typing.cast(Member, member)
+            base_description = f'`{bill.invoice_id}` · `${bill.amount_owed}`\n\nReason: **{invoice_info.desc}**\n\n' # type: ignore - Bill will not be empty checked later
+            unpaid_description = base_description + f"Pay to: <@{invoice_info.payer_id}>\n\nBilled: <t:{invoice_info.date}:f>" # type: ignore - Bill will not be empty checked later
             if invoice_info is not None:
-                bill_embed = Embed(
-                    title="Bill Info",
-                    description=f'`{bill.invoice_id}` · `02/28/23`\n\nReason: **{invoice_info.desc}**\n\nPay to: <@{invoice_info.payer_id}>\nAmount: **${bill.amount_owed: .2f}**'
-                )
-                bill_embed.color = Color.green() if bill.paid == True else Color.red()
-                await ctx.reply(embed=bill_embed, view=pay_view, mention_author=False)
-            else:
+                bill_embed = Embed(title="Bill Info")
+                if bill.paid:
+                    bill_embed.color = Color.green()
+                    paid_description = unpaid_description.replace("Pay", "Paid", 1)
+                    paid_description += f'\nPaid: <t:{bill.paid_on}:f>'
+                    bill_embed.description = paid_description
+                    await ctx.reply(embed=bill_embed, view=None, mention_author=False)      #type: ignore
+                else:
+                    bill_embed.color = Color.red()
+                    bill_embed.description = unpaid_description
+                    await ctx.reply(embed=bill_embed, view=pay_view, mention_author=False) #type: ignore
+            else:   
                 await ctx.reply("Invalid Code. Please re-run command", mention_author=False)
 
     @commands.command(aliases=["bc", "billc"])
@@ -202,54 +183,67 @@ class Ledger(CommandBase):
         else:
             bill = Invoice_Participant.get(ctx.author.id, arg.upper())
 
-        async def x_callback(interaction: Interaction):  #type: ignore
-            if interaction.user == ctx.author or interaction.user == get_member(ctx, invoice_info.payer_id):
-                bill_embed.description="Payment Cancelled.  Please re-run commands to fix errors if they exist"
-                bill_embed.color = Color.red()
-                await interaction.response.edit_message(embed=bill_embed, view=None)
-            else:
-                await interaction.response.defer()
-
-        async def check_callback(interaction: Interaction): #type: ignore
-            if interaction.user == get_member(ctx, invoice_info.payer_id):
-                bill_embed.color = Color.gold()
-                check_button.disabled = True
-                view.add_item(confirm_button)
-                await interaction.response.edit_message(embed=bill_embed, view=view)
-            else:
-                await interaction.response.defer()
-
         async def confirm_callback(interaction: Interaction): #type: ignore
-            if interaction.user == get_member(ctx, invoice_info.payer_id):
-                bill_embed.color = Color.green()
-                bill_embed.set_footer(text=f'Bill paid. Charge was updated in database')
-                bill.set_paid()
-                await interaction.response.edit_message(embed=bill_embed, view=None)
+            if interaction.user == member:
+                if not bill.paid:                       # type: ignore - Won't be none
+                    timestamp = get_pst_time()
+                    bill_embed.color = Color.green()
+                    bill_embed.set_footer(text=f'Bill paid. Charge was updated in database.')
+                    bill.set_paid(timestamp)     # type: ignore - Bill will not be empty checked later
+                    paid_description = unpaid_description.replace("Pay", "Paid", 1)
+                    paid_description += f'\nPaid: <t:{timestamp}:f>'
+                    bill_embed.description = paid_description
+                    await interaction.response.edit_message(embed=bill_embed, view=None)
+                else:
+                    paid_embed = already_paid(bill)    # type: ignore - Won't be none
+                    await interaction.response.edit_message(embed=paid_embed, view=None)
             else:
                 await interaction.response.defer()
 
-        x_button = Button(emoji="❌")
-        x_button.callback = x_callback
-        check_button = Button(emoji="☑")
-        check_button.callback = check_callback
         confirm_button = Button(emoji="☑", style = ButtonStyle.success)
         confirm_button.callback = confirm_callback
 
-        view = View()
-        view.add_item(x_button)
-        view.add_item(check_button)
-
         if bill is not None:
+            if bill.paid:
+                return await ctx.reply(embed=already_paid(bill), mention_author=False)
             invoice_info = Invoice.get(bill.invoice_id)
+            member = get_member(ctx, invoice_info.payer_id)     # type: ignore - Bill will not be empty checked later
+            member = typing.cast(Member, member)
             if invoice_info is not None:
+                unpaid_description = f'Reason: **{invoice_info.desc}**\n\nPay to: {member.mention}\nAmount: **${bill.amount_owed: .2f}**\n\nBilled: <t:{invoice_info.date}:f>'
                 bill_embed = Embed(
                     title=f"Pay Bill `{bill.invoice_id}`?",
-                    description=f'Reason: **{invoice_info.desc}**\n\nPay to: <@{invoice_info.payer_id}>\nAmount: **${bill.amount_owed: .2f}**'
+                    description=unpaid_description
                 )
-                content = f'{get_member(ctx, invoice_info.payer_id).mention} please confirm payment from {ctx.author.mention}' 
-                await ctx.reply(content=content, embed=bill_embed, view=view, mention_author=False)
+                content = f'{member.mention} please confirm payment from {ctx.author.mention}' 
+                view = create_confirmation_buttons(ctx, member, bill_embed, 2, confirm_button)
+                await ctx.reply(content=content, embed=bill_embed, view=view, mention_author=False)     #type: ignore
         else:
             await ctx.reply("Invalid Code. Please re-run command", mention_author=False)
+
+    @commands.command(aliases=['tc'])
+    async def test_confirm(self, ctx: Context, member: Member, param: int):
+        embed = Embed(
+            title="Test Embed",
+            description="Creates a test embed to attach views to"
+        )
+
+        async def confirm_callback(interaction: Interaction):    # type: ignore
+            await interaction.response.edit_message(content="Button works", embed=None, view=None)
+
+        confirm_button = Button(emoji='☑️')
+        confirm_button.callback = confirm_callback
+
+        view = create_confirmation_buttons(ctx, member, embed, param, confirm_button)
+
+        await ctx.reply(embed=embed, view=view)     # type: ignore
+
+    @commands.command()
+    async def time(self, ctx: Context):
+        embed = Embed(title="Time Test")
+        timestamp = get_pst_time()
+        embed.description = f'<t:{timestamp}:d>'
+        await ctx.reply(datetime.utcnow(), embed=embed)
 
 async def setup(bot: ManChanBot):
     if Ledger.is_enabled(bot.configs):

@@ -12,6 +12,7 @@ class Invoice_Participant(Base):
     participant_id = Column(Integer, default = None)
     amount_owed = Column(Float, default= 0.00)
     paid = Column(Boolean, default=False)
+    paid_on = Column(Integer, default = None)
 
     @classmethod
     def create(cls, invoice: str, pid: int, cost: float, status: bool) -> "Invoice_Participant":
@@ -30,6 +31,7 @@ class Invoice_Participant(Base):
     def get_latest(cls, pid: int) -> Optional["Invoice_Participant"]:
         return cls._query().filter_by(participant_id=pid, paid=False).order_by(cls.id.desc()).first()
     
-    def set_paid(self):
+    def set_paid(self, timestamp: int):
         self.paid = True
+        self.paid_on = timestamp
         self._save()
