@@ -14,23 +14,39 @@ from .commandbase import CommandBase
 
 class Ledger(CommandBase):
     @staticmethod
-    def store_in_database(uuid: str, pay_id: int, payee_id: int, cost: float):
+    def store_in_database(uuid: str, pay_id: int, payee_id: int, cost: float, arg: str):
         table_entry = Invoice.get(uuid)
 
         if not table_entry:
             table_entry = Invoice.create(uuid)
         
-        table_entry.set_values(pay_id, cost)
+        table_entry.set_values(pay_id, cost, arg)
 
         participant_entry = Invoice_Participant.create(table_entry.id, payee_id, cost, False)
 
 
     @commands.command()
-    async def bill(self, ctx: Context, member: Member, amount: float):
+    async def bill(self, ctx: Context, member: Member, amount: float, *, description: str = None): #type: ignore
+        if description is None:
+            error_embed= Embed(
+                title="Re-run command with a valid description",
+                description=f'Example: `!bill @chai 1.23 Starbucks`'
+            )
+            await ctx.reply(embed=error_embed, mention_author=False)
+        if len(description) > 25:
+            await ctx.reply("The description must be 25 characters or less")
+            return
+            
+        amount = round(amount, 2)
+        if amount < 0:
+            await ctx.reply("The amount cannot be negative")
+            return
+        
         bill_id = gen_uuid(4)
+        formatted_amount = "{:.2f}".format(amount)
         bill_embed = Embed(
             title="New Bill",
-            description=f"Bill ID: `{bill_id}`\nDate: `02/28/2023`\nPaid by {ctx.author.mention}\nBill to{member.mention}\nTotal Bill: **${amount}**",
+            description=f"Bill ID: `{bill_id}`\nDate: `02/28/2023`\n\nReason: **{description}**\n\nPaid by {ctx.author.mention}\nBill to{member.mention}\nTotal Bill: **${formatted_amount}**",
             color=Color.blue()
         )
         message = f'{member.mention} please confirm the bill from {ctx.author.mention}'
@@ -56,7 +72,7 @@ class Ledger(CommandBase):
             if interaction.user == member:
                 bill_embed.color = Color.green()
                 bill_embed.set_footer(text=f'Bill confirmed. Charge was added into database with ID #{bill_id}')
-                Ledger.store_in_database(bill_id, ctx.author.id, member.id, amount)
+                Ledger.store_in_database(bill_id, ctx.author.id, member.id, amount, str(description))
                 await interaction.response.edit_message(embed=bill_embed, view=None)
             else:
                 await interaction.response.defer()
@@ -95,10 +111,10 @@ class Ledger(CommandBase):
             if invoice_info is not None:
                 bill_embed = Embed(
                     title="Bill Info",
-                    description=f'`{bill.invoice_id}` · `02/28/23`\n\nPay to: <@{invoice_info.payer_id}>\nAmount: **${bill.amount_owed}**'
+                    description=f'`{bill.invoice_id}` · `02/28/23`\n\nReason: **{invoice_info.desc}**\n\nPay to: <@{invoice_info.payer_id}>\nAmount: **${bill.amount_owed: .2f}**'
                 )
                 bill_embed.color = Color.green() if bill.paid == True else Color.red()
-                await ctx.reply(embed=bill_embed)
+                await ctx.reply(embed=bill_embed, mention_author=False)
             else:
                 await ctx.reply("Invalid Code. Please re-run command", mention_author=False)
 
