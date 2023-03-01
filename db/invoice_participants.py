@@ -1,4 +1,4 @@
-from typing import Optional
+from typing import List, Optional
 
 from sqlalchemy import Integer, Float, String, Boolean
 from sqlalchemy.schema import Column
@@ -23,5 +23,13 @@ class Invoice_Participant(Base):
         return cls._query().filter_by(participant_id=pid, invoice_id=iid).first()
     
     @classmethod
+    def get_all(cls, pid: int) -> List["Invoice_Participant"]:
+        return cls._query().filter_by(participant_id=pid).order_by(cls.id.desc()).all()
+    
+    @classmethod
     def get_latest(cls, pid: int) -> Optional["Invoice_Participant"]:
-        return cls._query().filter_by(participant_id=pid).order_by(cls.id.desc()).first()
+        return cls._query().filter_by(participant_id=pid, paid=False).order_by(cls.id.desc()).first()
+    
+    def set_paid(self):
+        self.paid = True
+        self._save()
