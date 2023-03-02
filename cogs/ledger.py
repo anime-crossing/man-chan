@@ -4,7 +4,7 @@ import typing
 from discord import Color, Embed, Member, ButtonStyle, Interaction   #type: ignore
 from discord.ext import commands
 from discord.ext.commands.context import Context
-from discord.ui import Button, View #type: ignore
+from discord.ui import Button, View, Select #type: ignore
 from datetime import datetime
 
 from main import ManChanBot
@@ -220,6 +220,51 @@ class Ledger(CommandBase):
                 await ctx.reply(content=content, embed=bill_embed, view=view, mention_author=False)     #type: ignore
         else:
             await ctx.reply("Invalid Code. Please re-run command", mention_author=False)
+
+    @commands.command(aliases=['billm', 'bm'])
+    async def billmultiple(self, ctx: Context, total: float, *, arg: str = None):       # type: ignore
+        bill_id = gen_uuid(4)
+        timestamp = get_pst_time()
+        multi_embed = Embed(title="New Multi-Bill")
+        embed_description = f'Bill ID: `{bill_id}`\nDate: <t:{timestamp}:D>\n\nReason: {arg}\n\nPay to {ctx.author.mention}\n\nTotal Bill: **${total}**\n'
+        multi_embed.description = embed_description
+        select = Select(placeholder="Select people to bill", min_values=1, max_values=3)
+        select.add_option(
+            label='Test Ape',
+            value=1059938083031761007
+        )
+        select.add_option(
+            label='Man-chan',
+            value=798958744003149854
+        )
+        select.add_option(
+            label='ChaIvan',
+            value=850083935651102720
+        )
+
+        async def select_callback(interaction: Interaction):    # type: ignore
+            nonlocal embed_description
+            if interaction.user == ctx.author:
+                invoice = 'Bill the following people: \n'
+                for value in select.values:
+                    invoice += f'- <@{value}>\n'
+                embed_description += invoice
+                multi_embed.description = embed_description
+                await interaction.response.edit_message(embed=multi_embed, view=split_view)
+
+        select.callback = select_callback
+
+        view = View()
+        view.add_item(select)
+
+        split_evenly = Button(emoji='🟰', label='Split Evenly', style=ButtonStyle.success)
+        split_specific = Button(emoji='🔢', label='Split Specific')
+
+        split_view = View()
+        split_view.add_item(split_evenly)
+        split_view.add_item(split_specific)
+
+        await ctx.reply(embed=multi_embed, view=view, mention_author=False)     # type: ignore 
 
     @commands.command(aliases=['tc'])
     async def test_confirm(self, ctx: Context, member: Member, param: int):
