@@ -1,14 +1,16 @@
 import logging
-import typing
+from typing import List, Union, Optional
+import typing 
+import random
 
-from discord import Color, Embed, Member, ButtonStyle, Interaction   #type: ignore
+from discord import Color, Embed, Member, Message, ButtonStyle, Interaction   #type: ignore
 from discord.ext import commands
 from discord.ext.commands.context import Context
 from discord.ui import Button, View, Select #type: ignore
 from datetime import datetime
 
 from main import ManChanBot
-from utils.ledger_utils import gen_uuid, create_confirmation_buttons, already_paid, get_pst_time
+from utils.ledger_utils import *
 from utils.context import get_member
 from db.invoices import Invoice
 from db.invoice_participants import Invoice_Participant
@@ -17,7 +19,7 @@ from .commandbase import CommandBase
 
 class Ledger(CommandBase):
     @staticmethod
-    def store_in_database(uuid: str, pay_id: int, payee_id: int, cost: float, arg: str, timestamp: int):
+    def create_bill(uuid: str, pay_id: int, cost: float, arg: str, timestamp: int): # type: ignore 
         table_entry = Invoice.get(uuid)
 
         if not table_entry:
@@ -25,8 +27,24 @@ class Ledger(CommandBase):
         
         table_entry.set_values(pay_id, cost, arg, timestamp)
 
-        participant_entry = Invoice_Participant.create(table_entry.id, payee_id, cost, False)
+        return table_entry
+    
+    @staticmethod 
+    def handle_transaction(invoice: Invoice, participant_ids: Union[int, List[int]], splits: Optional[List[float]], param: int):
+        if not isinstance(participant_ids, list):
+            participant_ids = [participant_ids]
 
+        if splits is None:      # Traditional 1-on-1 Transacation !bill
+            participant_entry = Invoice_Participant.create(invoice.id, participant_ids[0], float(invoice.total_cost), False)
+        else:                   # Split Transactions from !bm
+            for participant, split in zip(participant_ids, splits):
+                participant_entry = Invoice_Participant.create(invoice.id, participant, split, False)
+
+    @staticmethod
+    def select_random_member(ctx: Context, participants: List[int]) -> Optional[Member]:
+        random_member_id = random.choice(participants)
+        return get_member(ctx, random_member_id)
+    
     @commands.command()
     async def bill(self, ctx: Context, member: Member, amount: float, *, description: str = None): #type: ignore
         if description is None:
@@ -67,7 +85,8 @@ class Ledger(CommandBase):
                 bill_embed.color = Color.green()
                 bill_embed.set_footer(text=f'Bill confirmed. Charge was added into database with ID #{bill_id}')
 
-                Ledger.store_in_database(bill_id, ctx.author.id, member.id, amount, str(description), timestamp)
+                bill = Ledger.create_bill(bill_id, ctx.author.id, amount, str(description), timestamp)
+                Ledger.handle_transaction(bill, member.id, None, 1)
                 await interaction.response.edit_message(embed=bill_embed, view=None)
             else:
                 await interaction.response.defer()
@@ -225,8 +244,10 @@ class Ledger(CommandBase):
     async def billmultiple(self, ctx: Context, total: float, *, arg: str = None):       # type: ignore
         bill_id = gen_uuid(4)
         timestamp = get_pst_time()
+        participants = []
+        cost_array = []
         multi_embed = Embed(title="New Multi-Bill")
-        embed_description = f'Bill ID: `{bill_id}`\nDate: <t:{timestamp}:D>\n\nReason: {arg}\n\nPay to {ctx.author.mention}\n\nTotal Bill: **${total}**\n'
+        embed_description = f'Bill ID: `{bill_id}`\nDate: <t:{timestamp}:D>\n\nReason: {arg}\n\nPay to {ctx.author.mention}\n\nTotal Bill: **${total: .2f}**\n'
         multi_embed.description = embed_description
         select = Select(placeholder="Select people to bill", min_values=1, max_values=3)
         select.add_option(
@@ -243,11 +264,12 @@ class Ledger(CommandBase):
         )
 
         async def select_callback(interaction: Interaction):    # type: ignore
-            nonlocal embed_description
+            nonlocal embed_description, participants
             if interaction.user == ctx.author:
                 invoice = 'Bill the following people: \n'
-                for value in select.values:
-                    invoice += f'- <@{value}>\n'
+                participants = select.values
+                for participant in participants:
+                    invoice += f'- <@{participant}>\n'
                 embed_description += invoice
                 multi_embed.description = embed_description
                 await interaction.response.edit_message(embed=multi_embed, view=split_view)
@@ -257,12 +279,96 @@ class Ledger(CommandBase):
         view = View()
         view.add_item(select)
 
+        async def even_callback(interaction: Interaction):      # type: ignore
+            if interaction.user == ctx.author:
+                if not participants:
+                    await interaction.response.send_message("Participants not being filled somehow or updating")
+                else:
+                    nonlocal embed_description, cost_array
+                    n = len(participants) + 1
+                    per_value = round(total/n, 2)
+                    embed_description += f'Each participant will pay $**{per_value: .2f}**. (Owner of Bill Included in Splits)'
+                    cost_array = [per_value] * (n - 1)
+                    multi_embed.description = embed_description
+                    view = create_confirmation_buttons(ctx, ctx.author, multi_embed, 2, confirm_button)     # type: ignore - Won't be none
+                    await interaction.response.edit_message(embed=multi_embed, view=view)
+            else:
+                await interaction.response.defer()
+
+        async def split_callback(interaction: Interaction):     # type: ignore
+            if interaction.user == ctx.author:
+                nonlocal embed_description, cost_array
+                cost_message = None
+                
+                temp_description = embed_description + "\nPlease enter bill in format `1.99, 11.14, 41.11`.  Whole numbers are okay!  Press Checkmark when complete.  Message will timeout in 60 seconds.\n"
+                multi_embed.description = temp_description
+
+                async def lock_callback(interaction: Interaction):      # type: ignore
+                    nonlocal embed_description
+                    embed_description += f'\nParticipant Price Breakdown:\n'
+
+                    for participant, cost in zip(participants, cost_array):
+                        embed_description += f'- <@{participant}>: **${cost: .2f}**\n'
+                        print(f'Cost Parsed: {cost}')
+                    
+                    multi_embed.description = embed_description
+
+                    view = create_confirmation_buttons(ctx, ctx.author, multi_embed, 2, confirm_button) # type: ignore
+                    
+                    await interaction.response.edit_message(embed=multi_embed, view=view)
+
+
+                lock_button = Button(emoji='🔒')
+                lock_button.callback = lock_callback
+                
+                view = create_confirmation_buttons(ctx, ctx.author, multi_embed, 2, confirm_button) # type: ignore - Won't be none
+                await interaction.response.edit_message(embed=multi_embed, view=view)
+                
+                def check(message: Message) -> bool:
+                    return ctx.author == message.author
+                
+                while cost_message is None:
+                    message = await ctx.bot.wait_for('message', timeout=60.0, check=check)
+                    if check_usd_format(str(message.content), len(participants)):
+                            cost_message = str(message.content)
+                    else:
+                        await ctx.send("String parsed incorrectly. Please try again")
+
+                cost_array = [float(x) for x in cost_message.split(', ')]
+                                    
+                for participant, cost in zip(participants, cost_array):
+                    temp_description += f'- Bill <@{participant}> **${cost}**?\n'
+                multi_embed.description = temp_description
+
+                view = create_confirmation_buttons(ctx, ctx.author, multi_embed, 2, lock_button) # type: ignore - Won't be none
+                await interaction.message.edit(embed=multi_embed, view=view)
+
+            else:
+                await interaction.response.defer()
+
+
+
         split_evenly = Button(emoji='🟰', label='Split Evenly', style=ButtonStyle.success)
+        split_evenly.callback = even_callback
         split_specific = Button(emoji='🔢', label='Split Specific')
+        split_specific.callback = split_callback
 
         split_view = View()
         split_view.add_item(split_evenly)
         split_view.add_item(split_specific)
+
+        async def confirm_callback(interaction: Interaction):       # type: ignore
+            if interaction.user == ctx.author:
+                bill = Ledger.create_bill(bill_id, ctx.author.id, total, arg, timestamp)
+                Ledger.handle_transaction(bill, participants, cost_array, 2)
+                multi_embed.set_footer(text=f'New Multi-bill confirmed.  Charges were added into the database with ID #{bill_id}')
+                multi_embed.color = Color.green()
+                await interaction.response.edit_message(embed=multi_embed, view=None)
+            else:
+                await interaction.response.defer()
+
+        confirm_button = Button(emoji='☑', style=ButtonStyle.success)
+        confirm_button.callback = confirm_callback
 
         await ctx.reply(embed=multi_embed, view=view, mention_author=False)     # type: ignore 
 
@@ -289,6 +395,22 @@ class Ledger(CommandBase):
         timestamp = get_pst_time()
         embed.description = f'<t:{timestamp}:d>'
         await ctx.reply(datetime.utcnow(), embed=embed)
+
+    @commands.command()
+    async def listen(self, ctx: Context):
+        def check(message: Message) -> bool:     
+            return message.author == ctx.author
+
+        message = await ctx.bot.wait_for('message', timeout=60.0, check=check)
+        
+        try: 
+            if check_usd_format(str(message.content), 2):
+                await ctx.send(f'String Parsed Correctly')
+            else:
+                await ctx.send("String parsed incorrectly")
+        except:
+            await ctx.send("Sorry you too too long to respond.")
+
 
 async def setup(bot: ManChanBot):
     if Ledger.is_enabled(bot.configs):

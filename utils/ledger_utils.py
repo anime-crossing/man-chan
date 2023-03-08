@@ -66,3 +66,18 @@ def get_pst_time() -> int:
     pst_time = datetime.now(pst_timezone)
 
     return int(pst_time.timestamp())
+
+def check_usd_format(s: str, n: int) -> bool:
+    values = s.split(', ')
+    if len(values) != n:
+        return False
+    for value in values:
+        try:
+            f = float(value)
+            if f < 0:
+                return False
+        except ValueError:
+            return False
+    return True
+ 
+
