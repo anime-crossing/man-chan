@@ -1,9 +1,10 @@
 from typing import Optional
 
-from sqlalchemy import Integer, Float, String
+from sqlalchemy import Float, Integer, String
 from sqlalchemy.schema import Column
 
 from .base import Base
+
 
 class Invoice(Base):
     __tablename__ = "invoices"
@@ -17,11 +18,11 @@ class Invoice(Base):
     def create(cls, uuid: str) -> "Invoice":
         new_invoice = cls._create(id=uuid)
         return new_invoice
-    
+
     @classmethod
     def get(cls, uuid: str) -> Optional["Invoice"]:
         return cls._query().filter_by(id=uuid).first()
-    
+
     @classmethod
     def get_latest(cls) -> Optional["Invoice"]:
         return cls._query().order_by(cls.id.desc()).first()
