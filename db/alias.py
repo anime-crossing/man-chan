@@ -22,7 +22,7 @@ class Aliases(Base):
 
     @classmethod
     def get_list(cls) -> List["Aliases"]:
-        return cls._query().all()
+        return cls._query().order_by(Aliases.alias.asc()).all()  # type: ignore
 
     def set_alias(self, alias: Optional[str]):
         self.alias = alias

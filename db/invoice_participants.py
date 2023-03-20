@@ -17,10 +17,10 @@ class Invoice_Participant(Base):
 
     @classmethod
     def create(
-        cls, invoice: str, pid: int, cost: float, status: bool
+        cls, invoice: str, pid: int, cost: float
     ) -> "Invoice_Participant":
         new_record = cls._create(
-            invoice_id=invoice, participant_id=pid, amount_owed=cost, paid=status
+            invoice_id=invoice, participant_id=pid, amount_owed=cost
         )
         return new_record
 
@@ -33,13 +33,28 @@ class Invoice_Participant(Base):
         return cls._query().filter_by(participant_id=pid).order_by(cls.id.desc()).all()
 
     @classmethod
-    def get_latest(cls, pid: int) -> Optional["Invoice_Participant"]:
+    def get_participants(
+        cls, bill_id: str
+    ) -> Optional[List["Invoice_Participant"]]:
+        return cls._query().filter_by(invoice_id=bill_id).all()
+
+    @classmethod
+    def get_latest(cls, pid: int, status: bool) -> Optional["Invoice_Participant"]:
         return (
             cls._query()
-            .filter_by(participant_id=pid, paid=False)
+            .filter_by(participant_id=pid, paid=status)
             .order_by(cls.id.desc())
             .first()
         )
+
+    def get_status(self, bill_id: str) -> bool:
+        participants = self.get_participants(bill_id)
+        
+        if participants is not None:
+            for participant in participants:
+                if not participant.paid:
+                    return False
+        return True
 
     def set_paid(self, timestamp: int):
         self.paid = True

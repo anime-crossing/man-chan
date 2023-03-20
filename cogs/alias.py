@@ -1,13 +1,9 @@
 import logging
 from typing import Optional
 
-from discord import (  # type: ignore - These libraries also exist
-    ButtonStyle,
-    Color,
-    Embed,
-    Interaction,
-    Member,
-)
+from discord import ButtonStyle  # type: ignore
+from discord import Interaction  # type: ignore
+from discord import Color, Embed, Member  # type: ignore - These libraries also exist
 from discord.ext import commands
 from discord.ext.commands.context import Context
 from discord.ui import (  # type: ignore - These libraries exist
@@ -24,6 +20,9 @@ from .commandbase import CommandBase
 
 
 class Alias(CommandBase):
+    def format_name(self, name: str) -> str:
+        return name.lower().capitalize()
+
     async def save_alias(self, discord_id: int, alias: Optional[str]):
         table_entry = Aliases.get(discord_id)
 
@@ -33,6 +32,7 @@ class Alias(CommandBase):
         table_entry.set_alias(alias)
 
     async def create_alias(self, ctx: Context, member: Optional[Member], interaction: Interaction, alias: str):  # type: ignore
+        alias = self.format_name(alias)
         embed = Embed(
             title="Confirm Alias",
             description=f"Alias Chosen: `{alias}`",
@@ -114,13 +114,14 @@ class Alias(CommandBase):
         remove_button = Button(emoji="🗑️", style=ButtonStyle.danger)
         remove_button.callback = remove_button
 
-    @commands.command(aliases=["sa"])
-    async def set_alias(self, ctx: Context, member: Member, arg: str):
+    @commands.command(aliases=["sal"])
+    async def setalias(self, ctx: Context, member: Member, arg: str):
         if ctx.author.guild_permissions.administrator:  # type: ignore
-            await self.save_alias(member.id, arg.lower())
+            alias = self.format_name(arg)
+            await self.save_alias(member.id, alias)
             embed = Embed(
                 title="Member Alias Saved",
-                description=f"Member Alias saved as: `{arg.lower()}`",
+                description=f"Member Alias saved as: `{alias}`",
                 color=Color.green(),
             )
             await ctx.reply(embed=embed, mention_author=False)
