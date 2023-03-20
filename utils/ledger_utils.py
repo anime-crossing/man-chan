@@ -30,8 +30,10 @@ def create_confirmation_buttons(ctx: Context, member: Member, embed: Embed, para
         if interaction.user == ctx.author or interaction.user == member:
             if param == 1:
                 embed.description = "Bill Cancelled.  Please re-run commands to fix errors if they exist."
-            elif param in [2, 3]:
+            elif param == 2:
                 embed.description = "Payment Cancelled.  Please re-run commands to fix errors if they exist."
+            elif param == 3:
+                embed.description = "Command Cancelled.  Please re-run commands to fix erros if they exist."
             embed.color = Color.red()
             await interaction.response.edit_message(embed=embed, view=None)
         else:

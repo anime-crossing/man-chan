@@ -1,4 +1,4 @@
-from typing import Optional
+from typing import Optional, List
 
 from sqlalchemy import Boolean, Float, Integer, String
 from sqlalchemy.schema import Column
@@ -25,19 +25,35 @@ class Invoice(Base):
     @classmethod
     def get(cls, uuid: str) -> Optional["Invoice"]:
         return cls._query().filter_by(id=uuid).first()
-
+    
+    @classmethod
+    def get_all(cls, discord_id: int) -> List["Invoice"]:
+        return cls._query().filter_by(payer_id=discord_id).order_by(cls.open_date.desc()).all()
+    
     @classmethod
     def get_latest(cls, discord_id: int, status: bool) -> Optional["Invoice"]:
-        return cls._query().filter_by(payer_id=discord_id, closed = status).order_by(cls.open_date.desc()).first()
+        return (
+            cls._query()
+            .filter_by(payer_id=discord_id, closed=status)
+            .order_by(cls.open_date.desc())  # type: ignore - yes i can
+            .first()
+        )
 
-    def set_values(self, pay_id: int, amount: float, arg: str, timestamp: int, multi: bool):
+    def set_values(
+        self, pay_id: int, amount: float, arg: str, timestamp: int, multi: bool
+    ):
         self.payer_id = pay_id
         self.total_cost = amount
         self.desc = arg
         self.open_date = timestamp
         self.has_multi = multi
         self._save()
-    
+
+    def open_bill(self):
+        self.closed = False
+        self.close_date = None
+        self._save()
+
     def close_bill(self, timestamp: int):
         self.closed = True
         self.close_date = timestamp

@@ -21,6 +21,11 @@ class Aliases(Base):
         return cls._query().filter_by(id=discord_id).first()
 
     @classmethod
+    def get_name(cls, discord_id: int) -> str:
+        query = cls._query().filter_by(id=discord_id).first()
+        return query.alias if query else "???"
+    
+    @classmethod
     def get_list(cls) -> List["Aliases"]:
         return cls._query().order_by(Aliases.alias.asc()).all()  # type: ignore
 

@@ -16,16 +16,16 @@ class Invoice_Participant(Base):
     paid_on = Column(Integer, default=None)
 
     @classmethod
-    def create(
-        cls, invoice: str, pid: int, cost: float
-    ) -> "Invoice_Participant":
+    def create(cls, invoice: str, pid: int, cost: float) -> "Invoice_Participant":
         new_record = cls._create(
             invoice_id=invoice, participant_id=pid, amount_owed=cost
         )
         return new_record
 
     @classmethod
-    def get(cls, pid: int, iid: str) -> Optional["Invoice_Participant"]:
+    def get(cls, pid: Optional[int], iid: str) -> Optional["Invoice_Participant"]:
+        if pid is None:
+            return cls._query().filter_by(invoice_id=iid).first()
         return cls._query().filter_by(participant_id=pid, invoice_id=iid).first()
 
     @classmethod
@@ -33,10 +33,10 @@ class Invoice_Participant(Base):
         return cls._query().filter_by(participant_id=pid).order_by(cls.id.desc()).all()
 
     @classmethod
-    def get_participants(
-        cls, bill_id: str
-    ) -> Optional[List["Invoice_Participant"]]:
-        return cls._query().filter_by(invoice_id=bill_id).all()
+    def get_participants(cls, bill_id: str, status: Optional[bool]) -> Optional[List["Invoice_Participant"]]:
+        if status is None:
+            return cls._query().filter_by(invoice_id=bill_id).all()    
+        return cls._query().filter_by(invoice_id=bill_id, paid=status).all()
 
     @classmethod
     def get_latest(cls, pid: int, status: bool) -> Optional["Invoice_Participant"]:
@@ -48,8 +48,8 @@ class Invoice_Participant(Base):
         )
 
     def get_status(self, bill_id: str) -> bool:
-        participants = self.get_participants(bill_id)
-        
+        participants = self.get_participants(bill_id, None)
+
         if participants is not None:
             for participant in participants:
                 if not participant.paid:
@@ -59,4 +59,9 @@ class Invoice_Participant(Base):
     def set_paid(self, timestamp: int):
         self.paid = True
         self.paid_on = timestamp
+        self._save()
+
+    def set_unpaid(self):
+        self.paid = False
+        self.paid_on = None
         self._save()

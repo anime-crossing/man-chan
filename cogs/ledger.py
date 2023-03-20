@@ -56,7 +56,7 @@ class Ledger(CommandBase):
     def select_random_member(ctx: Context, participants: List[int]) -> Optional[Member]:
         random_member_id = random.choice(participants)
         return get_member(ctx, random_member_id)
-    
+
     @commands.command()
     async def bill(self, ctx: Context, member: Member, amount: float, *, description: str = None):  # type: ignore
         if description is None:
@@ -130,7 +130,7 @@ class Ledger(CommandBase):
                     return await interaction.response.edit_message(embed=already_paid(bill), view=None)  # type: ignore - Bill will not be empty checked later
                 else:
                     await interaction.response.defer()
-                    await ctx.invoke(ctx.bot.get_command('pay'), arg=bill.invoice_id)   # type: ignore - It will never be none
+                    await ctx.invoke(ctx.bot.get_command("pay"), arg=bill.invoice_id)  # type: ignore - It will never be none
             else:
                 await interaction.response.defer()
 
@@ -197,60 +197,87 @@ class Ledger(CommandBase):
                 return
         else:
             bill = Invoice.get(arg.upper())
-        
-        async def close_callback(interaction: Interaction):     # type: ignore
-            pass
 
-        async def open_callback(interaction: Interaction):      # type: ignore
-            pass
-
-        async def remind_callback(interaction: Interaction):    #type: ignore
-            await ctx.invoke(ctx.bot.get_command('remindbill'), arg=bill.id)   # type: ignore - It will never be none
+        async def close_callback(interaction: Interaction):  # type: ignore
+            await ctx.invoke(ctx.bot.get_command('openbill'), arg=bill.id)
             await interaction.response.defer()
 
-        open_button = Button(label='Re-open Bill', emoji='⭕')
+        async def open_callback(interaction: Interaction):  # type: ignore
+            await ctx.invoke(ctx.bot.get_command('openbill'), arg=bill.id)
+            await interaction.response.defer()
+
+        async def remind_callback(interaction: Interaction):  # type: ignore
+            await ctx.invoke(ctx.bot.get_command("remindbill"), arg=bill.id)  # type: ignore - It will never be none
+            await interaction.response.defer()
+
+        open_button = Button(label="Re-open Bill", emoji="⭕")
         open_button.callback = open_callback
 
-        close_button = Button(label='Close Bill', emoji='❌')
+        close_button = Button(label="Close Bill", emoji="❌")
         close_button.callback = close_callback
 
-        remind_button = Button(label='Remind People!', emoji='🗣️')
+        remind_button = Button(label="Remind People!", emoji="🗣️")
         remind_button.callback = remind_callback
 
         action_view = View()
 
         if bill is not None:
-            bill_embed = Embed(title='Bill Info')
-            base_description=f'`{bill.id}` · `{bill.total_cost}`\n\nReason: **{bill.desc}**\n\nPaid by: <@{bill.payer_id}>\n\nParticipants:\n'
+            bill_embed = Embed(title="Bill Info")
+            base_description = f"`{bill.id}` · `{bill.total_cost}`\n\nReason: **{bill.desc}**\n\nPaid by: <@{bill.payer_id}>\n\nParticipants:\n"
 
-            participants = Invoice_Participant.get_participants(bill.id)
+            participants = Invoice_Participant.get_participants(bill.id, None)
 
             if participants is not None:
                 for participant in participants:
-                    emoji = '⭕' if participant.paid else '❌'
-                    base_description += f'{emoji} `${participant.amount_owed: .2f}` · <@{participant.participant_id}>\n'
+                    emoji = "✅" if participant.paid else "❌"
+                    base_description += f"{emoji} `${participant.amount_owed: .2f}` · <@{participant.participant_id}>\n"
 
-            base_description += f'\nBill opened: <t:{bill.open_date}:f>'
+            base_description += f"\nBill opened: <t:{bill.open_date}:f>"
 
             if bill.closed:
                 bill_embed.color = Color.green()
-                closed_description = f'{base_description}\nBill closed: <t:{bill.close_date}:f>'
+                closed_description = (
+                    f"{base_description}\nBill closed: <t:{bill.close_date}:f>"
+                )
                 bill_embed.description = closed_description
                 action_view.add_item(open_button)
-                await ctx.reply(embed=bill_embed, view=action_view, mention_author=False)
+                await ctx.reply(embed=bill_embed, view=action_view, mention_author=False)  # type: ignore - View Exists
             else:
                 bill_embed.color = Color.red()
                 bill_embed.description = base_description
                 action_view.add_item(remind_button)
                 action_view.add_item(close_button)
-                await ctx.reply(embed=bill_embed, view=action_view, mention_author=False)
+                await ctx.reply(embed=bill_embed, view=action_view, mention_author=False)  # type: ignore - View Exists
         else:
-            await ctx.reply("Invalid Code Entered.  Please re-run command", mention_author=False)
+            await ctx.reply(
+                "Invalid Code Entered.  Please re-run command", mention_author=False
+            )
 
     @commands.command(aliases=["bc", "billc"])
-    async def billcollection(self, ctx: Context, *, arg: str = None): #type: ignore
-        pass
-    
+    async def billcollection(self, ctx: Context, *, arg: str = None):  # type: ignore
+        bill_embed = Embed(title="Bill Collection")
+        collection = Invoice.get_all(ctx.author.id)
+
+        if len(collection) == 0:
+            bill_embed.description = "No bills issued by user."
+            return await ctx.send(embed=bill_embed)
+
+        description = f'Bills issued by {ctx.author.mention}\n\n'
+
+        for bill in collection:
+            emoji = '✅' if bill.closed else '⭕'
+            parent_invoice = bill.id
+            invoice_desc = bill.desc
+            timestamp = f'`Opened:` <t:{bill.open_date}:d>' if not bill.closed else f'`Closed:` <t:{bill.close_date}:d>'
+            
+            entry = f'{emoji} `{parent_invoice}` · {timestamp} · **{invoice_desc}**\n'
+
+            description += entry
+
+        bill_embed.description = description
+
+        await ctx.reply(embed=bill_embed, mention_author=False)
+
     @commands.command()
     async def pay(self, ctx: Context, *, arg: str = None):  # type: ignore
         if arg is None:
@@ -270,9 +297,9 @@ class Ledger(CommandBase):
                         text=f"Bill paid. Charge was updated in database."
                     )
                     bill.set_paid(timestamp)  # type: ignore - Bill will not be empty checked later
-                    if bill.get_status(bill.invoice_id):
-                        invoice = Invoice.get(bill.invoice_id)
-                        invoice.close_bill(get_pst_time())
+                    if bill.get_status(bill.invoice_id):  # type: ignore - Won't be none
+                        invoice = Invoice.get(bill.invoice_id)  # type: ignore - Won't be none
+                        invoice.close_bill(get_pst_time())  # type: ignore - Won't be none
                     paid_description = unpaid_description.replace("Pay", "Paid", 1)
                     paid_description += f"\nPaid: <t:{timestamp}:f>"
                     bill_embed.description = paid_description
@@ -381,7 +408,7 @@ class Ledger(CommandBase):
                 async def lock_callback(interaction: Interaction):  # type: ignore
                     nonlocal embed_description, cost_array
                     embed_description += f"\nYou paid: **${cost_array[0]: .2f}**\n"
-                    
+
                     cost_array = cost_array[1:]
 
                     embed_description += f"\nParticipant Price Breakdown:\n"
@@ -441,7 +468,9 @@ class Ledger(CommandBase):
 
         async def confirm_callback(interaction: Interaction):  # type: ignore
             if interaction.user == ctx.author:
-                bill = Ledger.create_bill(bill_id, ctx.author.id, total, arg, timestamp, True)
+                bill = Ledger.create_bill(
+                    bill_id, ctx.author.id, total, arg, timestamp, True
+                )
                 Ledger.handle_transaction(bill, participants, cost_array, 2)
                 multi_embed.set_footer(
                     text=f"New Multi-bill confirmed.  Charges were added into the database with ID #{bill_id}"
@@ -474,25 +503,115 @@ class Ledger(CommandBase):
 
         await ctx.reply(embed=embed, view=view)  # type: ignore
 
-    @commands.command(aliases=['rb'])
-    async def remindbill(self, ctx: Context, *, arg: str = None):
+    @commands.command(aliases=["rb"])
+    async def remindbill(self, ctx: Context, *, arg: str = None):  # type: ignore - Shush I can do this
         if arg is None:
-            return await ctx.reply("Please provide the bill id of the bill you wish to remind people of.  Example: `!rb br14`")
-        
-        participants = Invoice_Participant.get_participants(arg.upper())
+            return await ctx.reply(
+                "Please provide the bill id of the bill you wish to remind people of.  Example: `!rb br14`"
+            )
+
+        participants = Invoice_Participant.get_participants(arg.upper(), False)
 
         if participants is None:
-            return await ctx.reply("Unable to find the associated bill.  Double check the bill is in your inventory with `!bc` and then re-run the command.")
-        
-        message = ''
+            return await ctx.reply(
+                "Unable to find the associated bill.  Double check the bill is in your inventory with `!bc` and then re-run the command."
+            )
+
+        message = ""
 
         for participant in participants:
             if not participant.paid:
-                message += f'<@{participant.participant_id}> '
-        
-        message += f'\n\nThis is your reminder to pay the owner of Bill `{arg.upper()}`. Please pay promptly via their method of choice.  To confirm payment, please either run `!pay {arg}` or `!ii {arg}`'
+                message += f"<@{participant.participant_id}> "
+
+        message += f"\n\nThis is your reminder to pay the owner of Bill `{arg.upper()}`. Please pay promptly via their method of choice.  To confirm payment, please either run `!pay {arg}` or `!ii {arg}`"
 
         return await ctx.reply(content=message, mention_author=False)
+
+    @commands.command(aliases=["ob", "obill"])
+    async def openbill(self, ctx: Context, *, arg: str = None):  # type: ignore - Shush I can do this
+        if arg is None:
+            bill = Invoice.get_latest(ctx.author.id, True)  # Gets latest CLOSED Bill
+            if not bill and Invoice.get_latest(ctx.author.id, False):
+                return await ctx.reply(
+                    "All owned bills are already open, to close them run `!cb`"
+                )
+        else:
+            bill = Invoice.get(arg.upper())
+
+        if bill:
+            reopen_embed = Embed(title=f'Re-open Bill `{bill.id}`')
+            if bill.has_multi:
+                reopen_embed.description="Please select which members to re-open their tab"
+                participants = Invoice_Participant.get_participants(bill.id, True)
+                select = Select(placeholder="Select tabs to re-open", min_values=1, max_values=len(participants))
+                
+                for participant in participants:
+                    name = Aliases.get_name(participant.participant_id)
+                    select.add_option(label=name, value=participant.id)
+                
+                async def select_callback(interaction: Interaction):
+                    for selected in select.values:
+                        member_bill = Invoice_Participant.get(selected, bill.id)
+                        if member_bill: 
+                            member_bill.set_unpaid()
+                    bill.open_bill()
+                    reopen_embed.description = f"Bill `{bill.id}` re-opened"
+                    await interaction.response.edit_message(embed=reopen_embed, view=None)
+
+                
+                select.callback = select_callback
+                view = View()
+                view.add_item(select)
+
+                await ctx.reply(embed=reopen_embed, view=view, mention_author=False)
+            else:
+                participant = Invoice_Participant.get(None, bill.id)
+                reopen_embed.description = f"Re-open bill for <@{participant.participant_id}>?"
+
+                async def confirm_callback(interaction: Interaction):
+                    participant.set_unpaid()
+                    bill.open_bill()
+                    reopen_embed.description = f'Bill `{bill.id}` re-opened'
+                    await interaction.response.edit_message(embed=reopen_embed, view=None)
+
+                confirm_button = Button(emoji='☑')
+                confirm_button.callback = confirm_callback
+
+                view = create_confirmation_buttons(ctx, ctx.author, reopen_embed, 3, confirm_button)
+
+                await ctx.reply(embe=reopen_embed, view=view, mention_author=False)
+
+        else:
+            return await ctx.reply(
+                "Unable to find the associated bill.  Double check the bill is in your inventory with `!bc` then re-run the command"
+            )
+
+    @commands.command(aliases=["cb", "cbill"])
+    async def closebill(self, ctx: Context, *, arg: str = None):  # type: ignore - Shush I can do this
+        if arg is None:
+            bill = Invoice.get_latest(ctx.author.id, False)  # Get Latest OPEN Bill
+            if not bill and Invoice.get_latest(ctx.author.id, True):
+                return await ctx.reply(
+                    "All owned bills are currently closed, to re-open them run `!cb BILL_ID`"
+                )
+        else:
+            bill = Invoice.get(arg.upper())
+
+        async def confirm_callback(interaction: Interaction):  # type: ignore
+            participants = Invoice_Participant.get_participants(bill.id, False)  # type: ignore - Won't be none
+            timestamp = get_pst_time()
+            for participant in participants:  # type: ignore - Won't be none
+                participant.set_paid(timestamp)
+            bill.close_bill(timestamp)  # type: ignore - Won't be none
+
+        confirm_button = Button(emoji="☑", style=ButtonStyle.success)
+        confirm_button.callback = confirm_callback
+        if bill:
+            confirm_embed = Embed(
+                title="Closing Bill `{bill.id}`",
+                description="Please note that closing this bill will also close out all invoices for it's participants.  Confirm below with buttons.",
+            )
+            view = create_confirmation_buttons(ctx, ctx.author, confirm_embed, 3, confirm_button)  # type: ignore
 
 
 async def setup(bot: ManChanBot):
