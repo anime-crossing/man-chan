@@ -199,7 +199,7 @@ class Ledger(CommandBase):
             bill = Invoice.get(arg.upper())
 
         async def close_callback(interaction: Interaction):  # type: ignore
-            await ctx.invoke(ctx.bot.get_command('openbill'), arg=bill.id)
+            await ctx.invoke(ctx.bot.get_command('closebill'), arg=bill.id)
             await interaction.response.defer()
 
         async def open_callback(interaction: Interaction):  # type: ignore
@@ -556,6 +556,7 @@ class Ledger(CommandBase):
                             member_bill.set_unpaid()
                     bill.open_bill()
                     reopen_embed.description = f"Bill `{bill.id}` re-opened"
+                    reopen_embed.color = Color.green()
                     await interaction.response.edit_message(embed=reopen_embed, view=None)
 
                 
@@ -572,6 +573,7 @@ class Ledger(CommandBase):
                     participant.set_unpaid()
                     bill.open_bill()
                     reopen_embed.description = f'Bill `{bill.id}` re-opened'
+                    reopen_embed.color = Color.green()
                     await interaction.response.edit_message(embed=reopen_embed, view=None)
 
                 confirm_button = Button(emoji='☑')
@@ -579,7 +581,7 @@ class Ledger(CommandBase):
 
                 view = create_confirmation_buttons(ctx, ctx.author, reopen_embed, 3, confirm_button)
 
-                await ctx.reply(embe=reopen_embed, view=view, mention_author=False)
+                await ctx.reply(embed=reopen_embed, view=view, mention_author=False)
 
         else:
             return await ctx.reply(
@@ -604,14 +606,20 @@ class Ledger(CommandBase):
                 participant.set_paid(timestamp)
             bill.close_bill(timestamp)  # type: ignore - Won't be none
 
+            confirm_embed.description = "Bill Closed.  Be sure to communicate to the person!"
+            confirm_embed.color = Color.green()
+
+            await interaction.response.edit_message(embed=confirm_embed, view=None)
+
         confirm_button = Button(emoji="☑", style=ButtonStyle.success)
         confirm_button.callback = confirm_callback
         if bill:
             confirm_embed = Embed(
-                title="Closing Bill `{bill.id}`",
+                title=f"Closing Bill `{bill.id}`",
                 description="Please note that closing this bill will also close out all invoices for it's participants.  Confirm below with buttons.",
             )
             view = create_confirmation_buttons(ctx, ctx.author, confirm_embed, 3, confirm_button)  # type: ignore
+            await ctx.reply(embed=confirm_embed, view=view, mention_author=False)
 
 
 async def setup(bot: ManChanBot):
