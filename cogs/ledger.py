@@ -620,6 +620,89 @@ class Ledger(CommandBase):
             )
             view = create_confirmation_buttons(ctx, ctx.author, confirm_embed, 3, confirm_button)  # type: ignore
             await ctx.reply(embed=confirm_embed, view=view, mention_author=False)
+    
+    @commands.command(aliases=['rot'])
+    async def reopentab(self, ctx: Context, member: Member, arg: str):
+        bill = Invoice_Participant.get(member.id, arg.upper())
+
+        if not bill:
+            return await ctx.reply("No tab associated with member or bill.  Please double check your past bills and re-run commands")
+        else:
+            if not bill.paid:
+                return await ctx.reply("Bill yet to be closed.  No need to re-open")
+            bill.set_unpaid()
+            parent_bill = Invoice.get(arg.upper())
+            parent_bill.open_bill()
+
+    @commands.command(aliases=['tp'])
+    async def testpages(self, ctx: Context, size: int):
+
+        dummy_list = list(range(1, size))
+        page_content = []
+        sublists = []
+        pages= []
+        page = 0
+
+        for i in range(len(dummy_list)):
+            page_content.append(dummy_list[i])
+            if len(page_content) == 10 or i == len(dummy_list)-1:
+                sublists.append(page_content)
+                page_content = []
+        
+        start = 1
+        for i, sublist in enumerate(sublists):
+            page_embed = Embed(title=f'Page {i}')
+            description = 'Page Content: \n'
+            if len(sublist) != 10 and len(sublists) > 1:
+                fixed_list = sublists[i-1][-(10-len(sublist)):] + sublist
+                for value in fixed_list:
+                    description += f'{value}\n'
+                    start = len(dummy_list) - 9
+                    end = len(dummy_list)
+            else:
+                for value in sublists[i]:
+                    description += f'{value}\n'
+                end = start + len(sublist) - 1
+            page_embed.description = description
+            page_embed.set_footer(text=f'Displaying items {start}-{end} of {len(dummy_list)}')
+            start = end + 1
+            pages.append(page_embed)
+                
+        async def left_callback(interaction: Interaction):
+            nonlocal page
+            right_button.disabled = False
+            if page - 1 == 0:
+                left_button.disabled = True
+            
+            page -= 1
+            
+            await interaction.response.edit_message(content=page, embed=pages[page], view=view)
+        
+        async def right_callback(interaction: Interaction):
+            nonlocal page
+            left_button.disabled = False
+            if page + 1 == len(pages) - 1:
+                right_button.disabled = True
+
+            page += 1
+            
+            await interaction.response.edit_message(content=page, embed=pages[page], view=view)
+
+
+        left_button = Button(emoji='⬅️', disabled=True)
+        left_button.callback = left_callback
+        right_button = Button(emoji='➡️')
+        right_button.callback = right_callback
+
+        view = View()
+        view.add_item(left_button)
+        view.add_item(right_button)
+
+        await ctx.reply(embed=pages[page], view=view if len(pages) > 1 else None, mention_author=False)
+
+
+
+        
 
 
 async def setup(bot: ManChanBot):
