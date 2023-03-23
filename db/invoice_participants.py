@@ -4,6 +4,7 @@ from sqlalchemy import Boolean, Float, Integer, String
 from sqlalchemy.schema import Column
 
 from .base import Base
+from .invoices import Invoice
 
 
 class Invoice_Participant(Base):
@@ -55,6 +56,11 @@ class Invoice_Participant(Base):
                 if not participant.paid:
                     return False
         return True
+    
+    def get_desc(self) -> str:
+        bill = Invoice.get(self.invoice_id)
+
+        return bill.desc if bill else '???'
 
     def set_paid(self, timestamp: int):
         self.paid = True

@@ -53,9 +53,97 @@ class Ledger(CommandBase):
                 )
 
     @staticmethod
-    def select_random_member(ctx: Context, participants: List[int]) -> Optional[Member]:
-        random_member_id = random.choice(participants)
-        return get_member(ctx, random_member_id)
+    def create_sublists(ctx: Context, data: List[Union[Invoice, Invoice_Participant]]) -> List[List[str]]:
+        page_content = []
+        sublists = []
+
+        for i in range(len(data)):
+            s = ''
+            if isinstance(data[i], Invoice):
+                emoji = '✅' if data[i].closed else '⭕'
+                id = data[i].id
+                timestamp = f'`Closed:` <t:{data[i].close_date}:d>' if data[i].closed else f'`Opened:` <t:{data[i].open_date}:d>'
+                desc = data[i].desc
+
+                s = f'{emoji} `{id}` · {timestamp}  · {desc}'
+            elif isinstance(data[i], Invoice_Participant):
+                emoji = '✅' if data[i].paid else '⭕'
+                id = data[i].invoice_id
+                amount = f'`${data[i].amount_owed: .2f}`'
+                desc = data[i].get_desc()
+                mention = f'<@{data[i].participant_id}>'
+
+                s = f'{emoji} `{id}`  · {amount}  · **{desc}**  · Pay to {mention}'
+            page_content.append(s)
+            if len(page_content) == 10 or i == len(data)-1:
+                sublists.append(page_content)
+                page_content = []
+
+        return sublists
+    
+    @staticmethod
+    def create_pages(ctx: Context, lists: List[List[str]], size: int, param: int) -> List[Embed]:
+        initial_description = f'Bills issued by {ctx.author.mention}' if param == 1 else f'Invoices owed by {ctx.author.mention}'
+        pages = []
+        
+        start = 1
+        for i, sublist in enumerate(lists):
+            page_content = ''
+            if len(sublist) != 10 and len(lists) > 1:
+                fixed_list = lists[i-1][-(10-len(sublist)):] + sublist
+                for value in fixed_list:
+                    page_content += f'{value}\n'
+                    start = size - 9
+                    end = size
+            else:
+                for value in lists[i]:
+                    page_content += f'{value}\n'
+                end = start + len(sublist) - 1
+            empty_page = Embed(title='Bill Collection' if param == 1 else 'Invoice Collection')
+            empty_page.description = f'{initial_description}\n\n{page_content}'
+            empty_page.set_footer(text=f'Displaying items {start}-{end} of {size}')
+            start = end + 1
+            pages.append(empty_page)
+        
+        return pages
+
+
+    @staticmethod
+    def create_page_buttons(ctx: Context, pages: List[Embed]) -> View:
+        page = 0
+
+        async def left_callback(interaction: Interaction):       # type: ignore
+            nonlocal page
+            right_button.disabled = False
+            if page - 1 == 0:
+                left_button.disabled = True
+
+            page -= 1
+
+            await interaction.response.edit_message(embed=pages[page], view=view)    
+
+        async def right_callback(interaction: Interaction):      # type: ignore
+            nonlocal page
+
+            left_button.disabled = False
+            if page + 1 == len(pages) - 1:
+                right_button.disabled = True
+            
+            page += 1
+
+            await interaction.response.edit_message(embed=pages[page], view=view)
+        
+        left_button = Button(emoji='⬅️', disabled=True)
+        left_button.callback = left_callback
+        right_button = Button(emoji='➡️')
+        right_button.callback = right_callback
+
+        view = View()
+        view.add_item(left_button)
+        view.add_item(right_button)
+
+        return view          
+
 
     @commands.command()
     async def bill(self, ctx: Context, member: Member, amount: float, *, description: str = None):  # type: ignore
@@ -168,25 +256,17 @@ class Ledger(CommandBase):
 
     @commands.command(aliases=["ic", "invoices", "inc"])
     async def invoicecollection(self, ctx: Context):
-        collection_embed = Embed(title="Invoice Collection")
         collection = Invoice_Participant.get_all(ctx.author.id)
 
         if len(collection) == 0:
-            collection_embed.description = "No Invoices Associated with User."
+            collection_embed = Embed(title="Invoice Collection", description="No Invoices Associated with User.")
             return await ctx.send(embed=collection_embed)
 
-        description = f"Invoices owed by {ctx.author.mention}\n\n"
+        sublists = self.create_sublists(ctx, collection)
+        pages = self.create_pages(ctx, sublists, len(collection), 2)
+        view = self.create_page_buttons(ctx, pages)
 
-        for invoice in collection:
-            emoji = "✔️" if invoice.paid else "⭕"
-            parent_invoice = Invoice.get(invoice.invoice_id)
-            invoice_desc = parent_invoice.desc  # type: ignore
-            owed_id = parent_invoice.payer_id  # type: ignore
-            description += f"{emoji}  `{invoice.invoice_id}`  ·  `${invoice.amount_owed: .2f}` · **{invoice_desc}** · Pay to <@{owed_id}>\n"
-
-        collection_embed.description = description
-
-        await ctx.reply(embed=collection_embed, mention_author=False)
+        await ctx.reply(embed=pages[0], view=view if len(pages) > 1 else None, mention_author=False)
 
     @commands.command(aliases=["bi", "billi"])
     async def billinfo(self, ctx: Context, *, arg: str = None):  # type: ignore
@@ -255,28 +335,19 @@ class Ledger(CommandBase):
 
     @commands.command(aliases=["bc", "billc"])
     async def billcollection(self, ctx: Context, *, arg: str = None):  # type: ignore
-        bill_embed = Embed(title="Bill Collection")
         collection = Invoice.get_all(ctx.author.id)
 
         if len(collection) == 0:
-            bill_embed.description = "No bills issued by user."
+            bill_embed = Embed(title="Bill Collection", description="No bills issued by user.")
             return await ctx.send(embed=bill_embed)
 
         description = f'Bills issued by {ctx.author.mention}\n\n'
 
-        for bill in collection:
-            emoji = '✅' if bill.closed else '⭕'
-            parent_invoice = bill.id
-            invoice_desc = bill.desc
-            timestamp = f'`Opened:` <t:{bill.open_date}:d>' if not bill.closed else f'`Closed:` <t:{bill.close_date}:d>'
-            
-            entry = f'{emoji} `{parent_invoice}` · {timestamp} · **{invoice_desc}**\n'
+        sublists = self.create_sublists(ctx, collection)
+        pages = self.create_pages(ctx, sublists, len(collection), 1)
+        view = self.create_page_buttons(ctx, pages)
 
-            description += entry
-
-        bill_embed.description = description
-
-        await ctx.reply(embed=bill_embed, mention_author=False)
+        await ctx.reply(embed=pages[0],view=view if len(pages) > 1 else None, mention_author=False)
 
     @commands.command()
     async def pay(self, ctx: Context, *, arg: str = None):  # type: ignore
@@ -634,73 +705,39 @@ class Ledger(CommandBase):
             parent_bill = Invoice.get(arg.upper())
             parent_bill.open_bill()
 
-    @commands.command(aliases=['tp'])
-    async def testpages(self, ctx: Context, size: int):
+    @commands.command(aliases=['spb'])
+    async def spambill(self, ctx: Context, member: Member, amount: int):
+        if ctx.author.guild_permissions.administrator:
+            for i in range(amount):
+                bill_id = gen_uuid(4)
+                timestamp = get_pst_time()
 
-        dummy_list = list(range(1, size))
-        page_content = []
-        sublists = []
-        pages= []
-        page = 0
-
-        for i in range(len(dummy_list)):
-            page_content.append(dummy_list[i])
-            if len(page_content) == 10 or i == len(dummy_list)-1:
-                sublists.append(page_content)
-                page_content = []
-        
-        start = 1
-        for i, sublist in enumerate(sublists):
-            page_embed = Embed(title=f'Page {i}')
-            description = 'Page Content: \n'
-            if len(sublist) != 10 and len(sublists) > 1:
-                fixed_list = sublists[i-1][-(10-len(sublist)):] + sublist
-                for value in fixed_list:
-                    description += f'{value}\n'
-                    start = len(dummy_list) - 9
-                    end = len(dummy_list)
-            else:
-                for value in sublists[i]:
-                    description += f'{value}\n'
-                end = start + len(sublist) - 1
-            page_embed.description = description
-            page_embed.set_footer(text=f'Displaying items {start}-{end} of {len(dummy_list)}')
-            start = end + 1
-            pages.append(page_embed)
-                
-        async def left_callback(interaction: Interaction):
-            nonlocal page
-            right_button.disabled = False
-            if page - 1 == 0:
-                left_button.disabled = True
+                bill = Ledger.create_bill(bill_id, ctx.author.id, 10, f'Test{i}', timestamp, False)
+                Ledger.handle_transaction(bill, member.id, None, 1)
             
-            page -= 1
-            
-            await interaction.response.edit_message(content=page, embed=pages[page], view=view)
-        
-        async def right_callback(interaction: Interaction):
-            nonlocal page
-            left_button.disabled = False
-            if page + 1 == len(pages) - 1:
-                right_button.disabled = True
+            bill_embed = Embed(
+                title='Spam Bill Command',
+                description=f'{amount} Test Bills Created',
+                color=Color.green()
+            )
+            await ctx.reply(embed=bill_embed, mention_author=False)
 
-            page += 1
-            
-            await interaction.response.edit_message(content=page, embed=pages[page], view=view)
+        else:
+            await ctx.reply("Admin only for testing purposes")
 
+    @commands.command(aliases=['tto'])
+    async def test_timeout(self, ctx: Context):
+        embed = Embed(title='Test')
+        button = Button(emoji='😭')
 
-        left_button = Button(emoji='⬅️', disabled=True)
-        left_button.callback = left_callback
-        right_button = Button(emoji='➡️')
-        right_button.callback = right_callback
+        async def on_timeout():
+            await message.edit(content='Timeout occured!', embed=None, view=None)
 
-        view = View()
-        view.add_item(left_button)
-        view.add_item(right_button)
+        view = View(timeout=5.0)
+        view.add_item(button)
+        view.on_timeout=on_timeout
 
-        await ctx.reply(embed=pages[page], view=view if len(pages) > 1 else None, mention_author=False)
-
-
+        message = await ctx.send(embed=embed, view=view, mention_author=False)
 
         
 
