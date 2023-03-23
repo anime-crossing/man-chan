@@ -17,11 +17,6 @@ class Greetings(CommandBase):
         await ctx.channel.send("pong")
 
     @commands.command()
-    async def man(self, ctx: Context):
-        # Sends a message to the channel using the Context object.
-        await ctx.channel.send("chan")
-
-    @commands.command()
     async def l(self, ctx: Context):
         # Sends a message to the channel using the Context object.
         await ctx.channel.send("L")
