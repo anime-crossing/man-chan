@@ -1,6 +1,7 @@
 import datetime
 import logging
 import operator
+import re
 from typing import Any, Dict, List, Optional
 
 import requests
@@ -295,7 +296,8 @@ class Anilist(CommandBase):
         image_url = media_json["coverImage"]["extraLarge"]
         embed.title = media_json["title"]["romaji"]
         embed.url = media_json["siteUrl"]
-        embed.description = media_json["description"]
+        clean = re.compile('<.*?>')     # Removes HTML Formatting <> </> etc
+        embed.description = str(re.sub(clean, '', str(media_json["description"])))
         embed.set_thumbnail(url=image_url)
 
         information_string = f"Type: {media_json['type'] if media_json['format'] != 'NOVEL' else 'NOVEL'}\nStatus: {media_json['status']}\n"
