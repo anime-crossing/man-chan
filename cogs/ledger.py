@@ -1,5 +1,4 @@
 import logging
-import random
 import typing
 from typing import List, Optional, Union
 
@@ -71,7 +70,8 @@ class Ledger(CommandBase):
                 id = data[i].invoice_id
                 amount = f'`${data[i].amount_owed: .2f}`'
                 desc = data[i].get_desc()
-                mention = f'<@{data[i].participant_id}>'
+                bill_owner = Invoice.get(id).payer_id
+                mention = f'<@{bill_owner}>'
 
                 s = f'{emoji} `{id}`  · {amount}  · **{desc}**  · Pay to {mention}'
             page_content.append(s)
@@ -266,7 +266,7 @@ class Ledger(CommandBase):
         pages = self.create_pages(ctx, sublists, len(collection), 2)
         view = self.create_page_buttons(ctx, pages)
 
-        await ctx.reply(embed=pages[0], view=view if len(pages) > 1 else None, mention_author=False)
+        await ctx.reply(embed=pages[0], view=view if len(pages) > 1 else None, mention_author=False)    # type: ignore
 
     @commands.command(aliases=["bi", "billi"])
     async def billinfo(self, ctx: Context, *, arg: str = None):  # type: ignore
@@ -347,7 +347,7 @@ class Ledger(CommandBase):
         pages = self.create_pages(ctx, sublists, len(collection), 1)
         view = self.create_page_buttons(ctx, pages)
 
-        await ctx.reply(embed=pages[0],view=view if len(pages) > 1 else None, mention_author=False)
+        await ctx.reply(embed=pages[0],view=view if len(pages) > 1 else None, mention_author=False) # type: ignore
 
     @commands.command()
     async def pay(self, ctx: Context, *, arg: str = None):  # type: ignore
@@ -420,7 +420,7 @@ class Ledger(CommandBase):
         select = Select(
             placeholder="Select people to bill",
             min_values=1,
-            max_values=len(group_list) - 1,
+            max_values=len(group_list),
         )
 
         for member in group_list:
@@ -707,7 +707,7 @@ class Ledger(CommandBase):
 
     @commands.command(aliases=['spb'])
     async def spambill(self, ctx: Context, member: Member, amount: int):
-        if ctx.author.guild_permissions.administrator:
+        if ctx.author.guild_permissions.administrator:      # type: ignore
             for i in range(amount):
                 bill_id = gen_uuid(4)
                 timestamp = get_pst_time()
@@ -737,9 +737,47 @@ class Ledger(CommandBase):
         view.add_item(button)
         view.on_timeout=on_timeout
 
-        message = await ctx.send(embed=embed, view=view, mention_author=False)
+        message = await ctx.send(embed=embed, view=view, mention_author=False)      # type: ignore
 
-        
+    @commands.command()
+    async def debt(self, ctx: Context, member: Optional[Member]):
+        if not member:
+            embed = Embed(title='Debt Collection')
+            description = f'Debts owed by {ctx.author.mention}\n\n'
+
+            debts = Invoice_Participant.get_debt_all(ctx.author.id, 1)
+
+            for debt in debts:
+                description += f'◾ `${debt[1]: .2f}` · Pay to: <@{debt[0]}>\n' 
+
+            total_debt = sum(debt[1] for debt in debts)
+
+            embed.description = description
+            embed.set_footer(text=f'Your total debt to all valid members is ${total_debt: .2f}')
+            await ctx.reply(embed=embed, mention_author=False)
+        else:
+            amount = Invoice_Participant.get_debt_specific(ctx.author.id, member.id)
+            await ctx.reply(f'You owe {member.mention} `${amount: .2f}`', mention_author=False) 
+
+    @commands.command()
+    async def idk(self, ctx: Context, member: Optional[Member]):
+        if not member:
+            embed = Embed(title="idk what to call this")
+            description = f'Debts owed to {ctx.author.mention}\n\n'
+
+            debts = Invoice_Participant.get_debt_all(ctx.author.id, 2)
+            
+            for debt in debts:
+                description += f'◾ `${debt[1]: .2f}` · Owed by: <@{debt[0]}>\n' 
+
+            total_debt = sum(debt[1] for debt in debts)
+
+            embed.description = description
+            embed.set_footer(text=f'The above members owe you a collective value of ${total_debt: .2f}')
+            await ctx.reply(embed=embed, mention_author=False)
+        else:
+            amount = Invoice_Participant.get_debt_specific(member.id, ctx.author.id)
+            await ctx.reply(f'{member.mention} owes you `${amount: .2f}`')
 
 
 async def setup(bot: ManChanBot):
