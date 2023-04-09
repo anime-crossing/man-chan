@@ -1,10 +1,9 @@
 import logging
 from typing import Optional, Union, cast
 
-from discord import HTTPException, Member, Message, NotFound, TextChannel
-from discord.ext.commands.context import Context
+from disnake import HTTPException, Member, Message, NotFound, TextChannel
 
-from client import Client
+from .distyping import Context, ManChanBot
 
 
 def get_member(ctx: Context, mention: Union[int, str]) -> Optional[Member]:
@@ -19,7 +18,7 @@ def get_member(ctx: Context, mention: Union[int, str]) -> Optional[Member]:
 
 
 async def get_message_no_context(
-    bot: Client, guild_id: int, channel_id: int, message_id: int
+    bot: ManChanBot, guild_id: int, channel_id: int, message_id: int
 ) -> Optional[Message]:
     if not (guild_id and channel_id and message_id):
         return

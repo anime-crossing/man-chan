@@ -5,12 +5,11 @@ import re
 from typing import Any, Dict, List, Optional
 
 import requests
-from discord import ButtonStyle  # type: ignore - Exists
-from discord import Interaction  # type: ignore - Exists
-from discord import Color, Embed
-from discord.ext import commands
-from discord.ext.commands.context import Context
-from discord.ui import (  # type: ignore - These libraries exist
+from disnake import ButtonStyle  # type: ignore - Exists
+from disnake import Interaction  # type: ignore - Exists
+from disnake import Color, Embed
+from disnake.ext import commands
+from disnake.ui import (  # type: ignore - These libraries exist
     Button,
     Modal,
     Select,
@@ -20,8 +19,8 @@ from discord.ui import (  # type: ignore - These libraries exist
 
 from db.anilist_users import AnilistUsers
 from fetcher.anilist_queries import AnilistQueries
-from main import ManChanBot
 from utils.context import get_member
+from utils.distyping import Context, ManChanBot
 
 from .commandbase import CommandBase
 
@@ -296,8 +295,8 @@ class Anilist(CommandBase):
         image_url = media_json["coverImage"]["extraLarge"]
         embed.title = media_json["title"]["romaji"]
         embed.url = media_json["siteUrl"]
-        clean = re.compile('<.*?>')     # Removes HTML Formatting <> </> etc
-        embed.description = str(re.sub(clean, '', str(media_json["description"])))
+        clean = re.compile("<.*?>")  # Removes HTML Formatting <> </> etc
+        embed.description = str(re.sub(clean, "", str(media_json["description"])))
         embed.set_thumbnail(url=image_url)
 
         information_string = f"Type: {media_json['type'] if media_json['format'] != 'NOVEL' else 'NOVEL'}\nStatus: {media_json['status']}\n"
@@ -447,11 +446,11 @@ class Anilist(CommandBase):
 
     @classmethod
     def is_enabled(cls, configs: Dict[str, Any] = {}):
-        return configs["ENABLE_ANILIST"] and configs["ANILIST_URL"]
+        return configs.get("ENABLE_ANILIST") and configs.get("ANILIST_URL")
 
 
-async def setup(bot: ManChanBot):
+def setup(bot: ManChanBot):
     if Anilist.is_enabled(bot.configs):
-        await bot.add_cog(Anilist(bot))  # type: ignore
+        bot.add_cog(Anilist(bot))  # type: ignore
     else:
         logging.warn("SKIPPING: cogs.anilist")

@@ -3,14 +3,13 @@ from datetime import datetime, timezone
 from enum import Enum
 from typing import Any, Dict, cast
 
-from discord import Color, Embed, Guild
-from discord.ext import commands
-from discord.ext.commands.context import Context
-from discord.raw_models import RawReactionActionEvent
+from disnake import Color, Embed, Guild
+from disnake.ext import commands
+from disnake.raw_models import RawReactionActionEvent
 
 from db.socialcredit import UserCredit
-from main import ManChanBot
 from utils.context import get_member, get_message_no_context
+from utils.distyping import Context, ManChanBot
 
 from .commandbase import CommandBase
 
@@ -119,10 +118,10 @@ class SocialCredit(CommandBase):
     @classmethod
     def is_enabled(cls, configs: Dict[str, Any] = {}):
         return (
-            configs["ENABLE_SOCIAL_CREDIT"]
-            and configs["UPVOTE_EMOJI_NAME"]
-            and configs["DOWNVOTE_EMOJI_NAME"]
-            and configs["db_on"]
+            configs.get("ENABLE_SOCIAL_CREDIT")
+            and configs.get("UPVOTE_EMOJI_NAME")
+            and configs.get("DOWNVOTE_EMOJI_NAME")
+            and configs.get("db_on")
         )
 
     async def get_message_author_id(self, channel_id: int, message_id: int) -> int:
@@ -181,10 +180,10 @@ class SocialCredit(CommandBase):
         return message_time < (datetime.utcnow().timestamp() - time_limit)
 
 
-async def setup(bot: ManChanBot):
+def setup(bot: ManChanBot):
     if SocialCredit.is_enabled(bot.configs):
         cleanup_configs(bot)
-        await bot.add_cog(SocialCredit(bot))  # type: ignore
+        bot.add_cog(SocialCredit(bot))  # type: ignore
     else:
         logging.warn("SKIPPING: cogs.socialcredit")
 

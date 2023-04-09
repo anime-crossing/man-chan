@@ -3,14 +3,13 @@ import logging
 from pathlib import Path
 from typing import Any, Dict
 
-from discord import ButtonStyle  # type: ignore - Button Style Exists but PyLance Yells
-from discord import Interaction  # type: ignore - Interaction Exists but PyLance Yells
-from discord import Color, Embed, Message
-from discord.ext import commands
-from discord.ext.commands.context import Context
-from discord.ui import Button, Select, View  # type: ignore
+from disnake import ButtonStyle  # type: ignore - Button Style Exists but PyLance Yells
+from disnake import Interaction  # type: ignore - Interaction Exists but PyLance Yells
+from disnake import Color, Embed, Message
+from disnake.ext import commands
+from disnake.ui import Button, Select, View  # type: ignore
 
-from main import ManChanBot
+from utils.distyping import Context, ManChanBot
 
 from .commandbase import CommandBase
 
@@ -148,11 +147,11 @@ class Login(CommandBase):
 
     @classmethod
     def is_enabled(cls, configs: Dict[str, Any] = {}):
-        return configs["ENABLE_LOGIN"] and Login.open_json()
+        return configs.get("ENABLE_LOGIN") and Login.open_json()
 
 
-async def setup(bot: ManChanBot):
+def setup(bot: ManChanBot):
     if Login.is_enabled(bot.configs):
-        await bot.add_cog(Login(bot))  # type: ignore
+        bot.add_cog(Login(bot))  # type: ignore
     else:
         logging.warn("SKIPPING: cogs.login")

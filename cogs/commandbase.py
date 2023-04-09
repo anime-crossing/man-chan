@@ -1,8 +1,8 @@
 from typing import Any, Dict
 
-from discord.ext.commands import Cog
+from disnake.ext.commands import Cog
 
-from main import ManChanBot
+from utils.distyping import ManChanBot
 
 
 class CommandBase(Cog):
@@ -18,5 +18,5 @@ class CommandBase(Cog):
         return self.bot.configs
 
 
-async def setup(_):
+def setup(_):
     pass

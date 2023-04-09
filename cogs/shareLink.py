@@ -2,11 +2,10 @@ import logging
 from typing import Any, Dict
 
 import spotipy
-from discord.ext import commands
-from discord.ext.commands.context import Context
+from disnake.ext import commands
 from spotipy.oauth2 import SpotifyClientCredentials
 
-from main import ManChanBot
+from utils.distyping import Context, ManChanBot
 
 from .commandbase import CommandBase
 
@@ -40,15 +39,15 @@ class ShareLink(CommandBase):
     @classmethod
     def is_enabled(cls, configs: Dict[str, Any] = {}):
         return (
-            configs["ENABLE_SHARE_LINK"]
-            and configs["SPOTIFY_CLIENT_ID"]
-            and configs["SPOTIFY_CLIENT_SECRET"]
+            configs.get("ENABLE_SHARE_LINK")
+            and configs.get("SPOTIFY_CLIENT_ID")
+            and configs.get("SPOTIFY_CLIENT_SECRET")
         )
 
 
-async def setup(bot: ManChanBot):
+def setup(bot: ManChanBot):
     if ShareLink.is_enabled(bot.configs):
-        await bot.add_cog(ShareLink(bot))  # type: ignore
+        bot.add_cog(ShareLink(bot))  # type: ignore
 
     else:
         logging.warn("SKIPPING: cogs.sharelink")
