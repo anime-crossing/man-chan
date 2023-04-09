@@ -28,7 +28,7 @@ class Invoice(Base):
     
     @classmethod
     def get_all(cls, discord_id: int) -> List["Invoice"]:
-        return cls._query().filter_by(payer_id=discord_id).order_by(cls.open_date.desc()).all()
+        return cls._query().filter_by(payer_id=discord_id).order_by(cls.open_date.desc()).all()     # type: ignore
     
     @classmethod
     def get_latest(cls, discord_id: int, status: bool) -> Optional["Invoice"]:

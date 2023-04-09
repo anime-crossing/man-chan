@@ -1,6 +1,6 @@
 import logging
 import typing
-from typing import List, Optional, Union
+from typing import List, Optional, Union, Dict, Any
 
 from discord import ButtonStyle  # type: ignore
 from discord import Interaction  # type: ignore
@@ -59,18 +59,18 @@ class Ledger(CommandBase):
         for i in range(len(data)):
             s = ''
             if isinstance(data[i], Invoice):
-                emoji = '✅' if data[i].closed else '⭕'
+                emoji = '✅' if data[i].closed else '⭕'    # type: ignore
                 id = data[i].id
-                timestamp = f'`Closed:` <t:{data[i].close_date}:d>' if data[i].closed else f'`Opened:` <t:{data[i].open_date}:d>'
-                desc = data[i].desc
+                timestamp = f'`Closed:` <t:{data[i].close_date}:d>' if data[i].closed else f'`Opened:` <t:{data[i].open_date}:d>'   # type: ignore
+                desc = data[i].desc         # type: ignore
 
                 s = f'{emoji} `{id}` · {timestamp}  · {desc}'
             elif isinstance(data[i], Invoice_Participant):
-                emoji = '✅' if data[i].paid else '⭕'
-                id = data[i].invoice_id
-                amount = f'`${data[i].amount_owed: .2f}`'
-                desc = data[i].get_desc()
-                bill_owner = Invoice.get(id).payer_id
+                emoji = '✅' if data[i].paid else '⭕'     # type: ignore
+                id = data[i].invoice_id                     # type: ignore
+                amount = f'`${data[i].amount_owed: .2f}`'   # type: ignore
+                desc = data[i].get_desc()                   # type: ignore
+                bill_owner = Invoice.get(id).payer_id       # type: ignore
                 mention = f'<@{bill_owner}>'
 
                 s = f'{emoji} `{id}`  · {amount}  · **{desc}**  · Pay to {mention}'
@@ -101,8 +101,8 @@ class Ledger(CommandBase):
                 end = start + len(sublist) - 1
             empty_page = Embed(title='Bill Collection' if param == 1 else 'Invoice Collection')
             empty_page.description = f'{initial_description}\n\n{page_content}'
-            empty_page.set_footer(text=f'Displaying items {start}-{end} of {size}')
-            start = end + 1
+            empty_page.set_footer(text=f'Displaying items {start}-{end} of {size}')     # type: ignore
+            start = end + 1     # type: ignore
             pages.append(empty_page)
         
         return pages
@@ -262,7 +262,7 @@ class Ledger(CommandBase):
             collection_embed = Embed(title="Invoice Collection", description="No Invoices Associated with User.")
             return await ctx.send(embed=collection_embed)
 
-        sublists = self.create_sublists(ctx, collection)
+        sublists = self.create_sublists(ctx, collection)        # type: ignore
         pages = self.create_pages(ctx, sublists, len(collection), 2)
         view = self.create_page_buttons(ctx, pages)
 
@@ -279,11 +279,11 @@ class Ledger(CommandBase):
             bill = Invoice.get(arg.upper())
 
         async def close_callback(interaction: Interaction):  # type: ignore
-            await ctx.invoke(ctx.bot.get_command('closebill'), arg=bill.id)
+            await ctx.invoke(ctx.bot.get_command('closebill'), arg=bill.id) # type: ignore
             await interaction.response.defer()
 
         async def open_callback(interaction: Interaction):  # type: ignore
-            await ctx.invoke(ctx.bot.get_command('openbill'), arg=bill.id)
+            await ctx.invoke(ctx.bot.get_command('openbill'), arg=bill.id)  # type: ignore
             await interaction.response.defer()
 
         async def remind_callback(interaction: Interaction):  # type: ignore
@@ -343,7 +343,7 @@ class Ledger(CommandBase):
 
         description = f'Bills issued by {ctx.author.mention}\n\n'
 
-        sublists = self.create_sublists(ctx, collection)
+        sublists = self.create_sublists(ctx, collection)    # type: ignore
         pages = self.create_pages(ctx, sublists, len(collection), 1)
         view = self.create_page_buttons(ctx, pages)
 
@@ -614,13 +614,13 @@ class Ledger(CommandBase):
             if bill.has_multi:
                 reopen_embed.description="Please select which members to re-open their tab"
                 participants = Invoice_Participant.get_participants(bill.id, True)
-                select = Select(placeholder="Select tabs to re-open", min_values=1, max_values=len(participants))
+                select = Select(placeholder="Select tabs to re-open", min_values=1, max_values=len(participants))   # type: ignore
                 
-                for participant in participants:
+                for participant in participants:    # type: ignore
                     name = Aliases.get_name(participant.participant_id)
                     select.add_option(label=name, value=participant.id)
                 
-                async def select_callback(interaction: Interaction):
+                async def select_callback(interaction: Interaction):        # type: ignore
                     for selected in select.values:
                         member_bill = Invoice_Participant.get(selected, bill.id)
                         if member_bill: 
@@ -635,13 +635,13 @@ class Ledger(CommandBase):
                 view = View()
                 view.add_item(select)
 
-                await ctx.reply(embed=reopen_embed, view=view, mention_author=False)
+                await ctx.reply(embed=reopen_embed, view=view, mention_author=False)    # type: ignore
             else:
                 participant = Invoice_Participant.get(None, bill.id)
-                reopen_embed.description = f"Re-open bill for <@{participant.participant_id}>?"
+                reopen_embed.description = f"Re-open bill for <@{participant.participant_id}>?"     # type: ignore - Won't be none
 
-                async def confirm_callback(interaction: Interaction):
-                    participant.set_unpaid()
+                async def confirm_callback(interaction: Interaction):   # type: ignore
+                    participant.set_unpaid()    # type: ignore - Won't be none
                     bill.open_bill()
                     reopen_embed.description = f'Bill `{bill.id}` re-opened'
                     reopen_embed.color = Color.green()
@@ -650,9 +650,9 @@ class Ledger(CommandBase):
                 confirm_button = Button(emoji='☑')
                 confirm_button.callback = confirm_callback
 
-                view = create_confirmation_buttons(ctx, ctx.author, reopen_embed, 3, confirm_button)
+                view = create_confirmation_buttons(ctx, ctx.author, reopen_embed, 3, confirm_button)    # type: ignore
 
-                await ctx.reply(embed=reopen_embed, view=view, mention_author=False)
+                await ctx.reply(embed=reopen_embed, view=view, mention_author=False)    # type: ignore
 
         else:
             return await ctx.reply(
@@ -690,7 +690,7 @@ class Ledger(CommandBase):
                 description="Please note that closing this bill will also close out all invoices for it's participants.  Confirm below with buttons.",
             )
             view = create_confirmation_buttons(ctx, ctx.author, confirm_embed, 3, confirm_button)  # type: ignore
-            await ctx.reply(embed=confirm_embed, view=view, mention_author=False)
+            await ctx.reply(embed=confirm_embed, view=view, mention_author=False)       # type: ignore
     
     @commands.command(aliases=['rot'])
     async def reopentab(self, ctx: Context, member: Member, arg: str):
@@ -703,7 +703,24 @@ class Ledger(CommandBase):
                 return await ctx.reply("Bill yet to be closed.  No need to re-open")
             bill.set_unpaid()
             parent_bill = Invoice.get(arg.upper())
-            parent_bill.open_bill()
+            parent_bill.open_bill()     # type: ignore - Won't be none
+
+    @commands.command(aliases=['ct'])
+    async def closetab(self, ctx: Context, member: Member, arg: str):
+        bill = Invoice_Participant.get(member.id, arg.upper())
+
+        if not bill:
+            return await ctx.reply('No tab associated with member or bill.  Please double check your past bills and re-run commands')
+        else:
+            if not bill.paid:
+                return await ctx.reply(f'Bill already closed, to re-open run `!rot {arg}`')
+            timestamp = get_pst_time()
+            bill.set_paid(timestamp)
+            if bill.get_status(arg.upper()): 
+                parent_bill = Invoice.get(arg.upper())
+                parent_bill.close_bill(timestamp)       # type: ignore - Won't be none
+
+            
 
     @commands.command(aliases=['spb'])
     async def spambill(self, ctx: Context, member: Member, amount: int):
@@ -739,8 +756,8 @@ class Ledger(CommandBase):
 
         message = await ctx.send(embed=embed, view=view, mention_author=False)      # type: ignore
 
-    @commands.command()
-    async def debt(self, ctx: Context, member: Optional[Member]):
+    @commands.command(aliases=['iou', 'ioweu', 'mop'])
+    async def ioweyou(self, ctx: Context, member: Optional[Member]):
         if not member:
             embed = Embed(title='Debt Collection')
             description = f'Debts owed by {ctx.author.mention}\n\n'
@@ -759,8 +776,8 @@ class Ledger(CommandBase):
             amount = Invoice_Participant.get_debt_specific(ctx.author.id, member.id)
             await ctx.reply(f'You owe {member.mention} `${amount: .2f}`', mention_author=False) 
 
-    @commands.command()
-    async def idk(self, ctx: Context, member: Optional[Member]):
+    @commands.command(aliases=['uom', 'uoweme', 'pom'])
+    async def youoweme(self, ctx: Context, member: Optional[Member]):
         if not member:
             embed = Embed(title="idk what to call this")
             description = f'Debts owed to {ctx.author.mention}\n\n'
@@ -778,6 +795,11 @@ class Ledger(CommandBase):
         else:
             amount = Invoice_Participant.get_debt_specific(member.id, ctx.author.id)
             await ctx.reply(f'{member.mention} owes you `${amount: .2f}`')
+
+    @classmethod
+    def is_enabled(cls, configs: Dict[str, Any] = {}):
+        return configs["ENABLE_ANILIST"]
+
 
 
 async def setup(bot: ManChanBot):

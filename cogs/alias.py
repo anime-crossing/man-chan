@@ -128,6 +128,20 @@ class Alias(CommandBase):
         else:
             await ctx.reply("You must be an admin to run this command!")
 
+    @commands.command(aliases=["sid"])
+    async def setid(self, ctx: Context, member: int, arg: str):
+        if ctx.author.guild_permissions.administrator:  # type: ignore
+            alias = self.format_name(arg)
+            await self.save_alias(member, alias)
+            embed = Embed(
+                title="Member Alias Saved",
+                description=f"Member Alias saved as: `{alias}`",
+                color=Color.green(),
+            )
+            await ctx.reply(embed=embed, mention_author=False)
+        else:
+            await ctx.reply("You must be an admin to run this command!")
+
 
 async def setup(bot: ManChanBot):
     if Alias.is_enabled(bot.configs):
