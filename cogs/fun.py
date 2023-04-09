@@ -1,25 +1,29 @@
+from __future__ import annotations
+
 import logging
 import random
+from typing import TYPE_CHECKING
 
-from disnake.ext import commands
+from disnake.ext.commands import command
 
-from utils.distyping import Context, ManChanBot
+from utils.distyping import Context
 
 from .commandbase import CommandBase
 
+if TYPE_CHECKING:
+    from utils.distyping import ManChanBot
+
 
 class Fun(CommandBase):
-    @commands.command()
+    @command()
     async def ping(self, ctx: Context):
-        print(type(ctx))
-        # Sends a message to the channel using the Context object.
-        await ctx.channel.send("pong")
+        await ctx.channel.send("Pong!")
 
-    @commands.command()
+    @command()
     async def choose(self, ctx: Context, *args: str):
-        # Sends a message to the channel using the Context object.
-        join_words = " ".join(args).split(",")
-        await ctx.channel.send(random.choice(join_words))
+        # Will randomly choose a selection of words delimited by commas
+        options = "".join(args).split(",")
+        await ctx.channel.send(random.choice(options).strip())
 
 
 def setup(bot: ManChanBot):
