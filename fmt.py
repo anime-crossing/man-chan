@@ -6,7 +6,7 @@ if __name__ == "__main__":
     # Formatting
     print("-- Formatting... --")
     try:
-        print(main(["cogs", "main.py", "db", "utils"]))
+        print(main(["cogs", "main.py", "db", "utils", "service"]))
     except:
         pass
 

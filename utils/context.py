@@ -1,9 +1,14 @@
+from __future__ import annotations
+
 import logging
-from typing import Optional, Union, cast
+from typing import TYPE_CHECKING, Optional, Union, cast
 
-from disnake import HTTPException, Member, Message, NotFound, TextChannel
+from disnake import HTTPException, NotFound, TextChannel
 
-from .distyping import Context, ManChanBot
+if TYPE_CHECKING:
+    from disnake import Member, Message
+
+    from .distyping import Context, ManChanBot
 
 
 def get_member(ctx: Context, mention: Union[int, str]) -> Optional[Member]:
@@ -18,16 +23,12 @@ def get_member(ctx: Context, mention: Union[int, str]) -> Optional[Member]:
 
 
 async def get_message_no_context(
-    bot: ManChanBot, guild_id: int, channel_id: int, message_id: int
+    bot: ManChanBot, channel_id: int, message_id: int
 ) -> Optional[Message]:
-    if not (guild_id and channel_id and message_id):
+    if not (channel_id and message_id):
         return
 
-    guild = bot.get_guild(guild_id)
-    if not guild:
-        return None
-
-    channel = cast(TextChannel, guild.get_channel(channel_id))
+    channel = cast(TextChannel, bot.get_channel(channel_id))
     if not channel:
         return None
 
