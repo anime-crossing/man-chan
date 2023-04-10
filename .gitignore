@@ -5,3 +5,4 @@ configs.json
 configs.yaml
 login.json
 test_magi.db
+.cache

@@ -3,7 +3,7 @@ from __future__ import annotations
 import logging
 from typing import TYPE_CHECKING, Any, Dict
 
-from disnake.ext import commands
+from disnake.ext.commands import command
 
 from service import LoginService
 from utils.config_mapper import LOGIN_ENABLE, LOGIN_FILE_PATH, LOGIN_INFO_TIMEOUT
@@ -16,7 +16,7 @@ if TYPE_CHECKING:
 
 
 class Login(CommandBase):
-    @commands.command()
+    @command()
     async def login(self, ctx: Context):
         """Returns an interactive embed based on a provided json filled with login info."""
         service = LoginService(
