@@ -1,8 +1,11 @@
-from typing import Any, Dict
+from __future__ import annotations
+
+from typing import TYPE_CHECKING, Any, Dict
 
 from disnake.ext.commands import Cog
 
-from utils.distyping import ManChanBot
+if TYPE_CHECKING:
+    from utils.distyping import Config, ManChanBot
 
 
 class CommandBase(Cog):
@@ -10,7 +13,7 @@ class CommandBase(Cog):
         self.bot = bot
 
     @classmethod
-    def is_enabled(cls, configs: Dict[str, Any] = {}):
+    def is_enabled(cls, configs: Config = {}):
         return True
 
     @property
