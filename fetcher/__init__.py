@@ -1,1 +1,1 @@
-from .anilist_queries import *
+from .anilist import *

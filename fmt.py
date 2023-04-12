@@ -11,7 +11,7 @@ if __name__ == "__main__":
         pass
 
     print("-- Sorting imports... --")
-    os.system("isort main.py cogs db utils --profile black")
+    os.system("isort main.py cogs db utils service --profile black")
 
     # Validating
     print("-- Validating formatting. --")

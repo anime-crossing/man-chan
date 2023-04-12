@@ -1,16 +1,18 @@
 from __future__ import annotations
-from db import UserCredit
 
-from typing import TYPE_CHECKING, cast, Union, Optional
-from disnake import Embed, Color
-from utils.context import get_member, get_message_no_context
 from datetime import datetime, timezone
+from typing import TYPE_CHECKING, Optional, Union, cast
+
+from disnake import Color, Embed
+
+from db import UserCredit
+from utils.context import get_member, get_message_no_context
 
 if TYPE_CHECKING:
-    from disnake import User, Member, RawReactionActionEvent
-    from utils.distyping import Context, ManChanBot
+    from disnake import Member, Message, RawReactionActionEvent, User
+
     from cogs.socialcredit import ScoreCategory
-    from disnake import Message
+    from utils.distyping import Context, ManChanBot
 
 
 class SocialCreditService:

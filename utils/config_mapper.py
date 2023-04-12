@@ -1,3 +1,6 @@
+# Anilist
+ANILIST_ENABLE = "ENABLE_ANILIST"
+
 # Bot Status
 DATABASE_STATUS = "db_on"
 
