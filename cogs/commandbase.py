@@ -13,12 +13,17 @@ class CommandBase(Cog):
         self.bot = bot
 
     @classmethod
-    def is_enabled(cls, configs: Config = {}):
+    def is_enabled(cls, configs: Config = {}) -> bool:
         return True
 
     @property
-    def configs(self) -> Dict[str, Any]:
+    def configs(self) -> Config:
         return self.bot.configs
+
+    @property
+    def centralized_configs(self) -> Config:
+        """Returns related config keys based on Cog. Override in subclasses."""
+        return self.configs
 
 
 def setup(_):

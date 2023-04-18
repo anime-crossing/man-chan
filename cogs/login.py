@@ -5,9 +5,9 @@ from typing import TYPE_CHECKING, Any, Dict
 
 from disnake.ext.commands import command
 
-from service import LoginService
+from service.login import LoginInfo
 from utils.config_mapper import LOGIN_ENABLE, LOGIN_FILE_PATH, LOGIN_INFO_TIMEOUT
-from utils.distyping import Context
+from utils.distyping import Config, Context
 
 from .commandbase import CommandBase
 
@@ -19,9 +19,7 @@ class Login(CommandBase):
     @command()
     async def login(self, ctx: Context):
         """Returns an interactive embed based on a provided json filled with login info."""
-        service = LoginService(
-            ctx, self.configs.get(LOGIN_FILE_PATH), self.login_info_timeout
-        )
+        service = LoginInfo(ctx, self.centralized_configs)
 
         if service.is_login_empty():
             embed = service.create_broken_file_error_embed()
@@ -34,10 +32,18 @@ class Login(CommandBase):
     def login_info_timeout(self) -> int:
         return self.configs.get(LOGIN_INFO_TIMEOUT, 15)
 
+    @property
+    def centralized_configs(self) -> Config:
+        return {
+            LOGIN_ENABLE: self.configs[LOGIN_ENABLE],
+            LOGIN_FILE_PATH: self.configs[LOGIN_FILE_PATH],
+            LOGIN_INFO_TIMEOUT: self.login_info_timeout,
+        }
+
     @classmethod
-    def is_enabled(cls, configs: Dict[str, Any] = {}):
+    def is_enabled(cls, configs: Dict[str, Any] = {}) -> bool:
         path = configs.get(LOGIN_FILE_PATH)
-        return configs.get(LOGIN_ENABLE) and LoginService.open_json(path)
+        return bool(configs.get(LOGIN_ENABLE) and LoginInfo.open_json(path))
 
 
 def setup(bot: ManChanBot):
