@@ -1,6 +1,75 @@
 <h3 align="center">Man-chan Discord Bot</h3>
 
 
+Manchan is a discord bot made by three friends intended to be used by a small group of friends or users in a server.
+
+This bot is not hosted and cannot be added to a server. It is intended to be self-hosted with whatever method by cloning this repo.
+
+## Features:
+
+### **Shared Login**
+If you share accounts between others in the server, Manchan offers a way to list all the shared accounts usernames/password discreetly via command. (*Note: Currently no way to blacklist/whitelist users*)
+
+`!login` - Starts login sharing.
+
+### **Social Credit**
+By providing emoji names representing upvotes/downvotes, users that react with corresponding emoji to a message will influence the sender's social score. Leaderboard included.
+
+`!score` - Displays self score.
+
+`!score @username` - Displays score of user.
+
+`!leaderboard` || `!lb` - Displays leaderboard of all users in server.
+
+### **Anilist Integration**
+Uses Anilist API to search for anime for sharing info. Register your anilist account (only username needed) and you can display your anime ratings as well.
+
+`!anime <title>` || `!ani`: Searches for an anime.
+
+`!manga <title>` || `!man`: Searches for a manga.
+
+`!novel <title>` || `!nov`: Searches for a novel.
+
+```
+Example: !ani one piece
+```
+
+`!account` || `!acc`: Creates an embed where you provide your Anilist username. Database must be enabled.
+
+`!anilb` || `!alb`: Displays leaderboard of most view time and read amount for all registered users.
+
+### **Spotify Share Link**
+Share a song from spotify.
+
+`!track`: Share track via search keywords.
+
+`!album`: Share album via album name.
+
+```
+Examples:
+!track magnolia playboi carti
+!album whole lotta red
+```
+
+### **Fun**
+Random commands.
+
+`!choose`: Randomly choose one of the options. Delimited by commas.
+```
+Example: !choose pizza, chicken and waffles, burger
+> chicken and waffles
+```
+
+## Coming soon:
+### **Money Ledger**
+Keep track of what each person owes money too. Useful for social events where one person pays for everyone and stuff.
+
+### **Letterbox Integration**
+Same as Anilist, but movies.
+
+### **Backloggd Integration**
+Same as Anilist and Letterbox, but games.
+
 # Setup
 
 ## Virtual Environment
@@ -23,7 +92,25 @@ Use your favorite method to setup the virtual environment. Here will be a quick 
 
 4. `pip install -r requirements.txt`
 
+// alembic stuff
 
+
+# Usage
+
+### How to create your own discord bot
+Read any tutorial on making your own discord bot with its keys.
+https://discordpy.readthedocs.io/en/stable/discord.html
+
+### Configuration
+Temp
+
+### Run bot
+With a terminal or as execution for docker:
+```
+python main.py
+```
+
+# Development Guide
 
 # Utilities
 
