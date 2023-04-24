@@ -8,7 +8,7 @@ This bot is not hosted and cannot be added to a server. It is intended to be sel
 ## Features:
 
 ### **Shared Login**
-If you share accounts between others in the server, Manchan offers a way to list all the shared accounts usernames/password discreetly via command. (*Note: Currently no way to blacklist/whitelist users*)
+If you share accounts between others in the server, Manchan offers a way to list all the shared accounts usernames/password discreetly via command. (*Note: Currently no way to blacklist/whitelist users*). A `login.json` file is needed to store the login information, the structure on how is at the bottom of the page.
 
 `!login` - Starts login sharing.
 
@@ -70,6 +70,9 @@ Same as Anilist, but movies.
 ### **Backloggd Integration**
 Same as Anilist and Letterbox, but games.
 
+### **Youtube Music Streaming**
+Listen to music while in voice chat.
+
 # Setup
 
 ## Virtual Environment
@@ -92,7 +95,17 @@ Use your favorite method to setup the virtual environment. Here will be a quick 
 
 4. `pip install -r requirements.txt`
 
-// alembic stuff
+
+## Database
+You need to specify the database location in the configs file (more detail below).
+
+Run this to update the current db. <u>**Do this every time you pull to keep the database updated**</u>:
+
+`alembic upgrade head`
+
+Run this to create a new revision on changes:
+
+`alembic revision --autogenerate -m "revision name"`
 
 
 # Usage
@@ -102,7 +115,10 @@ Read any tutorial on making your own discord bot with its keys.
 https://discordpy.readthedocs.io/en/stable/discord.html
 
 ### Configuration
-Temp
+Create a file called `configs.yaml` and place it at the root of the directory. This is needed to disable or enable features you want to use as well as provide API keys and Discord tokens. The template is at the bottom of this page; copy its contents and paste it into `configs.yaml` and change the variables as you wish.
+
+The following commands/cogs need the following configs or jsons setup (structure at bottom of the page):
+- `login`: Needs `login.json` file at the root directory.
 
 ### Run bot
 With a terminal or as execution for docker:
@@ -111,56 +127,126 @@ python main.py
 ```
 
 # Development Guide
+Manchan uses the [Disnake](https://docs.disnake.dev/en/stable/) library for development.
 
-# Utilities
+## Directory Structure
+The Manchan system is separated to the following structured
+
+### **/cogs**
+Directory where files containing the discord command interface
+
+Each cog file must contain a class that inherits from `CommandBase`. 
+
+This class must have:
+```python
+@classmethod
+  def is_enabled(cls, configs: Dict[str, Any] = {}) -> bool:
+```
+This function should check the config file and verify that it has the appropriate variables needed to operate as well check if the command is enabled. For example, if `ENABLE_SOCIAL_CREDIT` is true, but `UPVOTE_EMOJI_NAME` is missing, the Social Credit should not be enabled.
+
+In order for Cogs to be loaded via Disnake, each Cog file must have a global function:
+```python
+def setup(bot: ManChanBot):
+  if Cog.is_enabled(bot.configs):
+    bot.add_cog(Cog(bot))
+  else:
+    logging.warn("SKIPPING: cogs.cogname")
+```
+That function will run as the bot is starting up from `main.py`.
+
+As a general rule, keep code here to a minimum for simplicity. Treat Cogs as if they were API endpoints for Cog commands. All the backend heavy-work should take place in **/service**.
+
+### **/db**
+Directory for database interactions using [SQLAlchemy](https://www.sqlalchemy.org/).
+
+Remember to run this whenever you modify the database to create a new migration:
+
+`alembic revision --autogenerate -m "revision name"`
+
+Also remember to run this whenever you pull changes to keep your local database up to date:
+
+`alembic upgrade head`
+
+### **/fetcher**
+Directory for modules involved with third-party API fetching.
+
+### **/models**
+Directory with templated queries or other data models. For example, the Anilist grapghql queries are stored here.
+
+### **/service**
+Directory that creates the backbone of all the Cog logic. For best practice, create a folder named after the Cog that contains the different types of services it can do.
+
+For Discord UI interactionm base classes are provided: `ServiceBase` and `CallbackBase`.
+
+**ServiceBase** is what will initialize the interaction and create the appropriate embeds, views, etc. If one of these would have a callback that would take the user to a new page, the callback can be stored in **CallbackBase**.
+
+**CallbackBase** acts as a linked list for the history of interactions, like a web page, so that previous and forward functionality can be implemented.
+
+Another general rule for good practice, you can inherit from Disnake's UI objects like Embed or Views to keep logic containerized and easy to follow.
+
+### **/utils**
+Random useful tools when developing. One thing to point out is the `config_mapper.py` that maps the config keys into global variables for reusability.
 
 ## Formatting
 A formatting python script has been added to keep formatting consistent. Before pushing up to your branch, make sure you run:
 
 `python fmt.py`
 
-## Alembic
-Run this to update the current db:
-
-`alembic upgrade head`
-
-Run this to create a new revision on changes:
-
-`alembic revision --autogenerate -m "revision name"`
+and fix any typing errors that it throws at you.
 
 # Config File
 ManChan will read from a provided `configs.yaml` in the root folder that you must fill out yourself. Recommended structure is below:
 
 ```yaml
 # Discord Bot Settings
-DISCORD_TOKEN: ""
+DISCORD_TOKEN: "Provide your own"
 COMMAND_PREFIX: "!"
-DATABASE_URL: "sqlite:///test_magi.db"  # Change as needed
-FORCE_DATABASE: true  # If true, won't start without a database
+PRESENCE_TEXT: "" # The text shown when online: 'Playing xxx'
+DATABASE_URL: "sqlite:///test_magi.db" # Change this as needed
+FORCE_DATABASE: true # if true, won't start without a database. Disable if you don't need one.
 ADMIN_USERS:
-  - Add User ID Here
+  - Add User Discord ID Here
 
-# Event listeners
-ENABLE_SOCIAL_CREDIT: false
-UPVOTE_EMOJI_NAME: ""  # Can use custom guild emojis
-DOWNVOTE_EMOJI_NAME: ""  # But both must be provided
-SOCIAL_WHITELIST: # Guilds to enable this function
+# Anilist Settings
+ENABLE_ANILIST: true
+
+# Social Credit Settings
+ENABLE_SOCIAL_CREDIT: true
+UPVOTE_EMOJI_NAME: "" # Can use custom guild emojis. Put the name without the colons
+DOWNVOTE_EMOJI_NAME: "" # But both must be provided
+SOCIAL_CREDIT_WHITELIST: # Guilds to enable this function
   - Add Guild ID Here
+SOCIAL_CREDIT_TIME_LIMIT: 86400 # In seconds, 24hr. Won't accept reactions after that time limit
 
 # Login Settings
 ENABLE_LOGIN: true
+LOGIN_FILE_PATH: "login.json"
+LOGIN_INFO_TIMEOUT: 15 # In seconds
+
+#Spotify API Tokens
+ENABLE_SHARE_LINK: true
+SPOTIFY_CLIENT_ID: "Provide Own"
+SPOTIFY_CLIENT_SECRET: "Provide Own"
+
+# Misc Settings
 ```
 
 # Login format
 When adding a source to the `login.json` be sure to follow this format:
 ```json
+  {
     "Site-Name" : {
-        "email": "johndoe@gmail.com",
-        "password": "password1234",
-        "emoji_text": ":emoji_name",
-        "emoji" : "🟠",
-        "description" : "Description of Streaming Service",
-        "link" : "Link to Streaming Service",
-        "hex" : "Site Color in Hex Form #111111",
-        "provider" : "Login Provider"
+      "email": "johnwick@gmail.com",
+      "password": "password1234",
+      "emoji_text": ":emoji_name",
+      "emoji" : "🟠",
+      "description" : "Description of Streaming Service",
+      "link" : "Link to Streaming Service",
+      "hex" : "Site Color in Hex Form #111111",
+      "provider" : "Person providing this"
+    },
+    "Site-Name2" : {
+      ...
     }
+  }
+```
