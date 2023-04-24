@@ -5,25 +5,17 @@ import re
 from typing import Any, Dict, List, Optional
 
 import requests
-from disnake import ButtonStyle
-from disnake import Interaction
-from disnake import Color, Embed
+from disnake import ButtonStyle, Color, Embed, Interaction
 from disnake.ext import commands
-from disnake.ui import (
-    Button,
-    Modal,
-    Select,
-    TextInput,
-    View,
-)
+from disnake.ui import Button, Modal, Select, TextInput, View
 
 from db.anilist_users import AnilistUsers
-from models.anilist_queries import AnilistQueries
 from main import ManChanBot
+from models.anilist_queries import AnilistQueries
 from utils.context import get_member
+from utils.distyping import Context
 
 from .commandbase import CommandBase
-from utils.distyping import Context
 
 
 class Anilist(CommandBase):
@@ -81,7 +73,9 @@ class Anilist(CommandBase):
             color=Color.blue(),
         )
 
-        answer = TextInput(label="username", custom_id=f"anilist-username-input{ctx.author.id}")
+        answer = TextInput(
+            label="username", custom_id=f"anilist-username-input{ctx.author.id}"
+        )
         prompt = Modal(title="Enter Anilist Username", components=[answer])
 
         async def modal_callback(interaction: Interaction):  # type: ignore - Interaction Exists
@@ -295,8 +289,8 @@ class Anilist(CommandBase):
         image_url = media_json["coverImage"]["extraLarge"]
         embed.title = media_json["title"]["romaji"]
         embed.url = media_json["siteUrl"]
-        clean = re.compile('<.*?>')     # Removes HTML Formatting <> </> etc
-        embed.description = str(re.sub(clean, '', str(media_json["description"])))
+        clean = re.compile("<.*?>")  # Removes HTML Formatting <> </> etc
+        embed.description = str(re.sub(clean, "", str(media_json["description"])))
         embed.set_thumbnail(url=image_url)
 
         information_string = f"Type: {media_json['type'] if media_json['format'] != 'NOVEL' else 'NOVEL'}\nStatus: {media_json['status']}\n"
