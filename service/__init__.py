@@ -2,4 +2,4 @@
 
 from .anilist import *
 from .login import *
-from .socialcredit import SocialCreditService
+from .socialcredit import *
