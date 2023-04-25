@@ -1,8 +1,11 @@
-from typing import Any, Dict
+from __future__ import annotations
 
-from discord.ext.commands import Cog
+from typing import TYPE_CHECKING
 
-from main import ManChanBot
+from disnake.ext.commands import Cog
+
+if TYPE_CHECKING:
+    from utils.distyping import Config, ManChanBot
 
 
 class CommandBase(Cog):
@@ -10,13 +13,18 @@ class CommandBase(Cog):
         self.bot = bot
 
     @classmethod
-    def is_enabled(cls, configs: Dict[str, Any] = {}):
+    def is_enabled(cls, configs: Config = {}) -> bool:
         return True
 
     @property
-    def configs(self) -> Dict[str, Any]:
+    def configs(self) -> Config:
         return self.bot.configs
 
+    @property
+    def centralized_configs(self) -> Config:
+        """Returns related config keys based on Cog. Override in subclasses."""
+        return self.configs
 
-async def setup(_):
+
+def setup(_):
     pass

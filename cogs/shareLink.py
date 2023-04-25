@@ -1,14 +1,23 @@
+from __future__ import annotations
+
 import logging
-from typing import Any, Dict
+from typing import TYPE_CHECKING, Any, Dict
 
 import spotipy
-from discord.ext import commands
-from discord.ext.commands.context import Context
+from disnake.ext.commands import command
 from spotipy.oauth2 import SpotifyClientCredentials
 
-from main import ManChanBot
+from utils.config_mapper import (
+    SPOTIFY_CLIENT_ID,
+    SPOTIFY_CLIENT_SECRET,
+    SPOTIFY_ENABLE_SHARE,
+)
+from utils.distyping import Context
 
 from .commandbase import CommandBase
+
+if TYPE_CHECKING:
+    from utils.distyping import ManChanBot
 
 
 class ShareLink(CommandBase):
@@ -16,39 +25,46 @@ class ShareLink(CommandBase):
         super().__init__(bot)
         self.sp = spotipy.Spotify(
             auth_manager=SpotifyClientCredentials(
-                client_id=self.configs["SPOTIFY_CLIENT_ID"],
-                client_secret=self.configs["SPOTIFY_CLIENT_SECRET"],
+                client_id=self.configs[SPOTIFY_CLIENT_ID],
+                client_secret=self.configs[SPOTIFY_CLIENT_SECRET],
             )
         )
 
-    @commands.command()
+    @command()
     async def track(self, ctx: Context, *args: str):
         join_words = " ".join(args).strip()
         results = self.sp.search(q=join_words, limit=1, type="track")
-        await ctx.channel.send(
-            results["tracks"]["items"][0]["external_urls"]["spotify"]
-        )
 
-    @commands.command()
+        if not results:
+            await ctx.channel.send("***No track found.***")
+        else:
+            await ctx.channel.send(
+                results["tracks"]["items"][0]["external_urls"]["spotify"]
+            )
+
+    @command()
     async def album(self, ctx: Context, *args: str):
         join_words = " ".join(args).strip()
         results = self.sp.search(q=join_words, limit=1, type="album")
-        await ctx.channel.send(
-            results["albums"]["items"][0]["external_urls"]["spotify"]
-        )
+
+        if not results:
+            await ctx.channel.send("***No track found.***")
+        else:
+            await ctx.channel.send(
+                results["albums"]["items"][0]["external_urls"]["spotify"]
+            )
 
     @classmethod
     def is_enabled(cls, configs: Dict[str, Any] = {}):
         return (
-            configs["ENABLE_SHARE_LINK"]
-            and configs["SPOTIFY_CLIENT_ID"]
-            and configs["SPOTIFY_CLIENT_SECRET"]
+            configs.get(SPOTIFY_ENABLE_SHARE)
+            and configs.get(SPOTIFY_CLIENT_ID)
+            and configs.get(SPOTIFY_CLIENT_SECRET)
         )
 
 
-async def setup(bot: ManChanBot):
+def setup(bot: ManChanBot):
     if ShareLink.is_enabled(bot.configs):
-        await bot.add_cog(ShareLink(bot))  # type: ignore
-
+        bot.add_cog(ShareLink(bot))
     else:
         logging.warn("SKIPPING: cogs.sharelink")

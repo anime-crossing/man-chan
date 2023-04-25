@@ -5,23 +5,15 @@ import re
 from typing import Any, Dict, List, Optional
 
 import requests
-from discord import ButtonStyle  # type: ignore - Exists
-from discord import Interaction  # type: ignore - Exists
-from discord import Color, Embed
-from discord.ext import commands
-from discord.ext.commands.context import Context
-from discord.ui import (  # type: ignore - These libraries exist
-    Button,
-    Modal,
-    Select,
-    TextInput,
-    View,
-)
+from disnake import ButtonStyle, Color, Embed, Interaction
+from disnake.ext import commands
+from disnake.ui import Button, Modal, Select, TextInput, View
 
 from db.anilist_users import AnilistUsers
-from fetcher.anilist_queries import AnilistQueries
 from main import ManChanBot
+from models.anilist_queries import AnilistQueries
 from utils.context import get_member
+from utils.distyping import Context
 
 from .commandbase import CommandBase
 
@@ -42,7 +34,7 @@ class Anilist(CommandBase):
         return f"{month_name} {date['day']}, {date['year']}"
 
     # Fetches Media Information For Embed
-    def media_fetch(self, media_id: int):
+    def media_fetch(self, media_id: str):
         anilist_url = self.configs["ANILIST_URL"]
 
         query = AnilistQueries.media
@@ -56,7 +48,7 @@ class Anilist(CommandBase):
         return json_response["data"]["Media"]
 
     # Fetches Score of Media if User ID has associated Anilist ID
-    def fetch_score(self, media_id: int, user_id: Optional[int]):
+    def fetch_score(self, media_id: str, user_id: Optional[int]):
         anilist_url = self.configs["ANILIST_URL"]
 
         if not user_id:
@@ -81,14 +73,15 @@ class Anilist(CommandBase):
             color=Color.blue(),
         )
 
-        prompt = Modal(title="Enter Anilist Username")
-        answer = TextInput(label="username")
+        answer = TextInput(
+            label="username", custom_id=f"anilist-username-input{ctx.author.id}"
+        )
+        prompt = Modal(title="Enter Anilist Username", components=[answer])
 
         async def modal_callback(interaction: Interaction):  # type: ignore - Interaction Exists
             await self.profile_query(ctx, interaction, answer)
 
-        prompt.add_item(answer)
-        prompt.on_submit = modal_callback
+        prompt.callback = modal_callback
 
         async def entry_callback(interaction: Interaction):  # type: ignore - Interaction Exists
             await interaction.response.send_modal(prompt)
@@ -130,7 +123,7 @@ class Anilist(CommandBase):
         await ctx.send(embed=already_registered, view=registered_view)  # type: ignore - view Exists
 
     # Used by Account Setup to obtain initial profile information
-    async def profile_query(self, ctx: Context, interaction: Interaction, anilist_id: str):  # type: ignore - Interaction Exists
+    async def profile_query(self, ctx: Context, interaction: Interaction, anilist_id: TextInput):  # type: ignore - Interaction Exists
         anilist_url = self.configs["ANILIST_URL"]
         query = AnilistQueries.account
 
@@ -287,7 +280,7 @@ class Anilist(CommandBase):
         await ctx.reply(embed=selection_embed, view=view, mention_author=False)  # type: ignore
 
     # Creates Message after Search is Completed, Combines all Parts (Content + Score)
-    async def create_message(self, ctx: Context, interaction: Interaction, media_id: int, prev_embed: Embed, old_view: View):  # type: ignore - Interaction Exists
+    async def create_message(self, ctx: Context, interaction: Interaction, media_id: str, prev_embed: Embed, old_view: View):  # type: ignore - Interaction Exists
         media_json = self.media_fetch(media_id)
 
         embed = Embed()
@@ -296,8 +289,8 @@ class Anilist(CommandBase):
         image_url = media_json["coverImage"]["extraLarge"]
         embed.title = media_json["title"]["romaji"]
         embed.url = media_json["siteUrl"]
-        clean = re.compile('<.*?>')     # Removes HTML Formatting <> </> etc
-        embed.description = str(re.sub(clean, '', str(media_json["description"])))
+        clean = re.compile("<.*?>")  # Removes HTML Formatting <> </> etc
+        embed.description = str(re.sub(clean, "", str(media_json["description"])))
         embed.set_thumbnail(url=image_url)
 
         information_string = f"Type: {media_json['type'] if media_json['format'] != 'NOVEL' else 'NOVEL'}\nStatus: {media_json['status']}\n"
@@ -447,11 +440,11 @@ class Anilist(CommandBase):
 
     @classmethod
     def is_enabled(cls, configs: Dict[str, Any] = {}):
-        return configs["ENABLE_ANILIST"] and configs["ANILIST_URL"]
+        return configs["ENABLE_ANILIST"]
 
 
-async def setup(bot: ManChanBot):
+def setup(bot: ManChanBot):
     if Anilist.is_enabled(bot.configs):
-        await bot.add_cog(Anilist(bot))  # type: ignore
+        bot.add_cog(Anilist(bot))
     else:
         logging.warn("SKIPPING: cogs.anilist")

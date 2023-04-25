@@ -2,12 +2,15 @@
     "include": [
         "main.py",
         "cogs/*",
+        "fetcher/*",
+        "service/*",
         "utils/*",
         "db/*"
     ],
     
     "exclude": [
         "**/__pycache__",
+        "service/__init__.py"
     ],
 
     "venv": "env",

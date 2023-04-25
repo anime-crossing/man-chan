@@ -71,4 +71,4 @@ class Base(object):
             session.rollback()
 
 
-Base = declarative_base(cls=Base)  # type: ignore
+Base = declarative_base(cls=Base)
