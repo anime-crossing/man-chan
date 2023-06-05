@@ -1,11 +1,9 @@
 from .player import Player
 
 class MasterPlayer:
-    players: dict[int , Player] = {}
-
-    @classmethod
-    def create(cls):
-        return cls()
+    
+    def __init__(self) -> None:
+        self.players: dict[int , Player] = {}
 
     def createPlayer(self, serverId: int):
         self.players[serverId] = Player()

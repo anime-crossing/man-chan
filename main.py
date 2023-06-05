@@ -5,6 +5,7 @@ from typing import Generator
 
 from disnake import Game, Intents
 from disnake.ext.commands import Bot
+from service.music import MasterPlayer
 
 from db.connection import DatabaseException, setup_db_session
 from utils.yaml_loader import load_yaml
@@ -20,6 +21,7 @@ class ManChanBot(Bot):
     def __init__(self):
         self.configs = {}
         self.db_on = False
+        self.master_player = MasterPlayer()
 
     def run(self):
         logging.info(f"Starting bot...")
