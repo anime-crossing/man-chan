@@ -5,9 +5,9 @@ from typing import Generator
 
 from disnake import Game, Intents
 from disnake.ext.commands import Bot
-from service.music import MasterPlayer
 
 from db.connection import DatabaseException, setup_db_session
+from service.music import MasterPlayer
 from utils.yaml_loader import load_yaml
 
 logging.basicConfig(

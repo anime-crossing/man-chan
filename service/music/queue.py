@@ -1,8 +1,8 @@
 from fetcher.youtube import YoutubeApi
 from models import Song
 
-class Queue:
 
+class Queue:
     def __init__(self) -> None:
         self.queue: list[Song] = []
         self.session_history: list[Song] = []
@@ -18,17 +18,15 @@ class Queue:
 
     def is_queue_empty(self) -> bool:
         return len(self.queue) == 0
-    
+
     def is_history_empty(self) -> bool:
         return len(self.session_history) == 0
-    
+
     def queue_to_string(self) -> str:
-        songs = ''
+        songs = ""
         for song in self.queue:
-            songs += song.title + '\n'
+            songs += song.title + "\n"
         return songs
 
     def history_to_string(self) -> str:
-        return "\n".join(map( lambda x : x.title,  self.session_history))
-    
-    
+        return "\n".join(map(lambda x: x.title, self.session_history))
