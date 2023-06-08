@@ -71,19 +71,17 @@ class Player:
             self.is_connected = True
 
     def play_music(self):
-        if not self.is_playing:
-            loop = asyncio.get_event_loop()
-            if not self._queue.is_queue_empty():
-                self.is_playing = True
+        if not self._queue.is_queue_empty():
+            self.is_playing = True
 
-                url = self.queue[0].url
-                self.current_song = self.queue[0]
-                self.remove_song()
-                source = disnake.FFmpegPCMAudio(url, **self.FFMPEG_OPTIONS)
-                self.voice_client.play(source, after=lambda e: self.play_music())  # type: ignore
-            else:
-                self.is_playing = False
-                self.current_song = None
+            url = self.queue[0].url
+            self.current_song = self.queue[0]
+            self.remove_song()
+            source = disnake.FFmpegPCMAudio(url, **self.FFMPEG_OPTIONS)
+            self.voice_client.play(source, after=lambda e: self.play_music())  # type: ignore
+        else:
+            self.is_playing = False
+            self.current_song = None
 
     def leave_voice(self):
         self.is_playing = False

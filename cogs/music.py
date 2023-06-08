@@ -52,7 +52,8 @@ class Music(CommandBase):
             return await ctx.send("Audio is now resumed", delete_after=5)
 
         await ctx.message.delete()
-        player.play_music()
+        if not player.is_playing:
+            player.play_music()
 
     @command()
     async def queue(self, ctx: Context):
