@@ -8,6 +8,7 @@ chardet==4.0.0
 click==8.1.2
 colorama==0.4.4
 disnake==2.8.1
+ffmpeg==1.4
 greenlet==1.1.2
 idna==3.3
 isort
@@ -27,3 +28,5 @@ sqlalchemy-stubs==0.4
 tomli==2.0.1
 typing_extensions==3.10.0.2
 yarl==1.7.2
+youtube-dl==2021.12.17
+youtube.search==2.1.2
