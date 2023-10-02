@@ -30,6 +30,16 @@ class ShareLink(CommandBase):
             )
         )
 
+
+    def _get_spotify_info(self, results: Any, request_type: str):
+        track_name = results[request_type]["items"][0]["name"]
+        track_link = results[request_type]["items"][0]["external_urls"]["spotify"]
+        track_artists = []
+        for artist in results[request_type]["items"][0]["artists"]:
+            track_artists.append(artist["name"])
+        track_artists = ', '.join(track_artists)
+        return track_name, track_artists, track_link
+
     @command()
     async def track(self, ctx: Context, *args: str):
         join_words = " ".join(args).strip()
@@ -38,9 +48,8 @@ class ShareLink(CommandBase):
         if not results:
             await ctx.channel.send("***No track found.***")
         else:
-            await ctx.channel.send(
-                results["tracks"]["items"][0]["external_urls"]["spotify"]
-            )
+            track_name, track_artists, track_link = self._get_spotify_info(results, "tracks")
+            await ctx.channel.send(f'[{track_name} - {track_artists}]({track_link})')
 
     @command()
     async def album(self, ctx: Context, *args: str):
@@ -48,11 +57,10 @@ class ShareLink(CommandBase):
         results = self.sp.search(q=join_words, limit=1, type="album")
 
         if not results:
-            await ctx.channel.send("***No track found.***")
+            await ctx.channel.send("***No album found.***")
         else:
-            await ctx.channel.send(
-                results["albums"]["items"][0]["external_urls"]["spotify"]
-            )
+            album_name, album_artists, album_link = self._get_spotify_info(results, "albums")
+            await ctx.channel.send(f'[{album_name} - {album_artists}]({album_link})')
 
     @classmethod
     def is_enabled(cls, configs: Dict[str, Any] = {}):
