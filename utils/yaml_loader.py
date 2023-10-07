@@ -9,7 +9,7 @@ class YamlReadError(Exception):
 
 def load_yaml() -> dict:
     configs = {}
-    with open("./configs.yaml", "r") as file:
+    with open("./configs.yaml", "r", encoding="utf-8") as file:
         configs = load(file, Loader)
 
     if not len(configs):
