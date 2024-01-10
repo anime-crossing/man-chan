@@ -9,7 +9,6 @@ from .connection import get_session
 
 
 class Base(object):
-
     id = Column(Integer, autoincrement=True, primary_key=True)
 
     def __init__(self, **kwargs: Any):
