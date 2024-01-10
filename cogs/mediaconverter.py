@@ -1,6 +1,6 @@
 import logging
 import re
-from typing import Any, Dict
+from typing import Any, Dict, Optional
 
 import requests
 from disnake import Message
@@ -11,25 +11,22 @@ from main import ManChanBot
 from .commandbase import CommandBase
 
 
-class Media_Converter(CommandBase):
+class MediaConverter(CommandBase):
     @Cog.listener()
     async def on_message(self, message: Message):
         if message.author.bot:
             return
 
-        link = self.extract_link(message.content)
-        if link:
-            if "tiktok.com" in link:
-                embedded_video = self.embed_tiktok(link)
-                await message.edit(
-                    suppress_embeds=True
-                )  # Removes previous TikTok embed from context message
-                await message.channel.send(f"[TikTok Link]({embedded_video})")
-            elif "twitter.com" in link or "x.com" in link:
-                converted_link = self.convert_twitter_link(link)
-                await message.channel.send(
-                    f"[Converted Twitter Link]({converted_link})"
-                )
+        link_info = self.extract_link(message.content)
+        if link_info[0] is "tiktok":
+            embedded_video = self.embed_tiktok(link_info[1])
+            await message.edit(
+                suppress_embeds=True
+            )  # Removes previous embed from context message
+            await message.channel.send(f"[TikTok Link]({embedded_video})")
+        elif link_info[0] is "twitter":
+            converted_link = self.convert_twitter_link(link_info[1])
+            await message.channel.send(f"[Converted Twitter Link]({converted_link})")
 
     @classmethod
     def extract_link(cls, text: str):
@@ -42,37 +39,41 @@ class Media_Converter(CommandBase):
             text,
         )
         if twitter_match:
-            return twitter_match.group(1)
+            return "twitter", twitter_match.group(1)
         elif tiktok_match:
-            return tiktok_match.group(0)
+            return "tiktok", tiktok_match.group(0)
+        return None, None
+
+    @classmethod
+    def convert_twitter_link(cls, twitter_link: Optional[str]):
+        if twitter_link:
+            converted_link = re.sub(
+                r"https?://(?:www\.)?(?:twitter\.com|x\.com)",
+                "https://fxtwitter.com",
+                twitter_link,
+            )
+            return converted_link
         return None
 
     @classmethod
-    def convert_twitter_link(cls, twitter_link: str):
-        converted_link = re.sub(
-            r"https?://(?:www\.)?(?:twitter\.com|x\.com)",
-            "https://fxtwitter.com",
-            twitter_link,
-        )
-        return converted_link
+    def embed_tiktok(cls, tiktok_link: Optional[str]):
+        if tiktok_link:
+            data = {"input_text": tiktok_link}
 
-    @classmethod
-    def embed_tiktok(cls, tiktok_link: str):
-        data = {"input_text": tiktok_link}
+            response = requests.post(
+                "https://api.quickvids.win/v1/shorturl/create", json=data
+            ).json()
 
-        response = requests.post(
-            "https://api.quickvids.win/v1/shorturl/create", json=data
-        ).json()
-
-        return response["quickvids_url"]
+            return response["quickvids_url"]
+        return None
 
     @classmethod
     def is_enabled(cls, configs: Dict[str, Any] = {}):
-        return configs["ENABLE_CONVERTER"]
+        return configs.get("ENABLE_MEDIA_LINK_CONVERTER", False)
 
 
 def setup(bot: ManChanBot):
-    if Media_Converter.is_enabled(bot.configs):
-        bot.add_cog(Media_Converter(bot))
+    if MediaConverter.is_enabled(bot.configs):
+        bot.add_cog(MediaConverter(bot))
     else:
         logging.warn("SKIPPING: cogs.mediaconverter")
