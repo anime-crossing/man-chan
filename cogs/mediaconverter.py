@@ -75,4 +75,4 @@ def setup(bot: ManChanBot):
     if Media_Converter.is_enabled(bot.configs):
         bot.add_cog(Media_Converter(bot))
     else:
-        logging.warn("SKIPPING: cogs.xconverter")
+        logging.warn("SKIPPING: cogs.mediaconverter")
