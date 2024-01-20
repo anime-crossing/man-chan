@@ -18,15 +18,20 @@ class MediaConverter(CommandBase):
             return
 
         link_info = self.extract_link(message.content)
-        if link_info[0] is "tiktok":
-            embedded_video = self.embed_tiktok(link_info[1])
-            await message.edit(
-                suppress_embeds=True
-            )  # Removes previous embed from context message
-            await message.channel.send(f"[TikTok Link]({embedded_video})")
-        elif link_info[0] is "twitter":
-            converted_link = self.convert_twitter_link(link_info[1])
-            await message.channel.send(f"[Converted Twitter Link]({converted_link})")
+        if link_info:
+            description = ""
+            if link_info[0] == "tiktok":
+                embedded_video = self.embed_tiktok(link_info[1])
+                description = f"[TikTok Link]({embedded_video})"
+            elif link_info[0] == "twitter":
+                converted_link = self.convert_twitter_link(link_info[1])
+                description = f"[Converted Twitter Link]({converted_link})"
+                
+            if description:     # Added this check to avoid an error about sending empty messages
+                await message.edit(
+                    suppress_embeds=True
+                )  # Removes previous embed from context message
+                await message.reply(content=description, mention_author=False)
 
     @classmethod
     def extract_link(cls, text: str):

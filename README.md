@@ -228,6 +228,9 @@ ENABLE_SHARE_LINK: true
 SPOTIFY_CLIENT_ID: "Provide Own"
 SPOTIFY_CLIENT_SECRET: "Provide Own"
 
+# Converter Settings
+ENABLE_MEDIA_LINK_CONVERTER: true
+
 # Misc Settings
 ```
 
