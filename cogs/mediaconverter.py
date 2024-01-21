@@ -3,7 +3,7 @@ import re
 from typing import Any, Dict, Optional
 
 import requests
-from disnake import Message
+from disnake import Message, Reaction, User
 from disnake.ext.commands import Cog
 
 from main import ManChanBot
@@ -17,21 +17,30 @@ class MediaConverter(CommandBase):
         if message.author.bot:
             return
 
-        link_info = self.extract_link(message.content)
-        if link_info:
+        link_type, link_url = self.extract_link(message.content)
+        if link_type:
             description = ""
-            if link_info[0] == "tiktok":
-                embedded_video = self.embed_tiktok(link_info[1])
+            if link_type == "tiktok":
+                embedded_video = self.embed_tiktok(link_url)
                 description = f"[TikTok Link]({embedded_video})"
-            elif link_info[0] == "twitter":
-                converted_link = self.convert_twitter_link(link_info[1])
-                description = f"[Converted Twitter Link]({converted_link})"
-                
-            if description:     # Added this check to avoid an error about sending empty messages
+
                 await message.edit(
                     suppress_embeds=True
                 )  # Removes previous embed from context message
                 await message.reply(content=description, mention_author=False)
+
+            elif link_type == "twitter":
+                return await self.mark_twitter_post(message)
+
+    @Cog.listener()
+    async def on_reaction_add(self, reaction: Reaction, user: User):
+        if reaction.emoji != "📹" or user.bot:
+            return
+
+        message = reaction.message
+        link = self.convert_twitter_link(message.content)
+        await message.edit(suppress_embeds=True)
+        await message.reply(content=f"[Twitter Link]({link})", mention_author=False)
 
     @classmethod
     def extract_link(cls, text: str):
@@ -48,6 +57,10 @@ class MediaConverter(CommandBase):
         elif tiktok_match:
             return "tiktok", tiktok_match.group(0)
         return None, None
+
+    @classmethod
+    async def mark_twitter_post(cls, message: Message):
+        return await message.add_reaction("📹")
 
     @classmethod
     def convert_twitter_link(cls, twitter_link: Optional[str]):
