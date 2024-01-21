@@ -34,7 +34,7 @@ class MediaConverter(CommandBase):
 
     @Cog.listener()
     async def on_reaction_add(self, reaction: Reaction, user: User):
-        if reaction.emoji != "📹" or user.bot:
+        if reaction.emoji != "📹" or user.bot or reaction.count > 2:
             return
 
         message = reaction.message
