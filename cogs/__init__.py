@@ -5,3 +5,4 @@ from .login import *
 from .mediaconverter import *
 from .shareLink import *
 from .socialcredit import *
+from .halloffame import *
