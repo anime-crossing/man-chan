@@ -38,8 +38,8 @@ class MediaConverter(CommandBase):
             reaction.emoji != "📹"
             or user.bot
             or reaction.count > 2
-            or not self.extract_link(reaction.message.content)
-        ):
+            or self.extract_link(reaction.message.content)[0] != 'twitter'
+        ): # Added additional checks
             return
 
         message = reaction.message
