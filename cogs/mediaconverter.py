@@ -34,10 +34,18 @@ class MediaConverter(CommandBase):
 
     @Cog.listener()
     async def on_reaction_add(self, reaction: Reaction, user: User):
-        if reaction.emoji != "📹" or user.bot or reaction.count > 2:
+        if (
+            reaction.emoji != "📹"
+            or user.bot
+            or reaction.count > 2
+            or not self.extract_link(reaction.message.content)
+        ):
             return
 
         message = reaction.message
+        if not message.embeds:
+            await message.reply(content="Dickhead this already sent")
+            return  # this assumes that the message embeds have already been surpressed.
         link = self.convert_twitter_link(message.content)
         await message.edit(suppress_embeds=True)
         await message.reply(content=f"[Twitter Link]({link})", mention_author=False)
