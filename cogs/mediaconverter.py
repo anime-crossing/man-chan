@@ -44,7 +44,6 @@ class MediaConverter(CommandBase):
 
         message = reaction.message
         if not message.embeds:
-            await message.reply(content="Dickhead this already sent")
             return  # this assumes that the message embeds have already been surpressed.
         link = self.convert_twitter_link(message.content)
         await message.edit(suppress_embeds=True)
