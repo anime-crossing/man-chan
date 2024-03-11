@@ -1,4 +1,4 @@
-from typing import cast
+from typing import Any, cast
 
 from yaml import Loader, load
 
@@ -7,7 +7,7 @@ class YamlReadError(Exception):
     pass
 
 
-def load_yaml() -> dict:
+def load_yaml() -> dict[str, Any]:
     configs = {}
     with open("./configs.yaml", "r", encoding="utf-8") as file:
         configs = load(file, Loader)

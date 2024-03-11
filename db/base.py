@@ -33,7 +33,7 @@ class Base(object):
         return base
 
     @classmethod
-    def _query(cls, entities: List[Any] = []) -> Query:
+    def _query(cls, entities: List[Any] = []) -> "Query[Any]":
         """
         Creates a query object from session.
 
