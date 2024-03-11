@@ -22,7 +22,7 @@ class Fun(CommandBase):
     @command()
     async def choose(self, ctx: Context, *args: str):
         # Will randomly choose a selection of words delimited by commas
-        options = "".join(args).split(",")
+        options = " ".join(args).split(",")
         await ctx.channel.send(random.choice(options).strip())
 
 
