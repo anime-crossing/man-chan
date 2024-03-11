@@ -60,6 +60,15 @@ Example: !choose pizza, chicken and waffles, burger
 > chicken and waffles
 ```
 
+`!conch` or `!8ball`: Ask a question, get an answer!
+Inspired by Spongebob's magic conch shell. But it is not mandatory to use the
+conch as part of this command. Supply an image url in the config mapper to
+send a custom image, including a conch if you desire.
+```
+Example: !conch Can I have something to drink?
+> No.
+```
+
 ### **Plugins**
 Allows you to load exterior commands outside of the main functionality.
 List these under a `/plugins` folder.
@@ -245,6 +254,7 @@ SPOTIFY_CLIENT_SECRET: "Provide Own"
 ENABLE_MEDIA_LINK_CONVERTER: true
 
 # Misc Settings
+CONCH_URL: ""
 ```
 
 # Login format
