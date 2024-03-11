@@ -9,7 +9,6 @@ from .connection import get_session
 
 
 class Base(object):
-
     id = Column(Integer, autoincrement=True, primary_key=True)
 
     def __init__(self, **kwargs: Any):
@@ -34,7 +33,7 @@ class Base(object):
         return base
 
     @classmethod
-    def _query(cls, entities: List[Any] = []) -> Query:
+    def _query(cls, entities: List[Any] = []) -> "Query[Any]":
         """
         Creates a query object from session.
 
