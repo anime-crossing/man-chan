@@ -38,8 +38,8 @@ class MediaConverter(CommandBase):
             reaction.emoji != "📹"
             or user.bot
             or reaction.count > 2
-            or self.extract_link(reaction.message.content)[0] != 'twitter'
-        ): # Added additional checks
+            or self.extract_link(reaction.message.content)[0] != "twitter"
+        ):  # Added additional checks
             return
 
         message = reaction.message
@@ -56,7 +56,7 @@ class MediaConverter(CommandBase):
             text,
         )
         tiktok_match = re.search(
-            r"https?://(?:www\.)?tiktok\.com/[a-zA-Z0-9_]+/[a-zA-Z0-9_]+",
+            r"https?://(?:www\.)?tiktok\.com/(?:@[a-zA-Z0-9_]+|[a-zA-Z0-9_]+)/(?:[a-zA-Z0-9_]+|video/\d+)(?:\S+)?",
             text,
         )
         if twitter_match:
@@ -83,8 +83,7 @@ class MediaConverter(CommandBase):
     @classmethod
     def embed_tiktok(cls, tiktok_link: Optional[str]):
         if tiktok_link:
-            data = {"input_text": tiktok_link}
-
+            data = {"input_text": tiktok_link, "detailed": False}
             response = requests.post(
                 "https://api.quickvids.win/v1/shorturl/create", json=data
             ).json()
