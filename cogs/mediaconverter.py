@@ -34,10 +34,17 @@ class MediaConverter(CommandBase):
 
     @Cog.listener()
     async def on_reaction_add(self, reaction: Reaction, user: User):
-        if reaction.emoji != "📹" or user.bot or reaction.count > 2:
+        if (
+            reaction.emoji != "📹"
+            or user.bot
+            or reaction.count > 2
+            or self.extract_link(reaction.message.content)[0] != "twitter"
+        ):  # Added additional checks
             return
 
         message = reaction.message
+        if not message.embeds:
+            return  # this assumes that the message embeds have already been surpressed.
         link = self.convert_twitter_link(message.content)
         await message.edit(suppress_embeds=True)
         await message.reply(content=f"[Twitter Link]({link})", mention_author=False)
@@ -49,7 +56,7 @@ class MediaConverter(CommandBase):
             text,
         )
         tiktok_match = re.search(
-            r"https?://(?:www\.)?tiktok\.com/[a-zA-Z0-9_]+/[a-zA-Z0-9_]+",
+            r"https?://(?:www\.)?tiktok\.com/(?:@[a-zA-Z0-9_]+|[a-zA-Z0-9_]+)/(?:[a-zA-Z0-9_]+|video/\d+)(?:\S+)?",
             text,
         )
         if twitter_match:
@@ -76,8 +83,7 @@ class MediaConverter(CommandBase):
     @classmethod
     def embed_tiktok(cls, tiktok_link: Optional[str]):
         if tiktok_link:
-            data = {"input_text": tiktok_link}
-
+            data = {"input_text": tiktok_link, "detailed": False}
             response = requests.post(
                 "https://api.quickvids.win/v1/shorturl/create", json=data
             ).json()
