@@ -56,7 +56,7 @@ class MediaConverter(CommandBase):
             text,
         )
         tiktok_match = re.search(
-            r"https?://(?:www\.)?tiktok\.com/(?:@[a-zA-Z0-9_]+|[a-zA-Z0-9_]+)/(?:[a-zA-Z0-9_]+|video/\d+)(?:\S+)?",
+            r"https?://(?:www\.)?tiktok\.com/(?:@[a-zA-Z0-9_.]+|[a-zA-Z0-9_]+)/(?:[a-zA-Z0-9_]+|video/\d+)(?:\S+)?",
             text,
         )
         if twitter_match:
