@@ -1,12 +1,16 @@
 from typing import Any
 
-from youtube_dl import YoutubeDL
+from yt_dlp import YoutubeDL
 
 from models import Song
 
 
 class YoutubeApi:
-    YDL_OPTIONS = {"format": "bestaudio", "noplaylist": "True"}
+    YDL_OPTIONS = {"format": "bestaudio", "noplaylist": "True" ,'postprocessors': [{
+        'key': 'FFmpegExtractAudio',
+        'preferredcodec': 'mp3',
+        'preferredquality': '192',
+    }],}
 
     @classmethod
     def search(cls, query: str, limit=1) -> list[Song]:
