@@ -2,7 +2,7 @@ from re import search
 from typing import Optional, Tuple
 
 
-def hex_to_rgb(hex: str) -> Optional[Tuple[int, int, int]]:
+def hex_to_rgb(hex: str) -> Optional[Tuple[int, ...]]:
     if hex is None or len(hex) < 6:
         return None
 

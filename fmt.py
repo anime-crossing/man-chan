@@ -6,12 +6,12 @@ if __name__ == "__main__":
     # Formatting
     print("-- Formatting... --")
     try:
-        print(main(["main.py", "cogs", "db", "utils", "service", "fetcher"]))
+        print(main(["main.py", "bot", "cogs", "db", "fetcher", "utils", "service"]))
     except:
         pass
 
     print("-- Sorting imports... --")
-    os.system("isort main.py cogs db utils service fetcher --profile black")
+    os.system("isort main.py bot cogs db utils service fetcher --profile black")
 
     # Validating
     print("-- Validating formatting. --")
@@ -20,6 +20,6 @@ if __name__ == "__main__":
     os.system("pyright")
 
     print("-- Checking imports... --")
-    os.system("isort -c main.py cogs db utils --profile black")
+    os.system("isort -c main.py bot cogs db utils --profile black")
 
     print("Done!")

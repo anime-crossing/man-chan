@@ -43,7 +43,7 @@ class LoginInfo(LoginBase):
 
 class _LoginPageInteraction(CallbackBase):
     @property
-    def logins(self) -> Dict[str, Dict]:
+    def logins(self) -> Dict[str, Dict[str, Any]]:
         return cast(LoginInfo, self.service).logins
 
     @property

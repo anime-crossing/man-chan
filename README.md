@@ -60,6 +60,28 @@ Example: !choose pizza, chicken and waffles, burger
 > chicken and waffles
 ```
 
+`!conch` or `!8ball`: Ask a question, get an answer!
+Inspired by Spongebob's magic conch shell. But it is not mandatory to use the
+conch as part of this command. Supply an image url in the config mapper to
+send a custom image, including a conch if you desire.
+```
+Example: !conch Can I have something to drink?
+> No.
+```
+
+### **Plugins**
+Allows you to load exterior commands outside of the main functionality.
+List these under a `/plugins` folder.
+
+For example, let's say you have two github repos with sets of commands that are compatible with ManChan bot: `images` and `encoder`.
+
+Add those to the plugins folder like so:
+`/plugins/image/generator.py`
+`/plugins/image/formatter.py`
+`/plugins/encoder/encode.py`
+
+Each of those modules will be loaded like any other Cog.
+
 ## Coming soon:
 ### **Money Ledger**
 Keep track of what each person owes money too. Useful for social events where one person pays for everyone and stuff.
@@ -228,7 +250,11 @@ ENABLE_SHARE_LINK: true
 SPOTIFY_CLIENT_ID: "Provide Own"
 SPOTIFY_CLIENT_SECRET: "Provide Own"
 
+# Converter Settings
+ENABLE_MEDIA_LINK_CONVERTER: true
+
 # Misc Settings
+CONCH_URL: ""
 ```
 
 # Login format

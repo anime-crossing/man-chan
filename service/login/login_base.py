@@ -20,7 +20,7 @@ class LoginBase(ServiceBase):
         super().__init__(ctx, configs)
 
     @property
-    def logins(self) -> Dict[str, Dict]:
+    def logins(self) -> Dict[str, Dict[str, Any]]:
         return self._logins
 
     @logins.setter
