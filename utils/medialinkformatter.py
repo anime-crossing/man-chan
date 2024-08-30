@@ -15,7 +15,7 @@ class MediaLinkFormatter:
     re_link = r"https?://"
     re_twitter = r"(https?://(?:www\.)?(?:twitter\.com|x\.com)/[a-zA-Z0-9_]+/status/[0-9]+(?:\?s=20)?)"
     re_tiktok = r"https?://(?:www\.)?tiktok\.com/(?:@[a-zA-Z0-9_.]+|[a-zA-Z0-9_]+)/(?:[a-zA-Z0-9_]+|video/\d+)(?:\S+)?"
-    re_instagram = r"https?://www\.(?:dd)?instagram\.com/\S+"
+    re_instagram = r"https?://www\.instagram\.com/\S+"
 
     @staticmethod
     def detect_link(text: str) -> Tuple[Optional[LinkType], Optional[str]]:
@@ -56,13 +56,5 @@ class MediaLinkFormatter:
         return re.sub(
             r"www\.instagram",
             "www.ddinstagram",
-            instagram_link,
-        )
-
-    @staticmethod
-    def embed_instagram_dd(instagram_link: str) -> str:
-        return re.sub(
-            r"www\.(?:dd)?instagram",
-            "d.ddinstagram",
             instagram_link,
         )

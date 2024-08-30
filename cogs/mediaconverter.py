@@ -20,20 +20,19 @@ class MediaConverter(CommandBase):
 
         if not (link_type and link_url):
             return
+        
+        if link_type == LinkType.TWITTER:
+            return await self.mark_post_emoji(message)
 
         if link_type == LinkType.TIKTOK:
             await self._send_embed(
                 link_url, "TikTok Link", message, MediaLinkFormatter.embed_tiktok
             )
 
-        if link_type == LinkType.TWITTER:
-            return await self.mark_post_emoji(message)
-
         if link_type == LinkType.INSTAGRAM:
-            replied_message = await self._send_embed(
+            return await self._send_embed(
                 link_url, "Instagram Link", message, MediaLinkFormatter.embed_instagram
             )
-            return await self.mark_post_emoji(replied_message)
 
     @Cog.listener()
     async def on_reaction_add(self, reaction: Reaction, user: User):
@@ -51,15 +50,6 @@ class MediaConverter(CommandBase):
         if link_type == LinkType.TWITTER:
             await self._send_embed(
                 link_url, "Twitter Link", message, MediaLinkFormatter.embed_twitter
-            )
-
-        if link_type == LinkType.INSTAGRAM:
-            await self._send_embed(
-                link_url,
-                "Instagram Download",
-                message,
-                MediaLinkFormatter.embed_instagram_dd,
-                suppress=False,
             )
 
     @classmethod
