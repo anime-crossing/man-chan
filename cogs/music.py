@@ -19,32 +19,6 @@ class Music(CommandBase):
         self.bot = bot
         self.master_player = bot.master_player
 
-    # @command()
-    # async def setup_music(self, ctx: Context):
-    #     channel = None
-    #     guild_id = ctx.guild.id
-
-    #     if (self.master_player.getPlayer(ctx.guild.id) != None):
-    #         return await ctx.channel.send("Player Already setup", delete_after=5)
-        
-    #     player = Players.get(ctx.guild.id)
-
-    #     if (player == None):
-    #         channel = await ctx.guild.create_text_channel(name="manchan radio")
-    #         Players.create(ctx.guild.id, channel.id)
-
-    #     if (ctx.guild.get_channel(player.channel_id) == None):
-    #         channel = await ctx.guild.create_text_channel(name="manchan radio")
-    #         player.set_channel_id(channel.id)
-
-    #     player = Players.get(ctx.guild.id)
-    #     self.master_player.createPlayer(player.id)
-    #     self.master_player.getPlayer(player.id).set_channel_id(player.channel_id)
-    #     self.master_player.getPlayer(player.id).set_channel_id(player.channel_id)
-        
-    #     await ctx.message.delete()
-
-
     @command()
     async def setup_music(self, ctx: Context):
         guild_id = ctx.guild.id
