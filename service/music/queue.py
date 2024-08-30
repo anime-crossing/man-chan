@@ -9,7 +9,6 @@ class Queue:
 
     def add_song(self, song_name: str) -> None:
         songs = YoutubeApi.search(song_name)
-        print(songs[0])
         self.queue.append(songs[0])
 
     def remove_song(self) -> None:
