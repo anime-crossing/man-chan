@@ -28,5 +28,5 @@ sqlalchemy-stubs==0.4
 tomli==2.0.1
 typing_extensions==3.10.0.2
 yarl==1.7.2
-youtube-dl==2021.12.17
 youtube.search==2.1.2
+yt-dlp==2024.8.6
