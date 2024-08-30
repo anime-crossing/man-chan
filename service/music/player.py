@@ -1,4 +1,3 @@
-import asyncio
 from typing import Optional
 
 import disnake
@@ -23,7 +22,7 @@ class Player:
         self.voice_client: Optional[VoiceClient] = None
         self.is_paused: bool = False
         self.is_connected: bool = False
-        self.is_playing: bool = False
+        self.is_audio_buffered: bool = False
         self.current_song: Optional[Song] = None
         self.embed: Embed = disnake.Embed(title="MANCHAN MUSIC BOT")
 
@@ -62,7 +61,7 @@ class Player:
     def set_player_ui(self, player_ui: Message):
         self.player_ui = player_ui
 
-    async def set_voice_client(self, ctx):
+    async def set_voice_client(self, ctx): # type: ignore
         if ctx.author.voice is None:  # type: ignore
             return await ctx.send("Connect to a voice channel!", delete_after=5)
         if not self.is_connected:
@@ -72,19 +71,19 @@ class Player:
 
     def play_music(self):
         if not self._queue.is_queue_empty():
-            self.is_playing = True
+            self.is_audio_buffered = True
 
             url = self.queue[0].url
             self.current_song = self.queue[0]
             self.remove_song()
-            source = disnake.FFmpegPCMAudio(url, **self.FFMPEG_OPTIONS)
+            source = disnake.FFmpegPCMAudio(url, **self.FFMPEG_OPTIONS) # type: ignore
             self.voice_client.play(source, after=lambda e: self.play_music())  # type: ignore
         else:
-            self.is_playing = False
+            self.is_audio_buffered = False
             self.current_song = None
 
     def leave_voice(self):
-        self.is_playing = False
+        self.is_audio_buffered = False
         self.is_paused = False
         self.is_connected = False
         self.voice_client = None
@@ -103,6 +102,6 @@ class Player:
     def get_status(self):
         status = ""
         status += "Connected: " + str(self.is_connected) + "\n"
-        status += "Playing: " + str(self.is_playing) + "\n"
+        status += "Playing: " + str(self.is_audio_buffered) + "\n"
         status += "Paused: " + str(self.is_paused) + "\n"
         return status
