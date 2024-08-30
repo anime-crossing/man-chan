@@ -4,7 +4,6 @@ import logging
 from typing import TYPE_CHECKING, Any, Dict
 from disnake.ext.commands import command
 
-from db.player import Players
 from service.music.player import Player
 from utils.distyping import Context
 
