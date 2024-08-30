@@ -6,6 +6,7 @@ from disnake.ext.commands import Bot
 
 from bot.command_loader import CommandLoader
 from db.connection import DatabaseException, setup_db_session
+from service.music import MasterPlayer
 from utils.yaml_loader import load_yaml
 
 logging.basicConfig(
@@ -19,6 +20,7 @@ class ManChanBot(Bot):
     def __init__(self):
         self.configs = {}
         self.db_on = False
+        self.master_player = MasterPlayer()
 
     def run(self):
         logging.info(f"Starting bot...")
