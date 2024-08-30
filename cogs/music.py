@@ -17,7 +17,6 @@ class Music(CommandBase):
     def __init__(self, bot: ManChanBot):
         self.bot = bot
         self.master_player = bot.master_player
-        # self.embed = Embed(title="MANCHAN RADIO")
 
     @command()
     async def setup_music(self, ctx: Context):
