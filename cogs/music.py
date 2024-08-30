@@ -27,7 +27,7 @@ class Music(CommandBase):
             and self.master_player.getPlayer(guild_id).channel_id
             and self.master_player.getPlayer(guild_id).player_ui
         ):
-            return await ctx.channel.send("channel Already exists", delete_after=5)
+            return await ctx.channel.send("Channel Already Exists", delete_after=5)
         channel = await ctx.guild.create_text_channel(name="manchan radio")
         self.master_player.createPlayer(guild_id)
         player_ui = await channel.send(
@@ -52,7 +52,7 @@ class Music(CommandBase):
             player.is_paused = False
             player.is_audio_buffered = True
             player.voice_client.resume()    # type: ignore
-            return await ctx.send("Audio is now resumed", delete_after=5)
+            return await ctx.send("Audio is now Resumed", delete_after=5)
 
         await ctx.message.delete()
         if not player.is_audio_buffered:
@@ -95,7 +95,7 @@ class Music(CommandBase):
         if player is None: return self.player_does_exist_error(ctx)
         if not await self.in_music_channel(player, ctx): return
         if player.is_history_empty():
-            return await ctx.channel.send("no songs", delete_after=5)
+            return await ctx.channel.send("No songs", delete_after=5)
         await ctx.message.delete()
         return await ctx.channel.send(player.history_to_string(), delete_after=20)
 
@@ -132,7 +132,7 @@ class Music(CommandBase):
             player.is_paused = False  
             player.is_audio_buffered = True  
             player.voice_client.resume()  # type: ignore
-            await ctx.send("Audio is now resumed", delete_after=5)
+            await ctx.send("Audio is now Resumed", delete_after=5)
         await ctx.message.delete()
 
     @command()
