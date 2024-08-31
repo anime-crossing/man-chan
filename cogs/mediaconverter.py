@@ -1,12 +1,11 @@
 import logging
-import re
-from typing import Any, Dict, Optional
+from typing import Any, Callable, Dict
 
-import requests
 from disnake import Message, Reaction, User
 from disnake.ext.commands import Cog
 
 from main import ManChanBot
+from utils import LinkType, MediaLinkFormatter
 
 from .commandbase import CommandBase
 
@@ -17,79 +16,64 @@ class MediaConverter(CommandBase):
         if message.author.bot:
             return
 
-        link_type, link_url = self.extract_link(message.content)
-        if link_type:
-            description = ""
-            if link_type == "tiktok":
-                embedded_video = self.embed_tiktok(link_url)
-                description = f"[TikTok Link]({embedded_video})"
+        link_type, link_url = MediaLinkFormatter.detect_link(message.content)
 
-                await message.edit(
-                    suppress_embeds=True
-                )  # Removes previous embed from context message
-                await message.reply(content=description, mention_author=False)
+        if not (link_type and link_url):
+            return
+        
+        if link_type == LinkType.TWITTER:
+            return await self.mark_post_emoji(message)
 
-            elif link_type == "twitter":
-                return await self.mark_twitter_post(message)
+        if link_type == LinkType.TIKTOK:
+            await self._send_embed(
+                link_url, "TikTok Link", message, MediaLinkFormatter.embed_tiktok
+            )
+
+        if link_type == LinkType.INSTAGRAM:
+            return await self._send_embed(
+                link_url, "Instagram Link", message, MediaLinkFormatter.embed_instagram
+            )
 
     @Cog.listener()
     async def on_reaction_add(self, reaction: Reaction, user: User):
-        if (
-            reaction.emoji != "📹"
-            or user.bot
-            or reaction.count > 2
-            or self.extract_link(reaction.message.content)[0] != "twitter"
-        ):  # Added additional checks
+        if reaction.emoji != "📹" or user.bot or reaction.count > 2:
             return
 
         message = reaction.message
         if not message.embeds:
             return  # this assumes that the message embeds have already been surpressed.
-        link = self.convert_twitter_link(message.content)
-        await message.edit(suppress_embeds=True)
-        await message.reply(content=f"[Twitter Link]({link})", mention_author=False)
+
+        link_type, link_url = MediaLinkFormatter.detect_link(reaction.message.content)
+        if not (link_type and link_url):
+            return
+
+        if link_type == LinkType.TWITTER:
+            await self._send_embed(
+                link_url, "Twitter Link", message, MediaLinkFormatter.embed_twitter
+            )
 
     @classmethod
-    def extract_link(cls, text: str):
-        twitter_match = re.search(
-            r"(https?://(?:www\.)?(?:twitter\.com|x\.com)/[a-zA-Z0-9_]+/status/[0-9]+(?:\?s=20)?)",
-            text,
-        )
-        tiktok_match = re.search(
-            r"https?://(?:www\.)?tiktok\.com/(?:@[a-zA-Z0-9_.]+|[a-zA-Z0-9_]+)/(?:[a-zA-Z0-9_]+|video/\d+)(?:\S+)?",
-            text,
-        )
-        if twitter_match:
-            return "twitter", twitter_match.group(1)
-        elif tiktok_match:
-            return "tiktok", tiktok_match.group(0)
-        return None, None
-
-    @classmethod
-    async def mark_twitter_post(cls, message: Message):
+    async def mark_post_emoji(cls, message: Message):
         return await message.add_reaction("📹")
 
-    @classmethod
-    def convert_twitter_link(cls, twitter_link: Optional[str]):
-        if twitter_link:
-            converted_link = re.sub(
-                r"https?://(?:www\.)?(?:twitter\.com|x\.com)",
-                "https://fxtwitter.com",
-                twitter_link,
-            )
-            return converted_link
-        return None
+    async def _send_embed(
+        self,
+        link_url: str,
+        link_desc: str,
+        message: Message,
+        embed_func: Callable[[str], str],
+        suppress: bool = True,
+    ) -> Message:
+        embedded_video = embed_func(link_url)
+        description = f"[{link_desc}]({embedded_video})"
 
-    @classmethod
-    def embed_tiktok(cls, tiktok_link: Optional[str]):
-        if tiktok_link:
-            data = {"input_text": tiktok_link, "detailed": False}
-            response = requests.post(
-                "https://api.quickvids.win/v1/shorturl/create", json=data
-            ).json()
+        if suppress:
+            await message.edit(
+                suppress_embeds=True
+            )  # Removes previous embed from context message
 
-            return response["quickvids_url"]
-        return None
+        replied_message = await message.reply(content=description, mention_author=False)
+        return replied_message
 
     @classmethod
     def is_enabled(cls, configs: Dict[str, Any] = {}):
