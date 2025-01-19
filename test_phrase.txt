@@ -1,0 +1,661 @@
+<!DOCTYPE html>
+<html lang="en" class="responsive-b" data-font-id="vha2lmb">
+
+<head>
+  <meta charset="utf-8">
+  <!-- Google Tag Manager -->
+  <script>
+    window.dataLayer = window.dataLayer || [];
+
+    (function(w, d, s, l, i) {
+      w[l] = w[l] || [];
+      w[l].push({
+        'gtm.start': new Date().getTime(),
+        event: 'gtm.js'
+      });
+      var f = d.getElementsByTagName(s)[0],
+        j = d.createElement(s),
+        dl = l != 'dataLayer' ? '&l=' + l : '';
+      j.async = true;
+      j.src =
+        'https://www.googletagmanager.com/gtm.js?id=' + i + dl;
+      f.parentNode.insertBefore(j, f);
+    })(window, document, 'script', 'dataLayer', 'GTM-TZWV3FR');
+  </script>
+  <!-- End Google Tag Manager -->
+  <title>FREE Japanese Word of the Day Widget - JapanesePod101</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+  <meta name="title" content="FREE Japanese Word of the Day Widget - JapanesePod101" />
+  <meta name="keywords" content="learn Japanese, study Japanese, speak Japanese, Japanese language, Japanese culture, read Japanese, write Japanese, Japan travel, Japanese podcasts" />
+  <meta name="description" content="Want to speak better Japanese? You need more words. Learning one Japanese word a day is easy, free, and takes less than a minute to learn at JapanesePod101" />
+  <meta http-equiv="Content-Language" content="en">
+  <meta name="apple-itunes-app" content="app-id=668386019" />
+  <meta property="fb:app_id" content="3123482371">
+  <meta property="og:title" content="FREE Japanese Word of the Day Widget - JapanesePod101">
+  <meta property="og:image" content="https://cdn.innovativelanguage.com/sns/em/content/lp/wotd/wotd_preview.png">
+  <meta property="og:description" content="Want to speak better Japanese? You need more words. Learning one Japanese word a day is easy, free, and takes less than a minute to learn at JapanesePod101">
+  <meta property="og:site_name" content="JapanesePod101">
+  <meta name="twitter:title" content="FREE Japanese Word of the Day Widget - JapanesePod101">
+  <meta name="twitter:description" content="Want to speak better Japanese? You need more words. Learning one Japanese word a day is easy, free, and takes less than a minute to learn at JapanesePod101">
+  <meta name="twitter:image" content="https://cdn.innovativelanguage.com/sns/em/content/lp/wotd/wotd_preview.png">
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="twitter:site" content="@JapanesePod101">
+  <meta name="twitter:creator" content="@JapanesePod101">
+  <link rel="SHORTCUT ICON" href="/static/images/japanesepod101/favicon.ico" />
+  <link rel="image_src" href="https://www.japanesepod101.com/static/images/japanesepod101/itunes_logo.jpg" />
+  <link rel="stylesheet" href="https://use.typekit.net/vcc4rmc.css" />
+  <link rel="canonical" href=\"https://www.japanesepod101.com/japanese-phrases/"> <script src="/static/js/jquery-1.12.4.min.js">
+  </script>
+  <script src="/static/js/jquery-migrate-1.4.1.min.js"></script>
+
+  <script type="text/javascript">
+    function trackEvent(args, isAsynchronous) {
+      jQuery.ajax({
+        type: 'POST',
+        async: (isAsynchronous != undefined) ? (isAsynchronous) : (true),
+        url: '/event_tracking.php',
+        data: jQuery.extend({
+          member_id: '0',
+          category: '_trackEvent',
+          action: '',
+          opt_label: '',
+          opt_value: ''
+        }, args),
+        success: function(msg) { /* do nothing */ }
+      });
+    }
+  </script>
+  <script src="/static/js/compiled/common.e99efd445f3d2053578803e34ef6ce47.illv.min.js" type="text/javascript"></script>
+  <script src="/static/compiled/word_day/esbuild/client.Z56SDPU5.js" type="text/javascript"></script>
+  <link href="/static/compass/css/common-2021/responsive.e48cf227b4662b35136e2cbc08e41210.illv.css" rel="Stylesheet" type="text/css" />
+  <link href="/static/compass/css/pages/redesign/vocabulary/vocabulary.2db117b2d85d9e8233b550fc23f5253a.illv.css" rel="Stylesheet" type="text/css" />
+  <link href="/static/compass/css/pages/redesign/wotd/wotd_page.37aa4294f81e874d85cdb2200423ab5b.illv.css" rel="Stylesheet" type="text/css" />
+  <link href="/static/compiled/word_day/esbuild/client.5FLSYIIH.css" rel="Stylesheet" type="text/css" />
+  <link href="/static/compass/css/common-2021/japanesepod101.88f7ae3183593674f7adc5f5ebe5a7a6.illv.css" rel="Stylesheet" type="text/css" />
+  <script type="text/javascript">
+    var li = false;
+    var hb = false;
+    var hp = false;
+  </script>
+</head>
+
+<body class="responsive-b">
+  <a href="/honeypot-do-not-follow" rel="nofollow" style="display: none" aria-hidden="true">Hallo, Pooh, you're just in time for a little smackerel of something</a>
+  <!-- Google Tag Manager (noscript) -->
+  <noscript><iframe src="https://www.googletagmanager.com/ns.html?id=GTM-TZWV3FR" height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
+  <!-- End Google Tag Manager (noscript) -->
+  <div id="fb-root"></div>
+  <script>(function(d, s, id) {
+        var js, fjs = d.getElementsByTagName(s)[0];
+        if (d.getElementById(id)) return;
+        js = d.createElement(s); js.id = id;
+        js.src = "//connect.facebook.net/en_US/sdk.js#xfbml=1&version=v2.3&appId=3123482371";
+        fjs.parentNode.insertBefore(js, fjs);
+    }(document, 'script', 'facebook-jssdk'));</script>
+  <div onclick="jQuery('.overlay_gray').hide();" class="overlay_gray" style="display: none;"></div>
+  <div onclick="jQuery('.overlay').hide();" onmouseover="jQuery('.overlay').hide();" class="overlay" style="display: none;"></div>
+  <div class="dashbar-a ">
+    <div>
+      <div class="dashbar-a__grid-top">
+        <div class="dashbar-a__cell-a">
+          <a class="dashbar-a__block--logo" tabindex="0" href="/">
+            <img src="/static/images/japanesepod101/header/japanesepod101-logo.svg" style="height: 40px;" alt="Home">
+          </a>
+        </div>
+        <div class="dashbar-a__cell-b"> <span role="application">
+            <div class="dashbar-a__block--nav-item js-dashbar-a-nav js-dashbar-a-block-lessons">
+              <a class="dashbar-a__nav-item dashbar-a__nav-item-dropdown js-dashbar-a-lessons js-dashbar-a-tabindex" aria-haspopup="true" aria-label="Lessons" tabindex="0">Lessons</a>
+              <div class="dashbar-a__block--dashbar dashbar-lessons js-dashbar-a-nav-item">
+                <div class="dashbar-a__grid">
+                  <div class="dashbar-a__cell-e--3">
+                    <div>
+                      <span class="dashbar-a__nav-item--sub ill-ease-color"><a href="/lesson-library">Lesson Library</a></span>
+                      <span class="dashbar-a__nav-item--sub ill-ease-color"><a href="/newest-lessons">Newest Lessons</a></span>
+                      <span class="dashbar-a__nav-item--sub ill-ease-color">
+                        <a href="/favorite-lessons">Favorite Lessons</a>
+                      </span>
+                    </div>
+                  </div>
+                  <div class="dashbar-a__cell-e--4">
+                    <div>
+                      <div class="dashbar-a__label--next-lesson">Your Next Lesson</div>
+                      <div class="dashbar-a__separator"></div>
+                      <div>
+                        <div class="dashbar-a__cell-e--5">
+                          <img class="js-dashbar-lesson-img" src="https://cdn.innovativelanguage.com/japanesepod101/static/images/lessons/98/1344/1344_98.jpg" alt="">
+                        </div>
+                        <div class="dashbar-a__cell-e--6">
+                          <a href="/lesson/absolute-beginner-1-say-hello-in-japanese-no-matter-what-the-time-of-day" class="js-dashbar-lesson-href js-dashbar-lesson-title dashbar-a__label--lesson-title ill-ease-color" aria-label="Lesson Title">Say Hello in Japanese No Matter What the Time of Day</a>
+                          <div class="dashbar-a__label--season-title js-dashbar-season-title">Absolute Beginner Season 1</div>
+                          <div class="dashbar-a__label--focus-statement js-dashbar-focus-statement">Learn how to greet someone both formally and informally </div>
+                          <div class="dashbar-a__label--add-new-path js-dashbar-add-new-path" style="display:none;">Congratulations! You've finished everything on your pathway.
+                            <a href="/lesson-library">Add a new path?</a>
+                          </div>
+                          <div class="dashbar-a__button--study-now">
+                            <a class="r101-button--h40-r4 js-dashbar-lesson-href" href="/lesson/absolute-beginner-1-say-hello-in-japanese-no-matter-what-the-time-of-day">Study now</a>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+            <div class="dashbar-a__block--nav-item js-dashbar-a-nav">
+              <a class="dashbar-a__nav-item dashbar-a__nav-item-dropdown js-dashbar-a-tabindex" aria-haspopup="true" aria-label="Vocabulary" tabindex="0">Vocabulary</a>
+              <div class="dashbar-a__block--dashbar js-dashbar-a-nav-item">
+                <div class="dashbar-a__grid">
+                  <div class="dashbar-a__cell-e--1">
+                    <div>
+                      <span class="dashbar-a__nav-item--sub ill-ease-color">
+                        <a href="/learningcenter/flashcards/flashcards">Flashcards</a>
+                      </span>
+                      <span class="dashbar-a__nav-item--sub ill-ease-color"><a href="/japanese-vocabulary-lists">Vocabulary Lists<span class="dashbar-a__free">Free</span></a></span>
+                      <span class="dashbar-a__nav-item--sub ill-ease-color">
+                        <a href="/learningcenter/account/wordbank">Word Bank</a>
+                      </span>
+                      <span class="dashbar-a__nav-item--sub ill-ease-color"><a href="/japanese-phrases/">Word of the Day<span class="dashbar-a__free">Free</span></a></span>
+                    </div>
+                  </div>
+                  <div class="dashbar-a__cell-e--2">
+                    <div>
+                      <span class="dashbar-a__nav-item--sub ill-ease-color"><a href="/japanese-dictionary/">Japanese Dictionary<span class="dashbar-a__free">Free</span></a></span>
+                      <span class="dashbar-a__nav-item--sub ill-ease-color"><a href="/japanese-word-lists/?coreX=100">100 Most Common Words<span class="dashbar-a__free">Free</span></a></span>
+                      <span class="dashbar-a__nav-item--sub ill-ease-color">
+                        <a href="/japanese-word-lists/?coreX=2000">2000 Most Common Words</a>
+                      </span>
+                      <span class="dashbar-a__nav-item--sub ill-ease-color"><a href="/key-japanese-phrases/">Japanese Key Phrases<span class="dashbar-a__free">Free</span></a></span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+            <div class="dashbar-a__block--nav-item js-dashbar-a-nav">
+              <a class="dashbar-a__nav-item dashbar-a__nav-item-dropdown js-dashbar-a-tabindex" aria-haspopup="true" aria-label="My Teacher" tabindex="0">My Teacher</a>
+              <div class="dashbar-a__block--dashbar js-dashbar-a-nav-item">
+                <div class="dashbar-a__grid my-teacher">
+                  <span class="dashbar-a__nav-item--sub ill-ease-color"><a href="/myteacher">My Teacher Messenger</a></span>
+                  <span class="dashbar-a__nav-item--sub ill-ease-color">
+                    <a href="/live-private-classes" tabindex="-1">Live Private Classes</a>
+                  </span>
+                  <span class="dashbar-a__nav-item--sub ill-ease-color">
+                    <a href="/live-group-classes" tabindex="-1">Live Group Classes</a>
+                  </span>
+                  <span class="dashbar-a__nav-item--sub ill-ease-color"><a href="/myteacher">My Assessment Test</a></span>
+                  <span class="dashbar-a__nav-item--sub ill-ease-color"><a href="/member/statistics.php" tabindex="-1">My Report</a></span>
+                </div>
+              </div>
+            </div>
+            <div class="dashbar-a__block--nav-item js-dashbar-a-nav">
+              <a class="dashbar-a__nav-item dashbar-a__nav-item-dropdown js-dashbar-a-tabindex" aria-haspopup="true" aria-label="Extras" tabindex="0">More</a>
+              <div class="dashbar-a__block--dashbar dashbar-dots js-dashbar-a-nav-item">
+                <div class="dashbar-a__grid">
+                  <div class="dashbar-a__cell-e--1">
+                    <div>
+                      <span class="dashbar-a__nav-item--sub ill-ease-color"><a href="/japanese-resources/">Japanese Resources</a></span>
+                      <span class="dashbar-a__nav-item--sub ill-ease-color"><a href="/app/">Mobile App</a></span>
+                      <span class="dashbar-a__nav-item--sub ill-ease-color">
+                        <a href="/japanese-grammar/">Grammar Bank</a>
+                      </span>
+                      <span class="dashbar-a__nav-item--sub ill-ease-color">
+                        <a href="/learningcenter/account/kanjibank">Kanji Bank</a>
+                      </span>
+                      <span class="dashbar-a__nav-item--sub ill-ease-color">
+                        <a href="/kanji-dictionary/">Kanji Dictionary</a>
+                      </span>
+                    </div>
+                  </div>
+                  <div class="dashbar-a__cell-narrow">
+                    <div>
+                      <span class="dashbar-a__nav-item--sub ill-ease-color">
+                        <a href="/learningcenter/account/notes">My Notes</a>
+                      </span>
+                      <span class="dashbar-a__nav-item--sub ill-ease-color"><a href="/learningcenter/account/myfeed">My Feed</a></span>
+                      <span class="dashbar-a__nav-item--sub ill-ease-color"><a href="https://www.japanesepod101.com/blog">Blog</a></span>
+                      <span data-lang="japanese" class="dashbar-a__nav-item--sub ill-ease-color">
+                        <a href="https://support.innovativelanguage.com/hc/en-us?language=japanese">Help Center</a>
+                      </span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </span>
+          <div class="dashbar-a__block--nav-item dashbar-a__block--nav-item-search js-dashbar-a-nav" role="application">
+            <a class="dashbar-a__nav-icon js-dashbar-a-search-item" role="search" tabindex="0" aria-haspopup="true" aria-label="Search"><i class="dashbar-a__icon--search"></i></a>
+            <div class="dashbar-a__block--dashbar dashbar-search dashbar-search--disabled-dashboard">
+              <div class="dashbar-a__block--search-string">
+                <i class="dashbar-a__icon--search"></i><input type="text" class="dashbar-a__search-string js-dashbar-search-string" name="search" accesskey="s" placeholder="Search Lessons or Dictionary...." aria-label="Search Lessons or Dictionary" autocomplete="off">
+              </div>
+              <div class="dashbar-a__grid dashbar-a__search-results js-dashbar-search-results" style="display: none;">
+                <div class="dashbar-a__cell-f--1">
+                  <div class="dashbar-a__block--search-result-lesson">
+                    <span class="dashbar-a__label--search-result-title">Lessons</span><a href="/search" class="dashbar-a__label--search-result-extra js-dashbar-advanced-search">Advanced Lesson Search</a>
+                    <ul class="js-dashbar-search-result-lessons">
+                    </ul>
+                  </div>
+                </div>
+                <div class="dashbar-a__cell-f--2">
+                  <div class="dashbar-a__block--search-result-dictionary">
+                    <span class="dashbar-a__label--search-result-title">Dictionary</span><a href="/learningcenter/reference/dictionary" class="dashbar-a__label--search-result-extra js-dashbar-dictionary-results">View All Dictionary Results</a>
+                    <ul class="js-dashbar-search-result-dictionary">
+                    </ul>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="dashbar-a__cell-c">
+          <button class="dashbar-a__block--sign-in-button r101-sign-in--a__button r101-sign-in--a__button--dashboard js-show-sign-in-form" aria-expanded="false" aria-haspopup="true">Sign In</button>
+          <script type="text/template" class="js-login-modal-template" data-captcha="1">
+            <div class="js-sign-in--a__form">
+    <div class="r101-sign-in--a__wrapper r101-sign-in--a__modal">
+        <div class="r101-sign-in--a__modal-dialog">
+            <div class="r101-sign-in--a__modal-top">
+                <div class="r101-sign-in--a__modal-image japanesepod101"></div>
+                <button type="button" aria-label="Close" class="r101-sign-in--a__modal-close js-sign-in--a__modal-close"></button>
+            </div>
+            <div class="r101-sign-in--a__modal-content">
+                <div class="r101-sign-in--a__block js-sign-in--a__block-sign-in show">
+                    <div class="r101-sign-in--a__block-title">Sign In</div>
+                                            <div class="r101-sign-in--a__third-party-box">
+                                                            <a href="/?ill_google_connect=1&amp;signup_source=japanese-phrases_google" class="r101-sign-in--a__google-button" title="Sign In With Google">
+                                    <span class="r101-sign-in--a__google-icon"></span>
+                                    <span class="r101-sign-in--a__google-text">Continue with Google</span>
+                                </a>
+                                                                                </div>
+                                        <div class="r101-sign-in--a__block-error js-sign-in--a__sign-in-error-block hide"></div>
+                    <form class="r101-sign-in--a__form js-sign-in-form"
+                          method="post"
+                          action="/sign-in?amember_redirect_url=%2Fjapanese-phrases%2F"
+                                                    name="signin">
+                        <input type="hidden" name="is_modal" value="1" />
+                        <input type="hidden" name="timezoneName" value="">
+                        <div class="r101-sign-in--a__form-item">
+                            <label for="r101-sign-in-login" class="r101-sign-in--a__form-label">Username or Email Address</label>
+                            <input class="r101-sign-in--a__form-input js-sign-in-email-input" type="text" name="amember_login" value="" autocapitalize="off" id="r101-sign-in-login">
+                            <p class="r101-sign-in--a__form-error-field" role="alert">This field is required</p>
+                        </div>
+                        <div class="r101-sign-in--a__form-item">
+                            <label for="r101-sign-in-password" class="r101-sign-in--a__form-label">Password</label>
+                            <input class="r101-sign-in--a__form-input js-sign-in-password-input" type="password" name="amember_pass" value="" id="r101-sign-in-password">
+                            <button class="r101-sign-in--a__form-show js-toggle-password-visibility" type="button">Show</button>
+                            <p class="r101-sign-in--a__form-error-field" role="alert">This field is required</p>
+                        </div>
+                        <div class="r101-sign-in--a__form-action">
+                            <div class="r101-sign-in--a__form-checkbox-wrap">
+                                <input type="checkbox" name="remember_login" id="r101-sign-in-remember-me" value="Y"><label for="r101-sign-in-remember-me">Remember me</label>
+                            </div>
+                            <div class="r101-sign-in--a__form-btn-wrap">
+                                <div class="js-sign-in-context-recaptcha"></div>
+                                <button class="r101-sign-in--a__form-btn js-ln-sign-in-button" type="submit">Sign In</button>
+                                <button class="r101-sign-in--a__form-link js-show-reset-password-form" type="button">Reset password</button>
+                            </div>
+                            <button class="r101-sign-in--a__form-link js-show-sign-up-form" type="button">Don’t have an account? Sign Up</button>
+                        </div>
+                    </form>
+                </div>
+                <div class="r101-sign-in--a__block r101-sign-in--a__block--reset js-sign-in--a__block-reset hide">
+                    <div class="r101-sign-in--a__block-title">Reset Password</div>
+                    <div class="r101-sign-in--a__block-text">Need to reset your password? No problem! Enter the email address you used to sign up with and we'll email you a password reset link.</div>
+                    <form name="sendpass"
+                          class="r101-sign-in--a__form js-reset-password-form"
+                          method="post"
+                          data-sitekey="6LfWff8UAAAAAKxlErR5YZwotldpj1hwO7KkZ-Lg"                          action="/reset-password?amember_redirect_url=%2Fjapanese-phrases%2F">
+                        <input type="hidden" name="is_modal" value="1" />
+                        <div class="r101-sign-in--a__form-item">
+                            <label for="r101-sign-in-rp-email" class="r101-sign-in--a__form-label">Email Address</label>
+                            <input type="email" class="r101-sign-in--a__form-input js-reset-password-input" name="login" id="r101-sign-in-rp-email" value="" aria-required="true">
+                            <p class="r101-sign-in--a__form-error-field" role="alert">Please enter a valid email address</p>
+                        </div>
+                        <div class="r101-sign-in--a__form-action">
+                            <div class="r101-sign-in--a__form-btn-wrap">
+                                <div class="js-reset-password-context-recaptcha"></div>
+                                <button class="r101-sign-in--a__form-btn js-reset-password-button" type="submit" disabled>Reset My Password</button>
+                                <button class="r101-sign-in--a__form-link js-show-sign-in-form" type="button">Go To Sign In</button>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+                <div class="r101-sign-in--a__block r101-sign-in--a__block--sign-up js-sign-in--a__block-sign-up hide">
+                    <div class="r101-sign-in--a__block-title">Get Started</div>
+                    <div class="r101-sign-in--a__block-text">Sign up using your preferred method to start speaking Japanese in minutes</div>
+                    <div class="r101-sign-in--a__third-party-box">
+                                                    <a href="/?ill_google_connect=1&amp;signup_source=japanese-phrases_google" class="r101-sign-in--a__google-button" title="Sign Up With Google">
+                                <span class="r101-sign-in--a__google-icon"></span>
+                                <span class="r101-sign-in--a__google-text">Continue with Google</span>
+                            </a>
+                                                                        <a href="/?ill_facebook_connect=1&amp;signup_source=japanese-phrases_facebook" class="r101-sign-in--a__facebook-button" title="Sign Up With Facebook">
+                            <span class="r101-sign-in--a__facebook-icon"></span>
+                            <span class="r101-sign-in--a__facebook-text">Continue with Facebook</span>
+                        </a>
+                    </div>
+                    <div class="r101-sign-in--a__block-error js-sign-up-error hide"></div>
+                    <form class="r101-sign-in--a__form js-sign-up-form"
+                          name="signup"
+                          method="post"
+                                                    action="/?validate=true"
+                    >
+                        <input type="hidden" name="clickpath" value="https://www.google.com/|/japanese-phrases/">
+                        <input type="hidden" name="controlgroup" value="">
+                        <input type="hidden" name="price_group" value="">
+                        <input type="hidden" name="paysys_id" value="free">
+                        <input type="hidden" name="do_payment" value="1">
+                        <input type="hidden" name="signup_source" value="japanese-phrases">
+                        <input type="hidden" name="login" value="_" maxlength="15">
+                        <input type="hidden" name="signup_level_selected" value="">
+                        <input type="hidden" name="signup_form" value="signup_home" />
+                        <input type="hidden" name="amember_redirect_url" value="/japanese-phrases/" />
+                        <div class="r101-sign-in--a__form-item js-sign-up-email-item">
+                            <label for="sign-up-email" class="r101-sign-in--a__form-label">Or continue with email</label>
+                            <input type="email"
+                                   name="email"
+                                   id="sign-up-email"
+                                   placeholder="Enter your email address"
+                                   title="Enter Your Email Address"
+                                   class="r101-sign-in--a__form-input js-sign-up-email"
+                                   value=""
+                            >
+                            <p class="r101-sign-in--a__form-error-field js-sign-up-email-error"></p>
+                        </div>
+                        <div class="r101-sign-in--a__form-action">
+                            <div class="r101-sign-in--a__form-btn-wrap">
+                                <div class="js-sign-up-context-recaptcha"></div>
+                                <button type="submit" class="r101-sign-in--a__form-btn js-sign-up-submit">Continue with Email</button>
+                            </div>
+                            <div class="r101-sign-in--a__form-terms">
+                                By continuing, you agree to our
+                                <a href="#terms_of_use" class="r101-sign-in--a__form-link-terms js-terms-link">Terms of Use</a>,
+                                <a href="#privacy_policy" class="r101-sign-in--a__form-link-terms js-privacy-link">Privacy Policy</a>,
+                                and to receive our email communications, which you may opt out at any time.
+                            </div>
+                            <button class="r101-sign-in--a__form-link js-show-sign-in-form" type="button">Already have an account? Sign In</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+</script>
+        </div>
+        <div class="dashbar-a__cell-d">
+          <div class="dashbar-a__block--free-trial">
+            <a href="/" class="dashbar-a__free-trial" aria-haspopup="false" tabindex="0">Start Your<br />Free Trial<i class="dashbar-a__arrow--sign-up"></i></a>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+
+  <div id="lockout_modal_container" data-language="Japanese" data-user="{&quot;guessedPremiumLevel&quot;:false,&quot;guessedBasicLevel&quot;:false,&quot;subscriptionBelowPremium&quot;:false}" data-signup-email-form-info="{&quot;signup_path&quot;:&quot;\/?validate=true&quot;,&quot;facebookLink&quot;:&quot;\/?ill_facebook_connect=1&quot;,&quot;googleLink&quot;:&quot;\/?ill_google_connect=1&quot;,&quot;clickpath&quot;:&quot;https:\/\/www.google.com\/|\/japanese-phrases\/&quot;,&quot;price_group&quot;:null,&quot;signup_source&quot;:&quot;lockout_modal&quot;,&quot;signup_level_selected&quot;:null,&quot;sitekey&quot;:&quot;&quot;,&quot;redirectUrl&quot;:&quot;?amember_redirect_url=%2Fjapanese-phrases%2F&quot;}"></div>
+  <link rel="stylesheet" href="/static/compiled/lockout_modal/esbuild/client.LNQFGIQN.css" media="print" onload="this.media='all'">
+  <script src="/static/compiled/lockout_modal/esbuild/client.QVUHJPFB.js" defer></script>
+  <div class="dashbar-r__header">
+    <button class="dashbar-r__header--menu-button js-dashbar_r-open-menu" aria-label="Menu" aria-expanded="false" aria-haspopup="true" tabindex="0"></button>
+    <div class="dashbar-r__header-logo">
+      <a class="dashbar-r__header-logo--a" href="/" aria-label="Home">
+        <img src="/static/images/japanesepod101/header/japanesepod101-logo.svg" role="img" class="dashbar-r__header-logo--img" alt="Home">
+      </a>
+    </div>
+  </div>
+
+  <div class="dashbar-r js-dashbar_r-wrap" lang="en">
+    <div class="dashbar-r__overlay js-dashbar_r-overlay" aria-label="Close Menu" aria-expanded="true">
+      <button class="dashbar-r__overlay--menu-button" aria-label="Close Menu"></button>
+    </div>
+    <div class="dashbar-r__menu js-dashbar_r-menu" role="navigation">
+      <div class="dashbar-r__profile">
+        <div class="dashbar-r__profile-color japanese"></div>
+        <button class="dashbard-r__profile--a dashbard-r__profile--a__left js-show-sign-in-form" aria-expanded="false" aria-haspopup="true">
+          <img src="/static/images/my_activity/icn_activity_user_placeholder.png" alt="" class="dashbard-r__profile-image">
+          <span class="dashboard-r__profile-info">
+            <span class="dashboard-r__profile-name">Welcome!</span>
+            <span class="dashboard-r__profile-link">Sign In</span>
+          </span>
+        </button>
+      </div>
+      <div class="dashbar-r__fla">
+        <a href="/" title="Start Your Free Trial" class="dashbar-r__fla--a" aria-label="Start Your Free Trial">
+          <img role="presentation" alt="Start Your Free Trial" src="/static/compass/images/ui/dashbar-r/icn_freeTrial.svg" class="dashbar-r__fla-image">
+          <span class="dashbar-r__fla-text">Start Your Free Trial</span>
+          <span class="dashbar-r__fla-arrow">&nbsp;</span>
+        </a>
+      </div>
+      <div class="dashbar-r__menu-slider js-dashbar_r-menu-slider">
+        <div class="dashbar-r__level-a js-dashbar_r-level-a">
+          <button class="dashbar-r__item--branch js-dahbar_r-branch" data-branch="lessons" aria-label="Lessons Submenu">Lessons</button>
+          <button class="dashbar-r__item--branch js-dahbar_r-branch" data-branch="vocabulary" aria-label="Vocabulary Submenu">Vocabulary</button>
+          <button class="dashbar-r__item--branch js-dahbar_r-branch" data-branch="myteacher" aria-label="My Teacher Submenu">My Teacher</button>
+          <button class="dashbar-r__item--branch js-dahbar_r-branch" data-branch="more" aria-label="Extras Submenu">More</button>
+          <button class="dashbar-r__item--leaf-shaded js-show-sign-in-form" aria-expanded="false" aria-haspopup="true">Sign in</button>
+        </div>
+        <div class="dashbar-r__level-b">
+          <div class="dashbar-r__branch js-dashbar_r-branch-lessons">
+            <button class="dashbar-r__item--back js-dashbar_r-close-branch" aria-label="Leave Lessons Submenu">Lessons</button>
+            <a href="/lesson-library" class=" dashbar-r__item--leaf-b" aria-label="Lesson Library">Lesson Library</a>
+            <a href="/newest-lessons" class="dashbar-r__item--leaf-b" aria-label="Newest Lessons">Newest Lessons</a>
+            <a href="/favorite-lessons" class="dashbar-r__item--leaf-b" aria-label="Favorite Lessons">Favorite Lessons</a>
+          </div>
+          <div class="dashbar-r__branch js-dashbar_r-branch-vocabulary">
+            <button class="dashbar-r__item--back js-dashbar_r-close-branch" aria-label="Leave Vocabulary Submenu">Vocabulary</button>
+            <a href="/learningcenter/flashcards/flashcards" class="dashbar-r__item--leaf-b" aria-label="Flashcards">Flashcards</a>
+            <a href="/japanese-vocabulary-lists/" class="dashbar-r__item--leaf-b" aria-label="Vocabulary Lists">Vocabulary Lists</a>
+            <a href="/learningcenter/account/wordbank" class="dashbar-r__item--leaf-b" aria-label="wordbank">Word Bank</a>
+            <a href="/japanese-phrases/" class="dashbar-r__item--leaf-b" aria-label="Word of the Day">Word of the Day</a>
+            <a href="/japanese-dictionary/" class="dashbar-r__item--leaf-b" aria-label="Japanese Dictionary">Japanese Dictionary</a>
+            <a href="/japanese-word-lists/?coreX=100" class="dashbar-r__item--leaf-b" aria-label="100 Most Common Words">100 Most Common Words</a>
+            <a href="/japanese-word-lists/?coreX=2000" class="dashbar-r__item--leaf-b" aria-label="2000 Most Common Words">2000 Most Common Words</a>
+            <a href="/key-japanese-phrases/" class="dashbar-r__item--leaf-b" aria-label="Japanese Key Phrases">Japanese Key Phrases</a>
+          </div>
+          <div class="dashbar-r__branch js-dashbar_r-branch-myteacher">
+            <button class="dashbar-r__item--back js-dashbar_r-close-branch" aria-label="Leave My Teacher Submenu">My Teacher</button>
+            <a href="/myteacher" class="dashbar-r__item--leaf-b" aria-label="My Teacher Messenger">My Teacher Messenger</a>
+            <a href="/live-private-classes" class="dashbar-r__item--leaf-b" aria-label="Live Private Classes"><span>Live Private Classes</span>
+              <a href="/live-group-classes" class="dashbar-r__item--leaf-b" aria-label="Live Group Classes"><span>Live Group Classes</span>
+                <a href="/myteacher" class="dashbar-r__item--leaf-b" aria-label="My Assessment Test">My Assessment Test</a>
+                <a href="/member/statistics.php" class="dashbar-r__item--leaf-b" aria-label="My Report">My Report</a>
+          </div>
+          <div class="dashbar-r__branch js-dashbar_r-branch-more">
+            <button class="dashbar-r__item--back js-dashbar_r-close-branch" aria-label="Leave Extras Submenu">More</button>
+            <a href="/japanese-resources/" class="dashbar-r__item--leaf-b" aria-label="Japanese Resources">Japanese Resources</a>
+            <a href="/app/" class="dashbar-r__item--leaf-b" aria-label="Mobile Apps">Mobile App</a>
+            <a href="/japanese-grammar/" class="dashbar-r__item--leaf-b" aria-label="Grammar Bank">Grammar Bank</a>
+            <a href="/learningcenter/account/kanjibank" class="dashbar-r__item--leaf-b" aria-label="Kanji Bank">Kanji Bank</a>
+            <a href="/kanji-dictionary/" class="dashbar-r__item--leaf-b" aria-label="Kanji Dictionary">Kanji Dictionary</a>
+            <a href="/learningcenter/account/notes" class="dashbar-r__item--leaf-b" aria-label="My Notes">My Notes</a>
+            <a href="/learningcenter/account/myfeed" class="dashbar-r__item--leaf-b" aria-label="My Feed">My Feed</a>
+            <a href="https://www.japanesepod101.com/blog" class="dashbar-r__item--leaf-b" aria-label="Blog">Blog</a>
+            <a href="https://support.innovativelanguage.com/hc/en-us?language=japanese" class="dashbar-r__item--leaf-b" aria-label="Help Center">Help Center</a>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div class="word_page midday js-theme-word-day">
+    <div class="word_page__banner">
+      <div class="r101-wrapper--e7eaf2">
+        <div class="r101-banner--a r101-banner--a_desktop">
+          <a href="https://www.japanesepod101.com/challenge/?src=banner" target="_blank" class="r101-banner--a__link js-banner-click-handler">
+            <img src="https://d2i6fl6f7gytpd.cloudfront.net/banner_2461.gif" alt="Click Here to Get 45% OFF" class="r101-banner--a__image">
+          </a>
+        </div>
+      </div>
+      <div class="r101-wrapper--e7eaf2">
+        <div class="r101-banner--a r101-banner--a_mobile">
+          <a href="https://www.japanesepod101.com/challenge/?src=mbanner" target="_blank" class="r101-banner--a__link js-banner-click-handler">
+            <img src="https://d2i6fl6f7gytpd.cloudfront.net/banner_2463.gif" alt="Click Here to Get 45% OFF" class="r101-banner--a__image">
+          </a>
+        </div>
+      </div>
+    </div>
+    <div class="word_page__container">
+      <div class="word_news">
+        <div class="word_news__fla">
+          <div class="fla--f js-fla">
+            <div class="fla__box">
+              <div class="fla__video-box">
+                <div class="fla__title"><strong>Learn Japanese</strong> in<br class="fla__br-slim">
+                  the fastest,<br class="fla__br-wide"> easiest and <br class="fla__br-slim">most fun way</div>
+                <video controls class="fla__video" poster="https://cdn.innovativelanguage.com/pages/wotd/video_posters/Japanese.png" preload="none" crossorigin="anonymous">
+                  <source src="https://cdn.innovativelanguage.com/sns/em/content/lp/wotd/Japanese.mp4">
+                  <track kind='subtitles' srclang='en' label='en' src='https://cdn.innovativelanguage.com/japanesepod101/common_video_subtitles/japanese_wotd.vtt'> </video>
+              </div>
+              <div class="fla__form-box">
+                <form name="signup" method="post" action="/?validate=true">
+                  <input type="hidden" name="clickpath" value="https://www.google.com/|/japanese-phrases/">
+                  <input type="hidden" name="price_group" value="">
+                  <input type="hidden" name="product_id" value="1">
+                  <input type="hidden" name="pasys_id" value="free">
+                  <input type="hidden" name="controlgroup" value="">
+                  <input type="hidden" name="do_payment" value="1">
+                  <input type="hidden" name="signup_source" value="lp_wotd">
+                  <input type="hidden" name="signup_form" value="fla_f" />
+                  <div class="fla__title"><strong>Learn Japanese</strong> in<br class="fla__br-slim">
+                    the fastest,<br class="fla__br-wide"> easiest and <br class="fla__br-slim">most fun way</div>
+                  <div class="fla__form-box2">
+                    <div class="fla__text">Create Your Free Account</div>
+                    <div class="fla__level">
+                      <select name="signup_level_selected" title="Select Your Level" required>
+                        <option value="" selected disabled>Select Your Level</option>
+                        <option value="Absolute Beginner">Absolute Beginner</option>
+                        <option value="Beginner">Beginner</option>
+                        <option value="Intermediate">Intermediate</option>
+                        <option value="Upper Intermediate">Upper Intermediate</option>
+                        <option value="Advanced">Advanced</option>
+                      </select>
+                    </div>
+                    <input type="email" required class="fla__email" placeholder="Email Address" name="email" value="">
+                    <div class="fla__form-buttons-a">
+                      <button type="submit" class="fla__submit">Join Now</button>
+                    </div>
+                    <div class="fla__form-fb fla__table">
+                      <div class="fla__cell">
+                        <div class="fla__form-fb-text">Or sign up using Facebook</div>
+                      </div>
+                      <div class="fla__cell">
+                        <div class="fla__form-fb-button">
+                          <a href="/?ill_facebook_connect=1&amp;signup_source=lp_wotd" class="fla__form-fb-button-link">
+                            <img src="/static/compass/images/responsive101/fla--f/btn_facebook.svg" class="fla__form-fb-button-image" alt="Connect with Facebook" width="167" height="25">
+                          </a>
+                        </div>
+                      </div>
+                    </div>
+                    <div class="fla__consent">By clicking Join Now, you agree to our
+                      <a rel="nofollow" href="#terms_of_use" class="js-terms-link">Terms of Use</a>,
+                      <a rel="nofollow" href="#privacy_policy" class="js-privacy-link">Privacy Policy</a>,
+                      and to receive our email communications, which you may opt out at any time.</div>
+                  </div>
+                </form>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="word_news__section">
+          <h1 class="word_news__h1">Japanese Word of the Day</h1>
+          <div class="word_news__text-a">Want to Start Learning Japanese in Just a Minute a Day? Get the
+            Japanese Word of the Day — Free Daily Vocab Lessons</div>
+          <div class="word_news__action">
+            <button class="word_news__btn js-btn-word-day-email">Get Word of the Day by Email</button>
+            <div class="word_news__notice">
+              You Have Added Word of the Day to Your Account
+            </div>
+          </div>
+          <div class="word_news__text-b">You’ve always wanted to learn Japanese, right? The easiest
+            way to start&nbsp;—&nbsp;this takes just a minute a day&nbsp;—&nbsp;is with JapanesePod101’s
+            Word of the Day. Perfect for complete beginners and anyone that wants to learn more
+            Japanese words. How does it work?</div>
+          <div class="word_news__list">
+            <div class="word_news__col">
+              <ul class="r101-list--h">
+                <li class="r101-list__item"><b>Just Sign Up &amp; Get Your FREE Daily Japanese Lessons</b></li>
+                <li class="r101-list__item"><b>Learn in Just a Minute</b> — Just check and review the
+                  email</li>
+                <li class="r101-list__item r101-list__item--last"><b>Learn Anywhere, Anytime</b> — Wherever
+                  you have email access</li>
+              </ul>
+            </div>
+            <div class="word_news__col">
+              <ul class="r101-list--h">
+                <li class="r101-list__item"><b>Master the Word</b> with the meaning, native audio
+                  pronunciation and picture</li>
+                <li class="r101-list__item"><b>Access Extra Sample Sentences</b> — understand how it’s
+                  used</li>
+                <li class="r101-list__item r101-list__item--last"><b>And Stay on Track</b> — Lessons are
+                  sent to you non-stop, every day</li>
+              </ul>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+
+    <div id="word_page" data-user="{&quot;hasPremiumAccess&quot;:false,&quot;hasPremiumPlusAccess&quot;:false,&quot;isLogined&quot;:false,&quot;isPrivateTheme&quot;:false,&quot;guessedPremiumLevel&quot;:false,&quot;secureCode&quot;:&quot;&quot;,&quot;wotdSubscriber&quot;:false}" data-language="Japanese" data-wordday="{&quot;date&quot;:&quot;2025-01-19&quot;,&quot;dictionary_id&quot;:&quot;136260&quot;,&quot;flashcard_id&quot;:&quot;224001&quot;,&quot;text&quot;:&quot;\u8840\u6db2&quot;,&quot;audio_target&quot;:&quot;https:\/\/d1pra95f92lrn3.cloudfront.net\/audio\/824406.mp3&quot;,&quot;audio_english&quot;:&quot;https:\/\/d1pra95f92lrn3.cloudfront.net\/audio\/3949.mp3&quot;,&quot;image_url&quot;:&quot;https:\/\/d1pra95f92lrn3.cloudfront.net\/media\/thumb\/9413_fit288.jpg&quot;,&quot;english&quot;:&quot;blood&quot;,&quot;meaning&quot;:&quot;the red liquid that your heart pumps around your body&quot;,&quot;class&quot;:&quot;noun&quot;,&quot;distracting_words&quot;:[&quot;body&quot;,&quot;elbow&quot;,&quot;neck&quot;],&quot;is_add_wordbank&quot;:false,&quot;kana&quot;:&quot;\u3051\u3064\u3048\u304d&quot;,&quot;romanization&quot;:&quot;ketsueki&quot;,&quot;samples&quot;:[{&quot;audio_target&quot;:&quot;https:\/\/d1pra95f92lrn3.cloudfront.net\/audio\/228463.mp3&quot;,&quot;audio_english&quot;:&quot;https:\/\/d1pra95f92lrn3.cloudfront.net\/audio\/90341.mp3&quot;,&quot;text&quot;:&quot;\u8840\u6db2\u691c\u67fb\u7528\u306e\u5c0f\u30d3\u30f3&quot;,&quot;english&quot;:&quot;vial of blood for a blood test&quot;,&quot;kana&quot;:&quot;\u3051\u3064\u3048\u304d\u3051\u3093\u3055\u3088\u3046\u306e\u3053\u30d3\u30f3&quot;,&quot;romanization&quot;:&quot;ketsueki kensa-y\u014d no kobin&quot;}]}" data-hintmode="" data-memberid="" data-timezonename="Asia/Tokyo">
+      <div class="_wrapper_16m36_12">
+        <div class="_container_16m36_22">
+          <div class="_top_16m36_29">
+            <div class="_top__line_16m36_80">
+              <div>
+                <div class="_top__title_16m36_38">Japanese
+                  <!-- --> Word of the Day</div>
+                <div class="_top__text_16m36_52">Grow your vocabulary 365 days a year</div>
+              </div>
+              <div class="_top__line_right_16m36_86"><button aria-haspopup="true" class="_btn_change_16m36_226" type="button">Change Your Preferences</button></div>
+            </div>
+            <div class="_top__actions_16m36_68">
+              <div class="_top__left_16m36_92"><button class="_top__btn_16m36_156 " type="button">Get Word of the Day by Email</button></div>
+              <div class="_top__right_16m36_100">
+                <div class="_top__switcher_16m36_151">
+                  <div class="_main_1dvly_1"></div>
+                </div>
+                <div class="_top__date_16m36_124">
+                  <div class="_datepicker_1q9ca_1"><button class="_date_1q9ca_1" type="button">Jan 19, 2025</button><input data-current="2025-01-19" data-max="2025-01-18" type="hidden" value="2025-01-19">
+                    <div class="_btn_wrapper_1q9ca_58"><button aria-label="Previous day" class="_btn_1q9ca_58 _btn__prev_1q9ca_90" type="button"></button><button aria-label="Next day" class="_btn_1q9ca_58 _btn__next_1q9ca_95" disabled="" type="button"></button></div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+          <div aria-live="polite">
+            <div class="_wrapper_12icq_2">
+              <div class="_quiz_12icq_15">
+                <div class="_quiz__top_12icq_21">
+                  <div class="_quiz__left_12icq_128">
+                    <div class="_quiz__audio_12icq_27">
+                      <div class="_audio_12icq_10" style="opacity:100%"><button aria-label="Play audio" class="_blue_tvqw6_51 _main_tvqw6_7" title="Play audio" type="button"></button></div>
+                    </div>
+                    <div class="_quiz__content_12icq_133">
+                      <div class="_quiz__head_12icq_136 _quiz__head_main_12icq_139">
+                        <div class="_japanesepod101_yuels_61 _word_yuels_107" dir="ltr" lang="ja">血液</div>
+                      </div>
+                      <div class="_quiz__head_12icq_136 _quiz__head_romainzation_12icq_160">
+                        <div class="" dir="ltr" lang="en">ketsueki</div>
+                      </div>
+                    </div>
+                  </div><button class="_quiz__right_12icq_68 _quiz__right_btn_12icq_78 _quiz__right_relative_12icq_99" type="button">
+                    <div class="_wrapper_1qjsp_9 _quiz__image_wrapper_12icq_207">
+                      <div class="_load_1qjsp_1">
+                        <div class="_main_static_1loj4_23 _main_1loj4_9 _loading_wrapper_12icq_1040" style="background:transparent">
+                          <div class="_spinner_1loj4_30 _spinner_small_1loj4_47"></div><span class="_label_1loj4_53" style="color:#383838">Loading</span>
+                        </div>
+                      </div><img alt="Word Image" class="_quiz__image_12icq_202 _hide_1qjsp_13" src="https://d1pra95f92lrn3.cloudfront.net/media/thumb/9413_fit288.jpg">
+                    </div><span class="_quiz__hint_12icq_35">Show Hint</span>
+                  </button>
+                </div>
+                <div class="_quiz__list_12icq_211">
+                  <div class="_quiz__what_12icq_214">What Does This Word Mean?</div>
+                  <div class="_quiz__description_12icq_221">Choose your answer below, then click the button to see if you're right!</div>0<div class="_quiz__answer_12icq_324"><button class="_btn_answer_12icq_448" disabled="" type="button">Reveal The Answer</button></div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+
+  </div>
+  <div class="js-flashcards-config" data-user-data="undefined" data-sync-url="" data-default-deck-name=""></div>
