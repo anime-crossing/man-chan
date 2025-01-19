@@ -58,7 +58,7 @@ For Twitter, a camera reaction emoji will appear where by clicking it, it will c
 
 For Instagram, this is automatic.
 
-While TikTok is implemented with a similar feature, since it is banned in the US and the third-party service used is shut down, this conversion is also disabled.
+For TikTok, this is automatic. It uses QuickVids API: https://github.com/quickvids
 
 ### **Fun**
 Random commands.
