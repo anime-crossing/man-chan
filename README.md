@@ -51,6 +51,15 @@ Examples:
 !album whole lotta red
 ```
 
+### Twitter and Instagram Video Embed
+Can automatically detect if a message is a link for a Twitter post or Instagram post.
+
+For Twitter, a camera reaction emoji will appear where by clicking it, it will convert the message to an embed. This is because not every post needs to automatically embedded.
+
+For Instagram, this is automatic.
+
+While TikTok is implemented with a similar feature, since it is banned in the US and the third-party service used is shut down, this conversion is also disabled.
+
 ### **Fun**
 Random commands.
 

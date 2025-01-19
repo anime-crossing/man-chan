@@ -26,8 +26,10 @@ class MediaLinkFormatter:
         if twitter_match := re.search(MediaLinkFormatter.re_twitter, text):
             return LinkType.TWITTER, twitter_match.group(1)
 
-        if tiktok_match := re.search(MediaLinkFormatter.re_tiktok, text):
-            return LinkType.TIKTOK, tiktok_match.group(0)
+        # Tik Tok is banned in US and the third-party tool is shut down.
+        #
+        # if tiktok_match := re.search(MediaLinkFormatter.re_tiktok, text):
+        #     return LinkType.TIKTOK, tiktok_match.group(0)
 
         if intagram_match := re.search(MediaLinkFormatter.re_instagram, text):
             return LinkType.INSTAGRAM, intagram_match.group(0)
@@ -54,7 +56,7 @@ class MediaLinkFormatter:
     @staticmethod
     def embed_instagram(instagram_link: str) -> str:
         return re.sub(
-            r"www\.instagram",
-            "www.kkinstagram",
+            r"https://www\.instagram",
+            "https://xnstagram",
             instagram_link,
         )
