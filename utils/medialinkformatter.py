@@ -55,6 +55,6 @@ class MediaLinkFormatter:
     def embed_instagram(instagram_link: str) -> str:
         return re.sub(
             r"https://www\.instagram",
-            "https://xnstagram",
+            "https://www.ddinstagram",
             instagram_link,
         )
