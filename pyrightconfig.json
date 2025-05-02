@@ -31,7 +31,7 @@
     "reportOptionalIterable": "warning",
     "reportOptionalContextManager": "warning",
 
-    "pythonVersion": "3.10",
+    "pythonVersion": "3.11",
     "pythonPlatform": "Linux",
 
 
