@@ -75,6 +75,7 @@ class Music(CommandBase):
 
     @command(aliases=["jvc"])
     async def join_music(self, ctx: Context):
+        await ctx.message.delete(delay=5)
         if ctx.guild is None:
             await ctx.send("This command can only be used in a server.", delete_after=5)
             return
@@ -90,12 +91,13 @@ class Music(CommandBase):
             player.channel_id = int(radio.channel_id)
             player.player_ui = player_ui
             embed = self.default_embed()
-            embed.description = ""
+            embed.description = "Please run !lvc to stop radio"
             await player_ui.edit(embed=embed)
         await player.set_voice_client(ctx)
 
     @command(aliases=["lvc"])
     async def leave_music(self, ctx: Context):
+        await ctx.message.delete(delay=5)
         if ctx.guild is None:
             await ctx.send("This command can only be used in a server.", delete_after=5)
             return
@@ -117,6 +119,7 @@ class Music(CommandBase):
 
     @command()
     async def play(self, ctx: Context, *args: str):
+        await ctx.message.delete(delay=5)
         if ctx.guild is None:
             await ctx.send("This command can only be used in a server.", delete_after=5)
             return
@@ -150,6 +153,7 @@ class Music(CommandBase):
 
     @command()
     async def add(self, ctx: Context, *args: str):
+        await ctx.message.delete(delay=5)
         if ctx.guild is None:
             await ctx.send("This command can only be used in a server.", delete_after=5)
             return
@@ -175,6 +179,7 @@ class Music(CommandBase):
 
     @command()
     async def history(self, ctx: Context):
+        await ctx.message.delete(delay=5)
         if ctx.guild is None:
             await ctx.send("This command can only be used in a server.", delete_after=5)
             return
@@ -195,6 +200,7 @@ class Music(CommandBase):
 
     @command()
     async def clear(self, ctx: Context):
+        await ctx.message.delete(delay=5)
         if ctx.guild is None:
             await ctx.send("This command can only be used in a server.", delete_after=5)
             return
@@ -216,6 +222,7 @@ class Music(CommandBase):
 
     @command()
     async def skip(self, ctx: Context):
+        await ctx.message.delete(delay=5)
         if ctx.guild is None:
             await ctx.send("This command can only be used in a server.", delete_after=5)
             return
@@ -231,6 +238,7 @@ class Music(CommandBase):
 
     @command()
     async def pause(self, ctx: Context):
+        await ctx.message.delete(delay=5)
         if ctx.guild is None:
             await ctx.send("This command can only be used in a server.", delete_after=5)
             return
@@ -254,6 +262,7 @@ class Music(CommandBase):
 
     @command(aliases=["cpl"])
     async def create_playlist(self, ctx: Context, *args: str):
+        await ctx.message.delete(delay=5)
         PlaylistDB.create(ctx.author.id, " ".join(args).strip())
         await ctx.send(
             f"Playlist: {' '.join(args).strip()} now created", delete_after=10
@@ -261,6 +270,7 @@ class Music(CommandBase):
 
     @command(aliases=["lpl"])
     async def list_playlist(self, ctx: Context, *args: str):
+        await ctx.message.delete(delay=5)
         playlists = PlaylistDB.get_all()
         embed = disnake.Embed()
         embed.title = "Playlists:"
@@ -272,6 +282,7 @@ class Music(CommandBase):
 
     @command(aliases=["dpl"])
     async def delete_playlist(self, ctx: Context, *args: str):
+        await ctx.message.delete(delay=5)
         id = int(" ".join(args).strip())
         playlist = PlaylistDB.get(id, ctx.author.id)
         if playlist is None:
@@ -284,6 +295,7 @@ class Music(CommandBase):
 
     @command(aliases=["apl"])
     async def add_playlist(self, ctx: Context, *args: str):
+        await ctx.message.delete(delay=5)
         if ctx.guild is None:
             await ctx.send("This command can only be used in a server.", delete_after=5)
             return
@@ -313,6 +325,7 @@ class Music(CommandBase):
 
     @command(aliases=["aqpl"])
     async def add_queue_playlist(self, ctx: Context, *args: str):
+        await ctx.message.delete(delay=5)
         if ctx.guild is None:
             await ctx.send("This command can only be used in a server.", delete_after=5)
             return
@@ -340,6 +353,7 @@ class Music(CommandBase):
 
     @command(aliases=["ahqpl"])
     async def add_history_queue_playlist(self, ctx: Context, *args: str):
+        await ctx.message.delete(delay=5)
         if ctx.guild is None:
             await ctx.send("This command can only be used in a server.", delete_after=5)
             return
@@ -369,6 +383,7 @@ class Music(CommandBase):
 
     @command(aliases=["pls"])
     async def list_playlist_songs(self, ctx: Context, *args: str):
+        await ctx.message.delete(delay=5)
         id = int(" ".join(args).strip())
         playlist = PlaylistSongDB.get_songs_by_playlist(id)
         if playlist is None:
@@ -395,6 +410,7 @@ class Music(CommandBase):
 
     @command(aliases=["rls"])
     async def remove_playlist_song(self, ctx: Context, *args: str):
+        await ctx.message.delete(delay=5)
         playlist_id = int(args[0])
         song_id = int(args[1])
         playlist = PlaylistSongDB.get_songs_by_playlist(playlist_id)
@@ -415,6 +431,7 @@ class Music(CommandBase):
 
     @command(aliases=["ldpl"])
     async def load_playlist(self, ctx: Context, *args: str):
+        await ctx.message.delete(delay=5)
         if ctx.guild is None:
             await ctx.send("This command can only be used in a server.", delete_after=5)
             return

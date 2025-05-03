@@ -112,5 +112,6 @@ class Player:
     def edit_embed(self, embed: Embed) -> Embed:
         if self.current_song is not None:
             embed.set_field_at(0, "Now Playing:", self.current_song.title, inline=False)
+            embed.set_image(self.current_song.thumbnail_url)
             embed.set_field_at(1, "Queue:", self.queue_to_string(), inline=False)
         return embed
