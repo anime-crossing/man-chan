@@ -33,6 +33,16 @@ class Base(object):
         return base
 
     @classmethod
+    def _delete(cls, **filter: Any):
+        session = cls._session
+
+        try:
+            session.query(cls).filter_by(**filter).delete()
+            session.commit()
+        except:
+            session.rollback()
+
+    @classmethod
     def _query(cls, entities: List[Any] = []) -> "Query[Any]":
         """
         Creates a query object from session.
