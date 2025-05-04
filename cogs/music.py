@@ -448,14 +448,7 @@ class Music(CommandBase):
         for entry in playlist:
             songdb = SongDB.get_by_id(entry.id)
             if songdb is not None:
-                song = Song(
-                    title=songdb.title,
-                    url=songdb.url,
-                    thumbnail_url=songdb.thumbnail_url,
-                    webpage_url=songdb.webpage_url,
-                )
-            if song is not None:
-                player.queue.append(song)
+                player.add_song(songdb.webpage_url)
         if player.player_ui is None:
             return
         await player.player_ui.edit(
