@@ -1,6 +1,7 @@
 from __future__ import annotations
 
-from typing import TYPE_CHECKING, Union
+import logging
+from typing import TYPE_CHECKING
 
 import disnake
 from disnake.ext.commands import command
@@ -502,12 +503,12 @@ class Music(CommandBase):
         return embed
 
     @classmethod
-    def is_enabled(cls, configs: Config = {}) -> bool:
-        return bool(configs.get(MUSIC_ENABLE) and bool(configs.get(DATABASE_STATUS))
+    def is_enabled(cls, configs: Config = {}) :
+        return (configs.get(MUSIC_ENABLE) and configs.get(DATABASE_STATUS))
 
 
 def setup(bot: ManChanBot):
     if Music.is_enabled(bot.configs):
         bot.add_cog(Music(bot))  # type: ignore
     else:
-        logging.warn("SKIPPING: cogs.Music")
+        logging.warning("SKIPPING: cogs.Music")

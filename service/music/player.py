@@ -1,4 +1,3 @@
-from logging import log
 import logging
 from typing import Optional
 
@@ -87,7 +86,7 @@ class Player:
 
             def after(error):  # type: ignore
                 if error:
-                    log(logging.ERROR, f"Playback error: {error}")
+                    logging.warning(f"Playback error: {error}")
                 else:
                     self.voice_client.loop.create_task(self.play_music())  # type: ignore
 
