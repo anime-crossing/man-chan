@@ -30,10 +30,10 @@ def upgrade():
     sa.Column('playlist_id', sa.Integer(), nullable=False),
     sa.Column('song_id', sa.Integer(), nullable=False),
     sa.PrimaryKeyConstraint('id'),
-    sa.UniqueConstraint('song_id')
     )
     op.create_table('radio',
     sa.Column('id', sa.Integer(), autoincrement=True, nullable=False),
+    sa.Column('embed_id', sa.Integer(), nullable=False),
     sa.Column('guild_id', sa.Integer(), nullable=False),
     sa.Column('channel_id', sa.String(), nullable=False),
     sa.PrimaryKeyConstraint('id'),

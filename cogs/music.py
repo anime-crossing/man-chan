@@ -1,7 +1,6 @@
 from __future__ import annotations
 
-import logging
-from typing import TYPE_CHECKING, Any, Dict
+from typing import TYPE_CHECKING, Union
 
 import disnake
 from disnake.ext.commands import command
@@ -13,7 +12,8 @@ from db.playlistSong import PlaylistSongDB
 from db.song import SongDB
 from models import Song
 from service.music.player import Player
-from utils.distyping import Context
+from utils.config_mapper import DATABASE_STATUS, MUSIC_ENABLE
+from utils.distyping import Config, Context
 
 from .commandbase import CommandBase
 
@@ -73,7 +73,7 @@ class Music(CommandBase):
         )
         return
 
-    @command(aliases=["jvc"])
+    @command(aliases=["jvc", "music"])
     async def join_music(self, ctx: Context):
         await ctx.message.delete(delay=5)
         if ctx.guild is None:
@@ -283,7 +283,12 @@ class Music(CommandBase):
     @command(aliases=["dpl"])
     async def delete_playlist(self, ctx: Context, *args: str):
         await ctx.message.delete(delay=5)
-        id = int(" ".join(args).strip())
+        try:
+            id = int(" ".join(args).strip())
+        except ValueError:
+            await ctx.send("Please provide a valid playlist ID (number)", delete_after=10)
+            return
+    
         playlist = PlaylistDB.get(id, ctx.author.id)
         if playlist is None:
             await ctx.send(
@@ -299,7 +304,12 @@ class Music(CommandBase):
         if ctx.guild is None:
             await ctx.send("This command can only be used in a server.", delete_after=5)
             return
-        id = int(" ".join(args).strip())
+        try:
+            id = int(" ".join(args).strip())
+        except ValueError:
+            await ctx.send("Please provide a valid playlist ID (number)", delete_after=10)
+            return
+        
         playlist = PlaylistDB.get_by_id(id)
         if playlist is None:
             await ctx.send(
@@ -329,7 +339,12 @@ class Music(CommandBase):
         if ctx.guild is None:
             await ctx.send("This command can only be used in a server.", delete_after=5)
             return
-        id = int(" ".join(args).strip())
+        try:
+            id = int(" ".join(args).strip())
+        except ValueError:
+            await ctx.send("Please provide a valid playlist ID (number)", delete_after=10)
+            return
+        
         playlist = PlaylistDB.get_by_id(id)
         if playlist is None:
             await ctx.send(
@@ -357,7 +372,12 @@ class Music(CommandBase):
         if ctx.guild is None:
             await ctx.send("This command can only be used in a server.", delete_after=5)
             return
-        id = int(" ".join(args).strip())
+        try:
+            id = int(" ".join(args).strip())
+        except ValueError:
+            await ctx.send("Please provide a valid playlist ID (number)", delete_after=10)
+            return
+        
         playlist = PlaylistDB.get_by_id(id)
         if playlist is None:
             await ctx.send(
@@ -384,7 +404,12 @@ class Music(CommandBase):
     @command(aliases=["pls"])
     async def list_playlist_songs(self, ctx: Context, *args: str):
         await ctx.message.delete(delay=5)
-        id = int(" ".join(args).strip())
+        try:
+            id = int(" ".join(args).strip())
+        except ValueError:
+            await ctx.send("Please provide a valid playlist ID (number)", delete_after=10)
+            return
+        
         playlist = PlaylistSongDB.get_songs_by_playlist(id)
         if playlist is None:
             await ctx.send(
@@ -402,7 +427,7 @@ class Music(CommandBase):
             song = SongDB.get_by_id(entry.id)
             if song is not None:
                 playlist_str += (
-                    str(index) + ". " + song.title + "(" + str(song.id) + ")" + "\n"
+                    f"{index:>3}. {song.title} ({song.id})\n"
                 )
             index += 1
         embed.add_field("", playlist_str)
@@ -411,8 +436,12 @@ class Music(CommandBase):
     @command(aliases=["rls"])
     async def remove_playlist_song(self, ctx: Context, *args: str):
         await ctx.message.delete(delay=5)
-        playlist_id = int(args[0])
-        song_id = int(args[1])
+        try:
+            playlist_id = int(args[0])
+            song_id = int(args[1])
+        except ValueError:
+            await ctx.send("Please provide a valid playlist ID (number)", delete_after=10)
+            return
         playlist = PlaylistSongDB.get_songs_by_playlist(playlist_id)
         if playlist is None:
             await ctx.send(
@@ -435,7 +464,12 @@ class Music(CommandBase):
         if ctx.guild is None:
             await ctx.send("This command can only be used in a server.", delete_after=5)
             return
-        id = int(" ".join(args).strip())
+        try:
+            id = int(" ".join(args).strip())
+        except ValueError:
+            await ctx.send("Please provide a valid playlist ID (number)", delete_after=10)
+            return
+        
         playlist = PlaylistSongDB.get_songs_by_playlist(id)
         if playlist is None:
             await ctx.send(
@@ -468,8 +502,8 @@ class Music(CommandBase):
         return embed
 
     @classmethod
-    def is_enabled(cls, configs: Dict[str, Any] = {}) -> bool:
-        return configs["ENABLE_MUSIC"]
+    def is_enabled(cls, configs: Config = {}) -> bool:
+        return bool(configs.get(MUSIC_ENABLE) and bool(configs.get(DATABASE_STATUS))
 
 
 def setup(bot: ManChanBot):
