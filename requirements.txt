@@ -38,5 +38,5 @@ sqlalchemy-stubs==0.4
 typing_extensions==4.8.0
 urllib3==2.0.6
 yarl==1.9.2
-youtube.search==2.1.2
-yt-dlp==2024.8.6
+youtube-search==2.1.2
+yt-dlp==2025.4.30
