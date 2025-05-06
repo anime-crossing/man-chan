@@ -6,11 +6,17 @@ from models import Song
 
 
 class YoutubeApi:
-    YDL_OPTIONS = {"format": "bestaudio", "noplaylist": "True" ,'postprocessors': [{
-        'key': 'FFmpegExtractAudio',
-        'preferredcodec': 'mp3',
-        'preferredquality': '192',
-    }],}
+    YDL_OPTIONS = {
+        "format": "bestaudio",
+        "noplaylist": "True",
+        "postprocessors": [
+            {
+                "key": "FFmpegExtractAudio",
+                "preferredcodec": "mp3",
+                "preferredquality": "192",
+            }
+        ],
+    }
 
     @classmethod
     def search(cls, query: str, limit=1) -> list[Song]:

@@ -23,8 +23,8 @@ class Queue:
 
     def queue_to_string(self) -> str:
         songs = ""
-        for song in self.queue:
-            songs += song.title + "\n"
+        for index, song in enumerate(self.queue, start=1):
+            songs += str(index) + ". " + song.title + "\n"
         return songs
 
     def history_to_string(self) -> str:
