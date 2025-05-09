@@ -1,10 +1,10 @@
 from __future__ import annotations
 
 import logging
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, Union
 
 import disnake
-from disnake.ext.commands import command
+from disnake.ext.commands import command, Cog
 
 from db import RadioDB
 from db.playlist import PlaylistDB
@@ -12,6 +12,7 @@ from db.playlist import PlaylistDB
 from db.playlistSong import PlaylistSongDB
 from db.song import SongDB
 from models import Song
+from service.music.music_ui import Music_UI
 from service.music.player import Player
 from utils.config_mapper import DATABASE_STATUS, MUSIC_ENABLE
 from utils.distyping import Config, Context
@@ -28,7 +29,7 @@ class Music(CommandBase):
         self.master_player = bot.master_player
 
     @command()
-    async def init_music(self, ctx: Context) -> None:
+    async def init_music1(self, ctx: Context) -> None:
         if ctx.guild is None:
             await ctx.send("This command can only be used in a server.", delete_after=5)
             return
@@ -36,7 +37,7 @@ class Music(CommandBase):
         radio = RadioDB.get(guild_id=ctx.guild.id)
         if radio is None:
             channel = await ctx.guild.create_text_channel(name="manchan radio")
-            player_ui = await channel.send(embed=self.default_embed())
+            player_ui = await channel.send(embed=self.default_embed(), view=self.defaultView())
             RadioDB.create(ctx.guild.id, channel.id, player_ui.id)
             await ctx.send(
                 f"Channel has been created: {channel.mention}, Music Player UI: [player]({player_ui.jump_url})",
@@ -56,7 +57,7 @@ class Music(CommandBase):
         )
 
     @command()
-    async def reset_music(self, ctx: Context) -> None:
+    async def reset_music1(self, ctx: Context) -> None:
         if ctx.guild is None:
             await ctx.send("This command can only be used in a server.", delete_after=5)
             return
@@ -74,52 +75,18 @@ class Music(CommandBase):
         )
         return
 
-    @command(aliases=["jvc", "music"])
+    @command(aliases=["jvc1", "music"])
     async def join_music(self, ctx: Context):
         await ctx.message.delete(delay=5)
-        if ctx.guild is None:
-            await ctx.send("This command can only be used in a server.", delete_after=5)
-            return
-        radio = RadioDB.get(guild_id=ctx.guild.id)
-        if radio is None:
-            await ctx.send("Run !initmusic command", delete_after=5)
-            return
-        player = self.master_player.create_player(ctx.guild.id)
-        player.set_channel_id(radio.channel_id)
-        music_channel = await ctx.guild.fetch_channel(player.get_channel_id())
-        if isinstance(music_channel, disnake.TextChannel):
-            player_ui = await music_channel.fetch_message(radio.embed_id)
-            player.channel_id = int(radio.channel_id)
-            player.player_ui = player_ui
-            embed = self.default_embed()
-            embed.description = "Please run !lvc to stop radio"
-            await player_ui.edit(embed=embed)
-        await player.set_voice_client(ctx)
+        await self.join_music_interaction(ctx)
 
-    @command(aliases=["lvc"])
+    @command(aliases=["lvc1"])
     async def leave_music(self, ctx: Context):
         await ctx.message.delete(delay=5)
-        if ctx.guild is None:
-            await ctx.send("This command can only be used in a server.", delete_after=5)
-            return
-
-        voice_client = ctx.voice_client
-        if voice_client is not None:
-            await voice_client.disconnect(force=False)
-
-        player = self.master_player.get_player(ctx.guild.id)
-        if player is not None:
-            music_channel = await ctx.guild.fetch_channel(player.get_channel_id())
-            self.master_player.destory_player(ctx.guild.id)
-            if (
-                isinstance(music_channel, disnake.TextChannel)
-                and player.player_ui is not None
-            ):
-                await player.player_ui.edit(embed=self.default_embed())
-        await ctx.send("Bot left VC and player instance destroyed", delete_after=5)
+        await self.leave_music_interaction(ctx)
 
     @command()
-    async def play(self, ctx: Context, *args: str):
+    async def play2(self, ctx: Context, *args: str):
         await ctx.message.delete(delay=5)
         if ctx.guild is None:
             await ctx.send("This command can only be used in a server.", delete_after=5)
@@ -501,6 +468,140 @@ class Music(CommandBase):
     def edit_embed_queue(self, player: Player, embed: disnake.Embed) -> disnake.Embed:
         embed.set_field_at(1, "Queue:", player.queue_to_string(), inline=False)
         return embed
+        
+    def defaultView(self) -> disnake.ui.View:
+        view = disnake.ui.View()
+        button = disnake.ui.Button()
+        button.label = "Start VC"
+        button.custom_id = "jvc"
+        # button.callback = self.join_music_interaction
+        view.add_item(button)
+        return view
+    
+    async def join_music_interaction(self, ctx: Union[disnake.Interaction, Context]):
+        if ctx.guild is None:
+            await ctx.send("This command can only be used in a server.", delete_after=5)
+            return
+        radio = RadioDB.get(guild_id=ctx.guild.id)
+        if radio is None:
+            await ctx.send("Run !initmusic command", delete_after=5)
+            return
+        if int(radio.channel_id) != ctx.channel.id:
+            await ctx.send("Not in Music Channel", delete_after=5)
+            return
+        if not isinstance(ctx.author, disnake.Member) or ctx.author.voice is None:
+            await ctx.send("Connect to a voice channel!", delete_after=5)
+            return
+        player = self.master_player.create_player(ctx.guild.id)
+        player.set_channel_id(int(radio.channel_id))
+        music_channel = await ctx.guild.fetch_channel(player.get_channel_id())
+        if isinstance(music_channel, disnake.TextChannel):
+            player_ui = await music_channel.fetch_message(radio.embed_id)
+            player.channel_id = int(radio.channel_id)
+            player.player_ui = player_ui
+            embed = self.default_embed()
+            embed.description = "Please run !lvc to stop radio"
+            await player_ui.edit(embed=embed, view= Music_UI.main_View())
+        if not self.is_connected and ctx.author.voice.channel is not None:
+            self.voice_client = await ctx.author.voice.channel.connect() 
+            self.is_connected = True
+            await ctx.send("Connected", delete_after=5)
+
+    async def leave_music_interaction(self, ctx: Union[disnake.Interaction, Context]):
+        if ctx.guild is None:
+            await ctx.send("This command can only be used in a server.", delete_after=5)
+            return
+
+        voice_client = ctx.guild.voice_client
+        if voice_client is not None:
+            await voice_client.disconnect(force=False)
+
+        player = self.master_player.get_player(ctx.guild.id)
+        if player is not None:
+            music_channel = await ctx.guild.fetch_channel(player.get_channel_id())
+            self.master_player.destory_player(ctx.guild.id)
+            if (
+                isinstance(music_channel, disnake.TextChannel)
+                and player.player_ui is not None
+            ):
+                await player.player_ui.edit(embed=self.default_embed(), view=self.defaultView())
+        await ctx.send("Bot left VC and player instance destroyed", delete_after=5)
+
+    async def play_music_interaction(self, ctx: Union[disnake.Interaction, Context]):
+        if ctx.guild is None:
+            return
+
+        player = self.master_player.get_player(ctx.guild.id)
+        if player is None:
+            return
+        if player.is_paused:
+            player.is_paused = False
+            player.is_audio_buffered = True
+            if player.voice_client is not None:
+                player.voice_client.resume()
+            return
+        if not player.is_audio_buffered:
+            await player.play_music()
+
+    async def list_playlist_interaction(self, ctx: disnake.Interaction):
+        await ctx.send(view=Music_UI.playlist_view())
+
+    # def main_View(self) -> disnake.ui.View:
+    #     view = disnake.ui.View()
+    #     play_button = disnake.ui.Button()
+    #     play_button.label = "Play"
+    #     play_button.custom_id = "play"
+    #     # play_button.callback = self.play_music_interaction
+
+    #     skip_button = disnake.ui.Button()
+    #     skip_button.label = "Skip"
+    #     # skip_button.callback = self.skip_callback
+
+    #     add_button = disnake.ui.Button()
+    #     add_button.label = "Add to Playlist"
+    #     # add_button.callback = self.add_callback
+
+    #     leave_button = disnake.ui.Button()
+    #     leave_button.label = "Leave VC"
+    #     leave_button.custom_id = "leave"
+    #     # leave_button.callback = self.leave_music_interaction
+
+    #     view.add_item(play_button)
+    #     view.add_item(skip_button)
+    #     view.add_item(add_button)
+    #     view.add_item(leave_button)
+    #     return view
+    
+    @Cog.listener(disnake.Event.button_click)
+    async def help_listener(self, inter: disnake.MessageInteraction):
+        if inter.component.custom_id not in ["play", "leave", "jvc", "add"]:
+            # We filter out any other button presses except
+            # the components we wish to process.
+            return
+        
+        # if inter.component.custom_id == "add":
+        #     await self.list_playlist_interaction(inter)
+
+        # player = self.master_player.get_player(inter.guild.id)
+        # if player is None:
+        #     return
+        
+        await inter.response.defer()
+
+        if inter.component.custom_id == "play":
+            await self.play_music_interaction(inter)
+        elif inter.component.custom_id == "leave":
+            await self.leave_music_interaction(inter)
+        elif inter.component.custom_id == "jvc":
+            await self.join_music_interaction(inter)
+        elif inter.component.custom_id == "add":
+            await self.list_playlist_interaction(inter)
+
+    @command()
+    async def testButton(self, ctx: Context):
+        await ctx.send(view= Music_UI.main_View())
+        return
+
 
     @classmethod
     def is_enabled(cls, configs: Config = {}) :
@@ -512,3 +613,11 @@ def setup(bot: ManChanBot):
         bot.add_cog(Music(bot))  # type: ignore
     else:
         logging.warning("SKIPPING: cogs.Music")
+
+#   File "D:\dev\man-chan\venv\lib\site-packages\disnake\client.py", line 703, in _run_event
+#     await coro(*args, **kwargs)
+#   File "D:\dev\man-chan\cogs\music.py", line 550, in help_listener
+#     await self.join_music_interaction(inter)
+#   File "D:\dev\man-chan\cogs\music.py", line 469, in join_music_interaction
+#     if not self.is_connected and ctx.author.voice.channel is not None:
+# AttributeError: 'Music' object has no attribute 'is_connected'

@@ -1,10 +1,11 @@
 import logging
-from typing import Optional
+from typing import Optional, Union
 
 import disnake
 from disnake import Embed, Message, VoiceClient
 # from utils.distyping import Context
 from models import Song
+# from utils.distyping import Context
 
 from .queue import Queue
 
@@ -63,7 +64,7 @@ class Player:
     def get_player_ui(self) -> Optional[Message]:
         return self.player_ui
 
-    async def set_voice_client(self, ctx): # type: ignore
+    async def set_voice_client(self, ctx : Union[disnake.Interaction, any]):  # type: ignore
         if not isinstance(ctx.author, disnake.Member) or ctx.author.voice is None:
             await ctx.send("Connect to a voice channel!", delete_after=5)
             return
