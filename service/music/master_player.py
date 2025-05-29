@@ -4,8 +4,16 @@ from .player import Player
 
 
 class MasterPlayer:
+    _instance = None
+
+    def __new__(cls):
+        if cls._instance is None:
+            cls._instance = super().__new__(cls)
+        return cls._instance
+
     def __init__(self) -> None:
-        self.players: dict[int, Player] = {}
+        if not hasattr(self, "players"):
+            self.players: dict[int, Player] = {}
 
     def create_player(self, serverId: int) -> Player:
         self.players[serverId] = Player()
