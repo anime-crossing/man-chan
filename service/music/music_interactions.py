@@ -22,7 +22,6 @@ class Music_Interactions:
             await inter.followup.send("This command can only be used in a server.", delete_after=5)
             return
         
-        print(inter.channel_id)
         radio = RadioDB.get(guild_id=inter.guild.id)
         if radio is None:
             channel = await inter.guild.create_text_channel(name="manchan radio")
@@ -108,7 +107,7 @@ class Music_Interactions:
         player = MasterPlayer().get_player(inter.guild.id)
         if player is not None:
             music_channel = await inter.guild.fetch_channel(player.get_channel_id())
-            MasterPlayer().destory_player(inter.guild.id)
+            MasterPlayer().destroy_player(inter.guild.id)
             if (
                 isinstance(music_channel, disnake.TextChannel)
                 and player.player_ui is not None

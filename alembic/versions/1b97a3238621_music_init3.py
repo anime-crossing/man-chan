@@ -46,7 +46,7 @@ def upgrade():
     sa.Column('thumbnail_url', sa.String(), nullable=True),
     sa.Column('webpage_url', sa.String(), nullable=True),
     sa.PrimaryKeyConstraint('id'),
-    sa.UniqueConstraint('webpage_url')
+    sa.UniqueConstraint('url')
     )
     # ### end Alembic commands ###
 

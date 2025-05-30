@@ -22,5 +22,5 @@ class MasterPlayer:
     def get_player(self, serverId: int) -> Optional[Player]:
         return self.players.get(serverId)
 
-    def destory_player(self, serverId: int) -> None:
+    def destroy_player(self, serverId: int) -> None:
         self.players.pop(serverId)

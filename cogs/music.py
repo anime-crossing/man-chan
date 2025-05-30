@@ -24,7 +24,6 @@ class Music(CommandBase):
 
     @slash_command(description="Initializations the music channel")
     async def init_music(self, inter: disnake.ApplicationCommandInteraction):
-        # await inter.response.defer()
         await Music_Interactions.init_music_interaction(inter)
 
     @slash_command(description="Deletes the music channel")
@@ -40,7 +39,7 @@ class Music(CommandBase):
     async def leave_music(self, inter: disnake.ApplicationCommandInteraction):
         await Music_Interactions.leave_music_interaction(inter)
 
-    @slash_command(description="Plays music queued up in the bot or provided song")
+    @slash_command(description="Unpauses player or starts playing queue/provided song")
     async def play(self, inter: disnake.ApplicationCommandInteraction, song: str = ""):
         await Music_Interactions.play_interaction(inter, song)
 
