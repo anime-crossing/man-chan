@@ -12,9 +12,9 @@ class SongDB(Base):
     __tablename__ = "song"
 
     title = Column(String, default="", nullable=False)
-    url = Column(String, default="", unique=True, nullable=False)
+    url = Column(String, default="", nullable=False)
     thumbnail_url = Column(String, default="")
-    webpage_url = Column(String, default="")
+    webpage_url = Column(String, unique=True, default="")
 
     @classmethod
     def create(cls, song: Song) -> "SongDB":

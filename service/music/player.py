@@ -2,8 +2,7 @@ import logging
 from typing import Optional
 
 import disnake
-from disnake import Embed, Message, VoiceClient
-# from utils.distyping import Context
+from disnake import Message, VoiceClient
 from models import Song
 
 from .queue import Queue
@@ -24,6 +23,7 @@ class Player:
         self.is_connected: bool = False
         self.is_audio_buffered: bool = False
         self.current_song: Optional[Song] = None
+        self.loop: bool = False
 
     @property
     def queue(self) -> list[Song]:
@@ -63,26 +63,26 @@ class Player:
     def get_player_ui(self) -> Optional[Message]:
         return self.player_ui
 
-    async def set_voice_client(self, ctx): # type: ignore
-        if not isinstance(ctx.author, disnake.Member) or ctx.author.voice is None:
-            await ctx.send("Connect to a voice channel!", delete_after=5)
+    async def set_voice_client(self, inter : disnake.Interaction):
+        if not isinstance(inter.author, disnake.Member) or inter.author.voice is None:
+            await inter.send("Connect to a voice channel!", delete_after=5)
             return
-        if not self.is_connected and ctx.author.voice.channel is not None:
-            self.voice_client = await ctx.author.voice.channel.connect() 
+        if not self.is_connected and inter.author.voice.channel is not None:
+            self.voice_client = await inter.author.voice.channel.connect() 
             self.is_connected = True
-            await ctx.send("Connected", delete_after=5)
+            await inter.send("Connected", delete_after=5)
 
     async def play_music(self):
-        if not self._queue.is_queue_empty():
+        if (not self._queue.is_queue_empty()) or self.loop:
             self.is_audio_buffered = True
 
-            url = self.queue[0].url
-            self.current_song = self.queue[0]
-            self.remove_song()
+            if not self.loop:
+                self.current_song = self.queue[0]
+                self.remove_song()
             player_ui = self.get_player_ui()
             if player_ui is not None:
-                await player_ui.edit(embed=self.edit_embed(player_ui.embeds[0]))
-            source = disnake.FFmpegPCMAudio(url, **self.FFMPEG_OPTIONS)  # type: ignore
+                await player_ui.edit(embed=self.edit_embed())
+            source = disnake.FFmpegPCMAudio(self.current_song.url, **self.FFMPEG_OPTIONS)  # type: ignore
 
             def after(error):  # type: ignore
                 if error:
@@ -110,9 +110,15 @@ class Player:
         status += "Paused: " + str(self.is_paused) + "\n"
         return status
 
-    def edit_embed(self, embed: Embed) -> Embed:
-        if self.current_song is not None:
-            embed.set_field_at(0, "Now Playing:", self.current_song.title, inline=False)
-            embed.set_image(self.current_song.thumbnail_url)
-            embed.set_field_at(1, "Queue:", self.queue_to_string(), inline=False)
+    def edit_embed(self) -> disnake.Embed:
+        embed = disnake.Embed()
+        embed.title = "MANCHAN RADIO"
+        embed.description = "Please run !lvc to stop radio"
+        embed.add_field("Paused:", str(self.is_paused))
+        embed.add_field("Loop:", str(self.loop))
+        embed.add_field("Now Playing:", self.current_song.title if self.current_song else "Empty", inline=False)
+        embed.add_field("Queue:", self.queue_to_string(), inline=False)
+        embed.set_image(None)
+        if self.current_song:
+            embed.set_image(self.current_song.thumbnail_url) 
         return embed
