@@ -1,0 +1,9 @@
+services:
+  manchan:
+    image: manchan
+    container_name: manchan
+    volumes:
+      - /ABSOLUTE_PATH/configs.yaml:/apps/configs.yaml:rw
+      - /ABSOLUTE_PATH/magi.db:/apps/magi.db:rw
+      - /ABSOLUTE_PATH/login.json:/apps/login.json:rw
+      - /ABSOLUTE_PATH/plugins:/apps/plugins:rw
