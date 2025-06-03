@@ -28,7 +28,6 @@ class Music(CommandBase):
 
     @slash_command(description="Deletes the music channel")
     async def reset_music(self, inter: disnake.ApplicationCommandInteraction) -> None:
-        await inter.response.defer()
         await Music_Interactions.reset_music(inter)
 
     @slash_command(description="Adds the bot to VC to start playing music")
