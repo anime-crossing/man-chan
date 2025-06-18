@@ -34,7 +34,7 @@ class SocialCreditService:
         if not message:
             return
 
-        discord_id = message.author.id
+        discord_id = str(message.author.id)
         if discord_id == reaction.user_id:
             return
 
@@ -52,7 +52,7 @@ class SocialCreditService:
 
     @classmethod
     def create_user_score_embed(cls, author: Union[User, Member]) -> Embed:
-        user_score = UserCredit.get(author.id)
+        user_score = UserCredit.get(str(author.id))
 
         embed = Embed()
         embed.title = author.display_name

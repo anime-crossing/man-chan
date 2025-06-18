@@ -17,7 +17,10 @@ services:
     image: postgres
     container_name: manchan-db
     environment:
-      POSTGRES_PASSWORD: "PASSWORD"
+      POSTGRES_USER: manchandb
+      POSTGRES_DB: manchandb
+      POSTGRES_PASSWORD: PASSWORD
+      POSTGRES_HOST: postgres
     volumes:
       - /ABSOLUTE_PATH/db:/var/lib/postgresql/
     networks:
@@ -27,7 +30,7 @@ services:
       - PORT:5432
 
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      test: ["CMD-SHELL", "pg_isready -U manchandb"]
       interval: 10s
       retries: 5
       start_period: 10s

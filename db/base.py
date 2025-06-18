@@ -1,6 +1,6 @@
 from typing import Any, Dict, List
 
-from sqlalchemy import Integer
+from sqlalchemy import String
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import Query, Session
 from sqlalchemy.schema import Column
@@ -9,10 +9,9 @@ from .connection import get_session
 
 
 class Base(object):
-    id = Column(Integer, autoincrement=True, primary_key=True)
+    id = Column(String, autoincrement=True, primary_key=True)
 
-    def __init__(self, **kwargs: Any):
-        ...
+    def __init__(self, **kwargs: Any): ...
 
     @classmethod
     @property

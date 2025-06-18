@@ -15,12 +15,12 @@ class UserCredit(Base):
     current_score = column_property(positives - negatives)
 
     @classmethod
-    def create(cls, discord_id: int) -> "UserCredit":
+    def create(cls, discord_id: str) -> "UserCredit":
         new_user = cls._create(id=discord_id)
         return new_user
 
     @classmethod
-    def get(cls, discord_id: int) -> Optional["UserCredit"]:
+    def get(cls, discord_id: str) -> Optional["UserCredit"]:
         return cls._query().filter_by(id=discord_id).first()
 
     @classmethod
