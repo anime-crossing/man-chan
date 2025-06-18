@@ -1,11 +1,15 @@
 from __future__ import annotations
 
 import logging
-from typing import TYPE_CHECKING, Any, Dict
-from disnake.ext.commands import command
+from typing import TYPE_CHECKING
 
-from service.music.player import Player
-from utils.distyping import Context
+import disnake
+from disnake.ext.commands import Cog, slash_command
+
+from service.music.music_interactions import Music_Interactions, PlaylistAddType
+
+from utils.config_mapper import DATABASE_STATUS, MUSIC_ENABLE
+from utils.distyping import Config
 
 from .commandbase import CommandBase
 
@@ -18,157 +22,86 @@ class Music(CommandBase):
         self.bot = bot
         self.master_player = bot.master_player
 
-    @command()
-    async def setup_music(self, ctx: Context):
-        guild_id = ctx.guild.id
-        if (
-            self.master_player.getPlayer(guild_id)
-            and self.master_player.getPlayer(guild_id).channel_id
-            and self.master_player.getPlayer(guild_id).player_ui
-        ):
-            return await ctx.channel.send("Channel Already Exists", delete_after=5)
-        channel = await ctx.guild.create_text_channel(name="manchan radio")
-        self.master_player.createPlayer(guild_id)
-        player_ui = await channel.send(
-            embed=self.master_player.getPlayer(guild_id).embed
-        )
-        self.master_player.getPlayer(guild_id).set_channel_id(channel.id)
-        self.master_player.getPlayer(guild_id).set_player_ui(player_ui)
-        await ctx.message.delete()
+    @slash_command(description="Initializations the music channel")
+    async def init_music(self, inter: disnake.ApplicationCommandInteraction):
+        await Music_Interactions.init_music_interaction(inter)
 
-    @command()
-    async def play(self, ctx: Context, *args: str):
-        player = self.master_player.getPlayer(ctx.guild.id)     #type: ignore[reportOptionalMemberAccess]
-        if player is None: return self.player_does_exist_error(ctx)
-        if not await self.in_music_channel(player, ctx): return
+    @slash_command(description="Deletes the music channel")
+    async def reset_music(self, inter: disnake.ApplicationCommandInteraction) -> None:
+        await Music_Interactions.reset_music(inter)
 
-        await player.set_voice_client(ctx)
+    @slash_command(description="Adds the bot to VC to start playing music")
+    async def join_music(self, inter: disnake.ApplicationCommandInteraction):
+        await Music_Interactions.join_music_interaction(inter)
 
-        if args != ():
-            player.add_song(" ".join(args).strip())
+    @slash_command(description="Stops the bot and leaves in VC")
+    async def leave_music(self, inter: disnake.ApplicationCommandInteraction):
+        await Music_Interactions.leave_music_interaction(inter)
 
-        if player.is_paused:
-            player.is_paused = False
-            player.is_audio_buffered = True
-            player.voice_client.resume()    # type: ignore
-            return await ctx.send("Audio is now Resumed", delete_after=5)
+    @slash_command(description="Unpauses player or starts playing queue/provided song")
+    async def play(self, inter: disnake.ApplicationCommandInteraction, song: str = ""):
+        await Music_Interactions.play_interaction(inter, song)
 
-        await ctx.message.delete()
-        if not player.is_audio_buffered:
-            player.play_music()
+    @slash_command(description="Adds song to the queue")
+    async def add(self, inter: disnake.ApplicationCommandInteraction, song: str):
+        await Music_Interactions.add_interaction(inter, song)
 
-    @command()
-    async def queue(self, ctx: Context):
-        player = self.master_player.getPlayer(ctx.guild.id)     #type: ignore[reportOptionalMemberAccess]
-        if player is None: return self.player_does_exist_error(ctx)
-        if not await self.in_music_channel(player, ctx): return
-        if player.is_queue_empty():
-            return await ctx.channel.send("No songs in queue.", delete_after=5)
-        await ctx.message.delete()
-        return await ctx.channel.send(player.queue_to_string(), delete_after=20)
+    @slash_command(description="Shows session history")
+    async def history(self, inter: disnake.ApplicationCommandInteraction):
+        await Music_Interactions.history_interaction(inter)
 
-    @command()
-    async def leave(self, ctx: Context):
-        player = self.master_player.getPlayer(ctx.guild.id)     #type: ignore[reportOptionalMemberAccess]
-        if player is None: return self.player_does_exist_error(ctx)
-        if not await self.in_music_channel(player, ctx): return
-        voice_client = ctx.voice_client
-        if not voice_client or not voice_client.channel:
-            return await ctx.send("Not connected to any voice channel.", delete_after=5)
-        player.leave_voice()
-        await voice_client.disconnect(force= False)  
-        await ctx.send("Disconnected", delete_after=5)
-        await ctx.message.delete()
+    @slash_command(description="Clears the queue")
+    async def clear(self, inter: disnake.ApplicationCommandInteraction):
+        await Music_Interactions.clear_interaction(inter)
 
-    @command()
-    async def add(self, ctx: Context, *args: str):
-        player = self.master_player.getPlayer(ctx.guild.id)     #type: ignore[reportOptionalMemberAccess]
-        if player is None: return self.player_does_exist_error(ctx)
-        if not await self.in_music_channel(player, ctx): return
-        player.add_song(" ".join(args).strip())
-        await ctx.message.delete()
+    @slash_command(description="Skips the current song")
+    async def skip(self, inter: disnake.ApplicationCommandInteraction):
+        await Music_Interactions.skip_interaction(inter)
 
-    @command()
-    async def history(self, ctx: Context):
-        player = self.master_player.getPlayer(ctx.guild.id)     #type: ignore[reportOptionalMemberAccess]
-        if player is None: return self.player_does_exist_error(ctx)
-        if not await self.in_music_channel(player, ctx): return
-        if player.is_history_empty():
-            return await ctx.channel.send("No songs", delete_after=5)
-        await ctx.message.delete()
-        return await ctx.channel.send(player.history_to_string(), delete_after=20)
+    @slash_command(description="Pause the current song")
+    async def pause(self, inter: disnake.ApplicationCommandInteraction):
+        await Music_Interactions.pause_interaction(inter)
 
-    @command()
-    async def clear(self, ctx: Context):
-        player = self.master_player.getPlayer(ctx.guild.id)     #type: ignore[reportOptionalMemberAccess]
-        if player is None: return self.player_does_exist_error(ctx)
-        if not await self.in_music_channel(player, ctx): return
-        if player.is_connected: 
-            player.clear_queue()  
-        await ctx.message.delete()
+    @slash_command(description="Creates a playlist")
+    async def create_playlist(self, inter: disnake.ApplicationCommandInteraction, playlist_name: str):
+        await Music_Interactions.create_playlist_interaction(inter, playlist_name)
 
-    @command()
-    async def skip(self, ctx: Context):
-        player = self.master_player.getPlayer(ctx.guild.id)     #type: ignore[reportOptionalMemberAccess]
-        if player is None: return self.player_does_exist_error(ctx)
-        if not await self.in_music_channel(player, ctx): return
-        if player.is_connected: 
-            player.stop_player()  
-        await ctx.message.delete()
+    @slash_command(description="List all playlists")
+    async def list_playlist(self, inter: disnake.ApplicationCommandInteraction):
+        await Music_Interactions.list_playlist_interaction(inter)
 
-    @command()
-    async def pause(self, ctx: Context):
-        player = self.master_player.getPlayer(ctx.guild.id)     #type: ignore[reportOptionalMemberAccess]
-        if player is None: return self.player_does_exist_error(ctx)
-        if not await self.in_music_channel(player, ctx): return
+    @slash_command(description="Deletes a playlist")
+    async def delete_playlist(self, inter: disnake.ApplicationCommandInteraction, playlist_id: int):
+        await Music_Interactions.delete_playlist_interaction(inter, playlist_id)
 
-        if player.is_audio_buffered:  
-            player.is_paused = True  
-            player.is_audio_buffered = False  
-            player.voice_client.pause()  # type: ignore
-            await ctx.send("Audio is now Paused", delete_after=5)
-        elif player.is_paused:  
-            player.is_paused = False  
-            player.is_audio_buffered = True  
-            player.voice_client.resume()  # type: ignore
-            await ctx.send("Audio is now Resumed", delete_after=5)
-        await ctx.message.delete()
+    @slash_command(description="Add song(s) to playlist")
+    async def add_playlist(self, inter: disnake.ApplicationCommandInteraction, playlist_id: int, add_type: PlaylistAddType):
+        await Music_Interactions.add_playlist_interaction(inter, playlist_id, PlaylistAddType(add_type))
 
-    @command()
-    async def status(self, ctx: Context):
-        player = self.master_player.getPlayer(ctx.guild.id)     #type: ignore[reportOptionalMemberAccess]
-        if player is None: return self.player_does_exist_error(ctx)
-        if not await self.in_music_channel(player, ctx): return
-        status = player.get_status()  
-        await ctx.message.delete()
-        return await ctx.send(status)
+    @slash_command(description="List songs in Playlist")
+    async def list_playlist_songs(self, inter: disnake.ApplicationCommandInteraction, playlist_id: int):
+        await Music_Interactions.list_playlist_songs_interaction(inter, playlist_id)
 
-    @command(aliases=["np"])
-    async def now_playing(self, ctx: Context):
-        player = self.master_player.getPlayer(ctx.guild.id)     #type: ignore[reportOptionalMemberAccess]
-        if player is None: return self.player_does_exist_error(ctx)
-        if not await self.in_music_channel(player, ctx): return
-        if not player.current_song == None: 
-            nowplaying = "NOW PLAYING: " + player.current_song.title 
-            await ctx.send(nowplaying, delete_after=5)
-        await ctx.message.delete()
-        return
-    
-    async def in_music_channel(self, player: Player, ctx: Context) -> bool:
-        if not player.get_channel_id() == ctx.channel.id:
-            await ctx.send("Not in Music Channel", delete_after=5)
-            return False
-        return True
-    
-    async def player_does_exist_error(self, ctx: Context) -> None:
-        await ctx.channel.send("Player does not Exist. Please use !setup_music", delete_after=10)
+    @slash_command(description="Remove Song from Playlist")
+    async def remove_playlist_song(self, inter: disnake.ApplicationCommandInteraction, playlist_id: int, song_id: int):
+        await Music_Interactions.remove_playlist_song(inter, playlist_id, song_id)
+
+    @slash_command(description="Add Playlist to queue")
+    async def load_playlist(self, inter: disnake.ApplicationCommandInteraction, playlist_id: int):
+        await Music_Interactions.load_playlist_interaction(inter, playlist_id)
+  
+    @Cog.listener(disnake.Event.button_click)
+    async def help_listener(self, inter: disnake.MessageInteraction):
+        if inter.component.custom_id not in ["jvc"]:
+            return 
+        await Music_Interactions.join_music_interaction(inter)
 
     @classmethod
-    def is_enabled(cls, configs: Dict[str, Any] = {}) -> bool:
-        return configs["ENABLE_MUSIC"]
+    def is_enabled(cls, configs: Config = {}) :
+        return (configs.get(MUSIC_ENABLE) and configs.get(DATABASE_STATUS))
 
 def setup(bot: ManChanBot):
     if Music.is_enabled(bot.configs):
         bot.add_cog(Music(bot))  # type: ignore
     else:
-        logging.warn("SKIPPING: cogs.Music")
+        logging.warning("SKIPPING: cogs.Music")

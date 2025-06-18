@@ -1,12 +1,26 @@
+from typing import Optional
+
 from .player import Player
 
 
 class MasterPlayer:
+    _instance = None
+
+    def __new__(cls):
+        if cls._instance is None:
+            cls._instance = super().__new__(cls)
+        return cls._instance
+
     def __init__(self) -> None:
-        self.players: dict[int, Player] = {}
+        if not hasattr(self, "players"):
+            self.players: dict[int, Player] = {}
 
-    def createPlayer(self, serverId: int):
+    def create_player(self, serverId: int) -> Player:
         self.players[serverId] = Player()
+        return self.players[serverId]
 
-    def getPlayer(self, serverId: int):
+    def get_player(self, serverId: int) -> Optional[Player]:
         return self.players.get(serverId)
+
+    def destroy_player(self, serverId: int) -> None:
+        self.players.pop(serverId)
