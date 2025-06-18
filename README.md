@@ -211,11 +211,8 @@ Use your favorite method to setup the virtual environment. Here will be a quick 
 
 8. Run with `python main.py`
 
+Anytime you pull the latest changes from this repository, repeat step 7.
 
-### Database
-You need to specify the database location in the `configs.yaml` file AND `alembic.ini` file.
-
-Run this to update the current db. <u>**Do this every time you pull to keep the database updated**</u>:
 
 # Config File
 ManChan will read from a provided `configs.yaml` in the root folder that you must fill out yourself. Recommended structure is below:
@@ -362,3 +359,7 @@ A formatting python script has been added to keep formatting consistent. Before 
 `python fmt.py`
 
 and fix any typing errors that it throws at you.
+
+
+# Why the name "Manchan"
+We are uncreative and merged all our names together to somehow create this.
