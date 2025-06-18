@@ -158,7 +158,7 @@ No port forwarding required! Only docker is needed to be installed on your machi
 3. Add a database password to the following locations:
     - `configs.yaml`
     - `alembic.ini`
-    - `compose.yaml`
+    - `compose.yaml` (add a port for host computer here too)
 
 4. Build the docker image:
 
