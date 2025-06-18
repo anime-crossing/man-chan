@@ -21,4 +21,4 @@ RUN apt-get update && \
 
 VOLUME ${APPHOME}
 
-CMD ls && alembic upgrade head ; python3 -u main.py
+CMD alembic upgrade head ; python3 -u main.py
