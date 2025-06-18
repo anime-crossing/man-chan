@@ -13,11 +13,11 @@ class PlaylistDB(Base):
     playlist_name = Column(String, default="", unique=True, nullable=False)
 
     @classmethod
-    def create(cls, discord_id: int, name: str) -> None:
+    def create(cls, discord_id: str, name: str) -> None:
         cls._create(discord_id=discord_id, playlist_name=name)
 
     @classmethod
-    def get(cls, id: int, discord_id: int) -> Optional["PlaylistDB"]:
+    def get(cls, id: int, discord_id: str) -> Optional["PlaylistDB"]:
         return cls._query().filter_by(discord_id=discord_id, id=id).first()
 
     @classmethod
