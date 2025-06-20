@@ -22,7 +22,7 @@ def upgrade():
     op.create_table(
         "playlist",
         sa.Column("id", sa.Integer(), autoincrement=True, nullable=False),
-        sa.Column("discord_id", sa.VARCHAR(20), nullable=False),
+        sa.Column("discord_id", sa.BIGINT, nullable=False),
         sa.Column("playlist_name", sa.VARCHAR, nullable=False),
         sa.PrimaryKeyConstraint("id"),
         sa.UniqueConstraint("playlist_name"),
@@ -37,9 +37,9 @@ def upgrade():
     op.create_table(
         "radio",
         sa.Column("id", sa.Integer(), autoincrement=True, nullable=False),
-        sa.Column("embed_id", sa.VARCHAR(20), nullable=False),
-        sa.Column("guild_id", sa.VARCHAR(20), nullable=False),
-        sa.Column("channel_id", sa.VARCHAR(20), nullable=False),
+        sa.Column("embed_id", sa.BIGINT, nullable=False),
+        sa.Column("guild_id", sa.BIGINT, nullable=False),
+        sa.Column("channel_id", sa.BIGINT, nullable=False),
         sa.PrimaryKeyConstraint("id"),
         sa.UniqueConstraint("channel_id"),
     )

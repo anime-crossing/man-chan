@@ -28,13 +28,13 @@ class Music_Interactions:
             )
             return
 
-        radio = RadioDB.get(guild_id=str(inter.guild.id))
+        radio = RadioDB.get(guild_id=inter.guild.id)
         if radio is None:
             channel = await inter.guild.create_text_channel(name="manchan radio")
             player_ui = await channel.send(
                 embed=Music_UI.init_embed(), view=Music_UI.init_view()
             )
-            RadioDB.create(str(inter.guild.id), str(channel.id), str(player_ui.id))
+            RadioDB.create(inter.guild.id, channel.id, player_ui.id)
             await inter.followup.send(
                 f"Channel has been created: {channel.mention}, Music Player UI: [player]({player_ui.jump_url})",
                 delete_after=20,
@@ -61,14 +61,14 @@ class Music_Interactions:
             )
             return
 
-        radio = RadioDB.get(guild_id=str(inter.guild.id))
+        radio = RadioDB.get(guild_id=inter.guild.id)
         if radio is None:
             await inter.followup.send("This command is not needed", delete_after=5)
             return
         music_channel = await inter.guild.fetch_channel(radio.channel_id)
         await music_channel.delete()
 
-        RadioDB.delete(str(inter.guild.id))
+        RadioDB.delete(inter.guild.id)
         await inter.followup.send(
             "Channel successfully delete and deleted from DB", delete_after=5
         )
@@ -82,7 +82,7 @@ class Music_Interactions:
                 "This command can only be used in a server.", delete_after=5
             )
             return
-        radio = RadioDB.get(guild_id=str(inter.guild.id))
+        radio = RadioDB.get(guild_id=inter.guild.id)
         if radio is None:
             await inter.followup.send("Run !initmusic command", delete_after=5)
             return
@@ -180,7 +180,7 @@ class Music_Interactions:
             )
             return
 
-        radio = RadioDB.get(guild_id=str(inter.guild.id))
+        radio = RadioDB.get(guild_id=inter.guild.id)
         if radio is None:
             await inter.followup.send("Run !initmusic command", delete_after=5)
             return
@@ -284,7 +284,7 @@ class Music_Interactions:
         inter: disnake.Interaction, playlist_name: str
     ):
         await inter.response.defer()
-        PlaylistDB.create(str(inter.author.id), playlist_name)
+        PlaylistDB.create(inter.author.id, playlist_name)
         await inter.followup.send(
             f"Playlist: {playlist_name} now created", delete_after=5
         )
@@ -305,7 +305,7 @@ class Music_Interactions:
     @staticmethod
     async def delete_playlist_interaction(inter: disnake.Interaction, playlist_id: int):
         await inter.response.defer()
-        playlist = PlaylistDB.get(playlist_id, str(inter.author.id))
+        playlist = PlaylistDB.get(playlist_id, inter.author.id)
         if playlist is None:
             await inter.followup.send(
                 f"Playlist: {playlist_id} does not exist", delete_after=10
