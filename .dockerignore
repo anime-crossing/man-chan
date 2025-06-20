@@ -1,0 +1,9 @@
+./docktest
+pyrightconfig.json
+fmt.py
+README.md
+compose-example.yaml
+configs.yaml
+.gitignore
+.vscode
+__pycache__

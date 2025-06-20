@@ -1,0 +1,41 @@
+services:
+  manchan:
+    image: manchan
+    container_name: manchan
+    volumes:
+      - /ABSOLUTE_PATH/configs.yaml:/apps/configs.yaml:rw
+      - /ABSOLUTE_PATH/magi.db:/apps/magi.db:rw
+      - /ABSOLUTE_PATH/login.json:/apps/login.json:rw
+      - /ABSOLUTE_PATH/plugins:/apps/plugins:rw
+    networks:
+      - manchan-internal
+    depends_on:
+      database:
+        condition: service_healthy
+
+  database:
+    image: postgres
+    container_name: manchan-db
+    environment:
+      POSTGRES_USER: manchandb
+      POSTGRES_DB: manchandb
+      POSTGRES_PASSWORD: PASSWORD
+      POSTGRES_HOST: postgres
+    volumes:
+      - /ABSOLUTE_PATH/db:/var/lib/postgresql/
+    networks:
+      - manchan-internal
+    hostname: manchandb
+    ports:
+      - PORT:5432
+
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U manchandb"]
+      interval: 10s
+      retries: 5
+      start_period: 10s
+      timeout: 10s
+
+networks:
+  manchan-internal:
+    driver: bridge
