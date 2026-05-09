@@ -3,83 +3,103 @@
 
 Manchan is a discord bot made by three friends intended to be used by a small group of friends or users in a server.
 
-This bot is not hosted and cannot be added to a server. It is intended to be self-hosted with whatever method by cloning this repo.
+This bot is not hosted and cannot be added to a server. It is intended to be self-hosted with whatever method by cloning this repo or to be used as a framework for your own bot.
 
 ## Features:
+These features can be enabled and disabled via a `configs.yaml`. A sample file is included in the repo and a the bottom of this page.
 
 ### **Shared Login**
-If you share accounts between others in the server, Manchan offers a way to list all the shared accounts usernames/password discreetly via command. (*Note: Currently no way to blacklist/whitelist users*). A `login.json` file is needed to store the login information, the structure on how is at the bottom of the page.
+If you share accounts between others in the server, Manchan offers a way to list all the shared accounts usernames/password discreetly via command. (*Note: Currently no way to blacklist/whitelist users*). A `login.json` file is needed to store the login information. A sample file structure is given at the bottom of this page.
 
-`!login` - Starts login sharing.
+Auth info is shared through an ephemeral message. It is only visible to the user and is deleted after a timeout.
+
+**Command:**
+- `!login` - Starts login sharing.
+
+**Config Variables:**
+- `ENABLE_LOGIN` - true/false
+- `LOGIN_FILE_PATH` - Default `login.json`.
+- `LOGIN_INFO_TIMEOUT` - Default 15. Seconds before login info is removed.
 
 ### **Social Credit**
+A joke way to build a social credit score in your server.
+
 By providing emoji names representing upvotes/downvotes, users that react with corresponding emoji to a message will influence the sender's social score. Leaderboard included.
 
-`!score` - Displays self score.
+Database required.
 
-`!score @username` - Displays score of user.
+**Commands:**
+- `!score` - Displays self score.
+- `!score @username` - Displays score of user.
+- `!leaderboard` || `!lb` - Displays leaderboard of all users in server.
 
-`!leaderboard` || `!lb` - Displays leaderboard of all users in server.
+**Config Variables:**
+- `ENABLE_SOCIAL_CREDIT` - true/false
+- `UPVOTE_EMOJI_NAME` - Put the emoji name without colons. Custom guild emojis can work too.
+- `DOWNVOTE_EMOJI_NAME` - Same as above.
+- `SOCIAL_CREDIT_WHITELIST` - Guild IDs to enable this feature on.
+- `SOCIAL_CREDIT_TIME_LIMIT` - Time in seconds before a message is no longer counted as social credit. You probably want this on. Default is `86400` (24h).
 
 ### **Anilist Integration**
-Uses Anilist API to search for anime for sharing info. Register your anilist account (only username needed) and you can display your anime ratings as well.
+For sharing anime recommendations and ratings.
 
-`!anime <title>` || `!ani`: Searches for an anime.
+Uses the Anilist API. To show recommendations, you must first "link" your Discord with Anilist. All this does is save your Anilist user to the database and associate it with your Discord ID (no login needed).
 
-`!manga <title>` || `!man`: Searches for a manga.
+**Commands:**
+- `!anime <title>` || `!ani`: Searches for an anime.
+- `!manga <title>` || `!man`: Searches for a manga.
+- `!novel <title>` || `!nov`: Searches for a novel.
 
-`!novel <title>` || `!nov`: Searches for a novel.
+  ```
+  Example: !ani one piece
+  ```
 
-```
-Example: !ani one piece
-```
+- `!account` || `!acc`: Creates an embed where you provide your Anilist username. Database must be enabled.
 
-`!account` || `!acc`: Creates an embed where you provide your Anilist username. Database must be enabled.
+- `!anilb` || `!alb`: Displays leaderboard of most view time and read amount for all registered users.
 
-`!anilb` || `!alb`: Displays leaderboard of most view time and read amount for all registered users.
+**Config Variables:**
+- `ENABLE_ANILIST` - true/false
 
-### **Spotify Share Link**
-Share a song from spotify.
 
-`!track`: Share track via search keywords.
-
-`!album`: Share album via album name.
-
-```
-Examples:
-!track magnolia playboi carti
-!album whole lotta red
-```
-
-### Twitter and Instagram Video Embed
-Can automatically detect if a message is a link for a Twitter post or Instagram post.
+### Twitter/X and Instagram Video Embed
+Can automatically detect if a message is a link for a Twitter post or Instagram post and create an embed within the message, making it easy to share videos.
 
 For Twitter, a camera reaction emoji will appear where by clicking it, it will convert the message to an embed. This is because not every post needs to automatically embedded.
 
 For Instagram, this is automatic.
 
-For TikTok, this is automatic. It uses QuickVids API: https://github.com/quickvids
+Tiktok used to be supported, but due to the difficulty of finding a right API provider and Discord already supporting embeds, this is disabled.
+Add the QuickVids bot instead: https://github.com/quickvids
 
-### **Fun**
+**Config Variables:**
+- `ENABLE_MEDIA_LINK_CONVERTER` - true/false
+
+### **Fun Commands**
 Random commands.
 
+#### Randomly Choose
 `!choose`: Randomly choose one of the options. Delimited by commas.
 ```
 Example: !choose pizza, chicken and waffles, burger
-> chicken and waffles
+Manchan > chicken and waffles
 ```
 
+#### Magic Conch Shell
 `!conch` or `!8ball`: Ask a question, get an answer!
-Inspired by Spongebob's magic conch shell. But it is not mandatory to use the
-conch as part of this command. Supply an image url in the config mapper to
-send a custom image, including a conch if you desire.
+
+Inspired by Spongebob's magic conch shell. You can include an image response with whatever image you want, so include an image url of the magic conch shell in the configs.
+
+**Config Variables:**
+- `CONCH_URL` - true/false
+
 ```
 Example: !conch Can I have something to drink?
 > No.
 ```
 
 ### **Plugins**
-Allows you to load exterior commands outside of the main functionality.
+Allows you to load exterior commands outside of the main functionality and program your own commands.
 List these under a `/plugins` folder.
 
 For example, let's say you have two github repos with sets of commands that are compatible with ManChan bot: `images` and `encoder`.

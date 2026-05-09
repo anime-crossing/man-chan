@@ -1,0 +1,30 @@
+# Discord Bot Settings
+DISCORD_TOKEN: "Provide your own"
+COMMAND_PREFIX: "!"
+PRESENCE_TEXT: "" # The text shown when online: 'Playing xxx'
+DATABASE_URL: "sqlite:///test_magi.db" # Change this as needed
+FORCE_DATABASE: true # if true, won't start without a database. Disable if you don't need one.
+ADMIN_USERS:
+  - "Add Discord IDs here"
+
+# Anilist Settings
+ENABLE_ANILIST: true
+
+# Social Credit Settings
+ENABLE_SOCIAL_CREDIT: true
+UPVOTE_EMOJI_NAME: "" # Can use custom guild emojis. Put the name without the colons
+DOWNVOTE_EMOJI_NAME: "" # But both must be provided
+SOCIAL_CREDIT_WHITELIST: # Guilds to enable this function
+  - "Add Guild ID Here"
+SOCIAL_CREDIT_TIME_LIMIT: 86400 # In seconds, 24hr. Won't accept reactions after that time limit
+
+# Login Settings
+ENABLE_LOGIN: true
+LOGIN_FILE_PATH: "login.json"
+LOGIN_INFO_TIMEOUT: 15 # In seconds
+
+# Converter Settings
+ENABLE_MEDIA_LINK_CONVERTER: true
+
+# Misc Settings
+CONCH_URL: ""
