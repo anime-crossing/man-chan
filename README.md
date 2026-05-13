@@ -182,22 +182,35 @@ No port forwarding required! Only docker is needed to be installed on your machi
 ### No Docker -- Virtual Environment
 Use your favorite method to setup the virtual environment. Here will be a quick rundown using the `virtualenv` package.
 
-1. `pip install virtualenv`
-2. `python -m virtualenv venv`
+```
+pip install virtualenv
+python -m virtualenv venv
+```
 
-3. If on Windows:
+If on Windows:
+```
+.\venv\Scripts\activate
+```
+Note that if using powershell, you may have to enable scripts to be runnable.
 
-    `.\venv\Scripts\activate`
-    
-    Note that if using powershell, you may have to enable scripts to be runnable.
+If on Linux:
+```
+source ./venv/bin/activate
+```
+If Linux + Fish shell:
+```
+source ./venv/bin/activate.fish
+```
 
-    If on Linux:
+If you are using VsCode, you will be prompted if you want to enable this virtual environment as default. Click yes so you do not run above every time.
 
-    `source ./venv/bin/activate`
 
-    If you are using VsCode, you will be prompted if you want to enable this virtual environment as default. Click yes so you do not run above every time.
+Then install the requirements:
+```
+pip install -r requirements.txt
+```
 
-4. `pip install -r requirements.txt`
+
 
 5. Add a database password or modify database url to the following locations:
     - `configs.yaml`
@@ -363,3 +376,6 @@ and fix any typing errors that it throws at you.
 
 # Why the name "Manchan"
 We are uncreative and merged all our names together to somehow create this.
+
+
+https://discord.com/developers/home
