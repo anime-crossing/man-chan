@@ -3,54 +3,64 @@
 
 Manchan is a discord bot made by four friends intended to be used for small servers -- such as small friend groups or communities.
 
-**This bot is not hosted publicly and cannot be added to a server.**
-
-
-It is intended to be self-hosted by cloning this repo or using this as a starting framework for your own discord bot. Feel free to fork this or borrow ideas.
+This bot is not hosted and cannot be added to a server. It is intended to be self-hosted with whatever method by cloning this repo or to be used as a framework for your own bot.
 
 ## Features:
+These features can be enabled and disabled via a `configs.yaml`. A sample file is included in the repo and a the bottom of this page.
 
 ### **Shared Login**
-If you want to share account logins with others in your server, Manchan offers a way to list all the sharable accounts with the username/password discreetly via command.
+If you share accounts between others in the server, Manchan offers a way to list all the shared accounts usernames/password discreetly via command. (*Note: Currently no way to blacklist/whitelist users*). A `login.json` file is needed to store the login information. A sample file structure is given at the bottom of this page.
 
-A `login.json` file is needed to store the login information. Usage of this fileis at the bottom of this page.
+Auth info is shared through an ephemeral message. It is only visible to the user and is deleted after a timeout.
 
-(*Note: Currently no way to blacklist/whitelist users*).
+**Command:**
+- `!login` - Starts login sharing.
 
-`!login` - Starts login sharing.
+**Config Variables:**
+- `ENABLE_LOGIN` - true/false
+- `LOGIN_FILE_PATH` - Default `login.json`.
+- `LOGIN_INFO_TIMEOUT` - Default 15. Seconds before login info is removed.
 
 ### **Social Credit**
-By providing emoji names representing upvotes/downvotes, users that react with the corresponding emoji to a message which will influence the sender's social score. Leaderboard included.
+A joke way to build a social credit score in your server.
 
-`!score` - Displays self score.
+By providing emoji names representing upvotes/downvotes, users that react with corresponding emoji to a message will influence the sender's social score. Leaderboard included.
 
-`!score @username` - Displays score of user.
+Database required.
 
-`!leaderboard` || `!lb` - Displays leaderboard of all users in server.
+**Commands:**
+- `!score` - Displays self score.
+- `!score @username` - Displays score of user.
+- `!leaderboard` || `!lb` - Displays leaderboard of all users in server.
+
+**Config Variables:**
+- `ENABLE_SOCIAL_CREDIT` - true/false
+- `UPVOTE_EMOJI_NAME` - Put the emoji name without colons. Custom guild emojis can work too.
+- `DOWNVOTE_EMOJI_NAME` - Same as above.
+- `SOCIAL_CREDIT_WHITELIST` - Guild IDs to enable this feature on.
+- `SOCIAL_CREDIT_TIME_LIMIT` - Time in seconds before a message is no longer counted as social credit. You probably want this on. Default is `86400` (24h).
 
 ### **Anilist Integration**
-Uses Anilist API to search for anime for sharing shows watched and user ratings.
+For sharing anime recommendations and ratings.
 
-Requires linking your Anilist account to the database using only your username. This allows displaying user ratings and public user stats.
+Uses the Anilist API. To show recommendations, you must first "link" your Discord with Anilist. All this does is save your Anilist user to the database and associate it with your Discord ID (no login needed).
 
-(*Note: Currently has issues registering users).
+**Commands:**
+- `!anime <title>` || `!ani`: Searches for an anime.
+- `!manga <title>` || `!man`: Searches for a manga.
+- `!novel <title>` || `!nov`: Searches for a novel.
 
-`!anime <title>` || `!ani`: Searches for an anime.
+  ```
+  Example: !ani one piece
+  ```
 
-`!manga <title>` || `!man`: Searches for a manga.
+- `!account` || `!acc`: Creates an embed where you provide your Anilist username. Database must be enabled.
 
-`!novel <title>` || `!nov`: Searches for a novel.
+- `!anilb` || `!alb`: Displays leaderboard of most view time and read amount for all registered users.
 
-```
-Example: !ani one piece
-```
+**Config Variables:**
+- `ENABLE_ANILIST` - true/false
 
-`!account` || `!acc`: Creates an embed where you provide your Anilist username. Database must be enabled.
-
-`!anilb` || `!alb`: Displays leaderboard of most view time and read amount for all registered users.
-
-### **Spotify Share Link**
-Share a song from spotify.
 
 `!track`: Share track via search keywords.
 
@@ -64,42 +74,44 @@ Examples:
 
 ### Twitter, Instagram, and TikTok Video Embed
 Can automatically detect if a message is a link for a Twitter post, Instagram post, or TikTok video.
+### Twitter/X and Instagram Video Embed
+Can automatically detect if a message is a link for a Twitter post or Instagram post and create an embed within the message, making it easy to share videos.
 
 For Twitter, a camera reaction emoji will appear where by clicking it, it will convert the message to an embed. This is because not every post needs to automatically embedded.
 
 For Instagram, this is automatic. The API used is unstable however and may not always work.
 
-For TikTok, this is automatic. It uses QuickVids API: https://github.com/quickvids
+Tiktok used to be supported, but due to the difficulty of finding a right API provider and Discord already supporting embeds, this is disabled.
+Add the QuickVids bot instead: https://github.com/quickvids
 
-### Youtube Music Streaming
-Allows Manchan to join a voice channel and stream YouTube music. Users can also create custom playlists from songs played or manually add songs to the playlists.
+**Config Variables:**
+- `ENABLE_MEDIA_LINK_CONVERTER` - true/false
 
-This is all empowered by slash commands and embed interactions.
-
-Requires a database to exist and a designated channel.
-
-Do `/init_music`.
-
-### **Fun**
+### **Fun Commands**
 Random commands.
 
+#### Randomly Choose
 `!choose`: Randomly choose one of the options. Delimited by commas.
 ```
 Example: !choose pizza, chicken and waffles, burger
-> chicken and waffles
+Manchan > chicken and waffles
 ```
 
+#### Magic Conch Shell
 `!conch` or `!8ball`: Ask a question, get an answer!
-Inspired by Spongebob's magic conch shell. But it is not mandatory to use the
-conch as part of this command. Supply an image url in the config mapper to
-send a custom image, including a conch if you desire.
+
+Inspired by Spongebob's magic conch shell. You can include an image response with whatever image you want, so include an image url of the magic conch shell in the configs.
+
+**Config Variables:**
+- `CONCH_URL` - true/false
+
 ```
 Example: !conch Can I have something to drink?
 > No.
 ```
 
 ### **Plugins**
-Allows you to load exterior commands outside of the main functionality.
+Allows you to load exterior commands outside of the main functionality and program your own commands.
 List these under a `/plugins` folder.
 
 For example, let's say you have two github repos with sets of commands that are compatible with ManChan bot: `images` and `encoder`.
@@ -209,8 +221,6 @@ Then install the requirements:
 ```
 pip install -r requirements.txt
 ```
-
-
 
 5. Add a database password or modify database url to the following locations:
     - `configs.yaml`
