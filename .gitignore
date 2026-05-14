@@ -8,3 +8,5 @@ login.json
 test_magi.db
 .cache
 reminders.json
+.env
+docker-compose.yml

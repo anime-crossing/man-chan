@@ -1,13 +1,14 @@
-from typing import Any, Dict, Union
+from typing import TYPE_CHECKING, Any, Dict, Union
 
 from disnake import Embed, Interaction, Member, User
 from disnake.ui import Select, View
 
-from utils.distyping import Config, Context
+if TYPE_CHECKING:
+    from utils.distyping import Config, Context
 
 
 class ServiceBase:
-    def __init__(self, ctx: Context, configs: Config = {}):
+    def __init__(self, ctx: "Context", configs: "Config" = {}):
         self.ctx = ctx
         self.configs = configs
 
@@ -47,7 +48,7 @@ class CallbackBase:
         self._meta = meta
 
     @property
-    def ctx(self) -> Context:
+    def ctx(self) -> "Context":
         return self.service.ctx
 
     @property
@@ -55,11 +56,9 @@ class CallbackBase:
         return self.service.author
 
     @property
-    def configs(self) -> Config:
+    def configs(self) -> "Config":
         return self.service.configs
 
-    async def callback(self, interaction: Interaction):
-        ...
+    async def callback(self, interaction: Interaction): ...
 
-    async def send(self):
-        ...
+    async def send(self): ...

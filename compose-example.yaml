@@ -3,10 +3,10 @@ services:
     image: manchan
     container_name: manchan
     volumes:
-      - /ABSOLUTE_PATH/configs.yaml:/apps/configs.yaml:rw
-      - /ABSOLUTE_PATH/magi.db:/apps/magi.db:rw
-      - /ABSOLUTE_PATH/login.json:/apps/login.json:rw
-      - /ABSOLUTE_PATH/plugins:/apps/plugins:rw
+      - ./configs.yaml:/apps/configs.yaml:rw
+      - ./magi.db:/apps/magi.db:rw
+      - ./login.json:/apps/login.json:rw
+      - ./plugins:/apps/plugins:rw
     networks:
       - manchan-internal
     depends_on:
@@ -22,7 +22,7 @@ services:
       POSTGRES_PASSWORD: PASSWORD
       POSTGRES_HOST: postgres
     volumes:
-      - /ABSOLUTE_PATH/db:/var/lib/postgresql/
+      - ./manchandb:/var/lib/postgresql/
     networks:
       - manchan-internal
     hostname: manchandb

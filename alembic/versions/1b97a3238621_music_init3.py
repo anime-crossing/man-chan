@@ -53,6 +53,8 @@ def upgrade():
         sa.PrimaryKeyConstraint("id"),
         sa.UniqueConstraint("url"),
     )
+
+    op.create_unique_constraint("uq_song_webpage_url", "song", ["webpage_url"])
     # ### end Alembic commands ###
 
 

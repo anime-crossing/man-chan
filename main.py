@@ -7,6 +7,7 @@ from disnake.ext.commands import Bot
 from bot.command_loader import CommandLoader
 from db.connection import DatabaseException, setup_db_session, setup_plugins_db
 from service.music import MasterPlayer
+from utils.env_loader import EnvLoader
 from utils.yaml_loader import load_yaml
 
 logging.basicConfig(
@@ -22,6 +23,7 @@ class ManChanBot(Bot):
         self.db_on = False
         self.db_plugins_on = False
         self.master_player = MasterPlayer()
+        self.envconfig = EnvLoader()
 
     def run(self):
         logging.info(f"Starting bot...")
@@ -79,7 +81,7 @@ class ManChanBot(Bot):
         )
 
     def _setup_db(self):
-        if "DATABASE_URL" not in self.configs:
+        if not self.envconfig.validate_db():
             # Will always start bot without a database unless given an
             # env variable to not start without it.
             # Properly check database conditions on Cogs that require it.
@@ -92,11 +94,11 @@ class ManChanBot(Bot):
             self.configs["db_on"] = self.db_on
             return
         else:
-            setup_db_session(self.configs["DATABASE_URL"])
+            setup_db_session(self.envconfig.db_url())
             self.db_on = True
             self.configs["db_on"] = self.db_on
 
-        if "PLUGINS_DB_URL" in self.configs:
+        if "PLUGINS_DB_URL" in self.configs and len(self.configs["PLUGINS_DB_URL"]) > 0:
             setup_plugins_db(self.configs["PLUGINS_DB_URL"])
             self.db_plugins_on = True
             self.configs["plugins_db_on"] = self.db_plugins_on

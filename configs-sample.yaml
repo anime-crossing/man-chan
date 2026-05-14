@@ -1,8 +1,7 @@
 # Discord Bot Settings
 DISCORD_TOKEN: "Provide your own"
-COMMAND_PREFIX: "!"
-PRESENCE_TEXT: "" # The text shown when online: 'Playing xxx'
-DATABASE_URL: "sqlite:///test_magi.db" # Change this as needed
+COMMAND_PREFIX: "!" # Symbol to initiate the bot command in Discord
+PRESENCE_TEXT: "" # The text shown when bot is online. Example: 'Playing xxx'
 FORCE_DATABASE: true # if true, won't start without a database. Disable if you don't need one.
 ADMIN_USERS:
   - "Add Discord IDs here"
@@ -28,3 +27,4 @@ ENABLE_MEDIA_LINK_CONVERTER: true
 
 # Misc Settings
 CONCH_URL: ""
+PLUGINS_DB_URL: "" # This is for plugins database if needed

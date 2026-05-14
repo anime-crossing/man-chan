@@ -45,6 +45,8 @@ For sharing anime recommendations and ratings.
 
 Uses the Anilist API. To show recommendations, you must first "link" your Discord with Anilist. All this does is save your Anilist user to the database and associate it with your Discord ID (no login needed).
 
+Database required for connecting accounts. But not for fetching anime info.
+
 **Commands:**
 - `!anime <title>` || `!ani`: Searches for an anime.
 - `!manga <title>` || `!man`: Searches for a manga.
@@ -62,18 +64,6 @@ Uses the Anilist API. To show recommendations, you must first "link" your Discor
 - `ENABLE_ANILIST` - true/false
 
 
-`!track`: Share track via search keywords.
-
-`!album`: Share album via album name.
-
-```
-Examples:
-!track magnolia playboi carti
-!album whole lotta red
-```
-
-### Twitter, Instagram, and TikTok Video Embed
-Can automatically detect if a message is a link for a Twitter post, Instagram post, or TikTok video.
 ### Twitter/X and Instagram Video Embed
 Can automatically detect if a message is a link for a Twitter post or Instagram post and create an embed within the message, making it easy to share videos.
 
@@ -103,7 +93,7 @@ Manchan > chicken and waffles
 Inspired by Spongebob's magic conch shell. You can include an image response with whatever image you want, so include an image url of the magic conch shell in the configs.
 
 **Config Variables:**
-- `CONCH_URL` - true/false
+- `CONCH_URL` - Url to image for the conch message.
 
 ```
 Example: !conch Can I have something to drink?
@@ -136,151 +126,74 @@ Same as Anilist, but movies.
 ### **Backloggd Integration**
 Same as Anilist and Letterbox, but games.
 
-# Usage
-
-### How to create your own discord bot
+# Setup
+## How to create your own discord bot
 Read any tutorial on making your own discord bot and get a discord token.
 https://discordpy.readthedocs.io/en/stable/discord.html
 
-### Configuration
-Create a file called `configs.yaml` and place it at the root of the directory. This is needed to disable or enable features you want to use as well as provide API keys and Discord tokens. The template is at the bottom of this page; copy its contents and paste it into `configs.yaml` and change the variables as you wish.
 
-For example, `ENABLE_LOGIN: true` will enable the shared login feature.
+## Configure Settings
+Create a file called `configs.yaml` and place it at the root of the directory. Use the `configs-sample.yaml` in this github as an example.
+
+This config file lets you enable/disable features and customize several settings. This is also where you put your Discord tokens.
+
+If you want to use a database, you can use the database that comes from the docker setup (below) or supply your own. Currently only postgres is configured to work.
 
 
-### Shared Logins
 A `login.json` file is needed at the root of the directory if you want to use the shared login feature. An example structure is provided at the bottom of this page.
 
-
-## Setup
-
 ### Docker Setup (Recommended)
-No port forwarding required! Only docker is needed to be installed on your machine.
+The easiest way to run Manchan is using docker. However it requires setting up a few config files.
 
-1. Create a `compose.yaml` file. An example on the structure is given on `compose-example.yaml`
+Docker needs to be installed in your machine.
 
-2. Create a folder where you want the manchan data to exist. Add the absolute path of this folder to `compose.yaml`
+Then do the following steps.
 
-3. Place the following files into the created folder. Any optional files you dont want remove those paths from the `compose.yaml` file to prevent errors:
-    - `configs.yaml` (required)
-    - `compose.yaml` (required)
-    - `login.json` (optional)
-    - A sqllite database (optional - for plugins usage)
-
-3. Add a database password to the following locations:
-    - `configs.yaml`
-    - `alembic.ini`
-    - `compose.yaml` (add a port for host computer here too)
-
-4. Build the docker image:
+1. Git clone this project
+2. Run the following:
 
     ```
     docker build . -t manchan
     ```
 
-5. You need to edit the `configs.yaml` file with a discord token and any features you want.
 
-6. Within the created folder in step 2, run:
+3. In another directory, create a `docker-compose.yaml` file. A sample file is provided in `compose-sample.yaml`
+4. Create a `.env` file. This will contain your database configurations. Right now, only postgres is supported.
+
+    Use the `env-sample` file for reference. You can keep everything but change the password.
+
+5. Create the additional config files. For any optional files you dont want, remove those paths from the `docker-compose.yaml` file to prevent errors:
+    - `configs.yaml` (required)
+    - `login.json` (optional)
+    - `plugins/` (optional - if you are adding plugin commands)
+      - A sqllite database (optional - for plugins usage)
+
+6. Run the following:
 
     ```
-    docker compose up -d
+    docker compose up
     ```
 
-    The `-d` is so that it runs in the background. Don't add it on the first run so you can debug any issues.
-
-**Any time you want to update Manchan**, you must pull this repo again. Then rerun step 4. Then step 6. Database migrations are automatically applied this way.
+    Add a `-d` at the end if you want to run it detached (async and independent from the terminal).
 
 
-### No Docker -- Virtual Environment
-Use your favorite method to setup the virtual environment. Here will be a quick rundown using the `virtualenv` package.
+NOTE: If you are on SELinux (like Fedora), put a `,Z` at the end of any paths for the volumes in docker compose. Example: `:ro,Z`. Or if no `ro/rw` exists, just `:Z`.
 
+NOTE: If you get permission errors because you are on linux, run these:
 ```
-pip install virtualenv
-python -m virtualenv venv
+sudo chown -R 999:999 ./dockerdb
+sudo chmod -R 700 ./dockerdb
 ```
 
-If on Windows:
-```
-.\venv\Scripts\activate
-```
-Note that if using powershell, you may have to enable scripts to be runnable.
 
-If on Linux:
+Anytime a new version of Manchan is released, pull the latest version from GitHub and rerun the second step. Check if any new features were added that may need additional config variables.
+
+To shut down Manchan:
 ```
-source ./venv/bin/activate
-```
-If Linux + Fish shell:
-```
-source ./venv/bin/activate.fish
+docker compose down
 ```
 
-If you are using VsCode, you will be prompted if you want to enable this virtual environment as default. Click yes so you do not run above every time.
 
-
-Then install the requirements:
-```
-pip install -r requirements.txt
-```
-
-5. Add a database password or modify database url to the following locations:
-    - `configs.yaml`
-    - `alembic.ini`
-
-    Typically it follows the structure of `<db-type>://<user>:<password>@<url>:<port>/`. **Postgres is highly recommended and is the tested database type.**
-
-6. You need to edit the `configs.yaml` file with a discord token and any features you want.
-
-7. Update the database with `alembic upgrade head`
-
-8. Run with `python main.py`
-
-Anytime you pull the latest changes from this repository, repeat step 7.
-
-
-# Config File
-ManChan will read from a provided `configs.yaml` in the root folder that you must fill out yourself. Recommended structure is below:
-
-```yaml
-# Discord Bot Settings
-DISCORD_TOKEN: "Provide your own"
-COMMAND_PREFIX: "!"
-PRESENCE_TEXT: "" # The text shown when online: 'Playing xxx'
-DATABASE_URL: "postgresql+psycopg2://postgres:PASSWORD@manchandb/" # Change this as needed. SQLlite example: sqlite:///test_magi.db
-FORCE_DATABASE: true # if true, won't start without a database. Disable if you don't need one.
-ADMIN_USERS:
-  - Add User Discord ID Here
-
-# Anilist Settings
-ENABLE_ANILIST: true
-ANILIST_URL: 'https://graphql.anilist.co' # Dont modify unless the API path changes
-
-# Social Credit Settings
-ENABLE_SOCIAL_CREDIT: true
-UPVOTE_EMOJI_NAME: "" # Can use custom guild emojis. Put the name without the colons :
-DOWNVOTE_EMOJI_NAME: "" # ...But both must be provided
-SOCIAL_CREDIT_WHITELIST: # Guilds to enable this feature
-  - Add Guild ID Here
-SOCIAL_CREDIT_TIME_LIMIT: 86400 # In seconds, 24hr. Messages after that time limit won't register new reactions to prevent abuse.
-
-# Login Settings
-ENABLE_LOGIN: true
-LOGIN_FILE_PATH: "login.json"
-LOGIN_INFO_TIMEOUT: 15 # Embed timeout, in seconds
-
-#Spotify API Tokens
-ENABLE_SHARE_LINK: true
-SPOTIFY_CLIENT_ID: "Provide Own"
-SPOTIFY_CLIENT_SECRET: "Provide Own"
-
-# Music
-ENABLE_MUSIC: true # Enables YouTube music streaming
-
-# Converter Settings
-ENABLE_MEDIA_LINK_CONVERTER: true # This automatically embeds Twitter, Instagram, and TikTok
-
-# Misc Settings
-CONCH_URL: "" # Url path for the conch image
-```
 
 # Login format
 When adding a source to the `login.json` be sure to follow this format:
@@ -312,7 +225,7 @@ The following upgrades the database to latest revisions:
 alembic upgrade head
 ```
 
-Run this to create a new revision:
+Run this to create a new revision for a database migration:
 
 ```
 alembic revision --autogenerate -m "revision name"

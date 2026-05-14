@@ -1,4 +1,5 @@
 ./docktest
+./dockerdb
 pyrightconfig.json
 fmt.py
 README.md
