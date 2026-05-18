@@ -1,7 +1,7 @@
-from typing import TYPE_CHECKING, Any, Dict, Union
+from typing import TYPE_CHECKING, Any, Dict, List, Union
 
 from disnake import Embed, Interaction, Member, User
-from disnake.ui import Select, View
+from disnake.ui import Button, Select, View
 
 if TYPE_CHECKING:
     from utils.distyping import Config, Context
@@ -33,6 +33,7 @@ class CallbackBase:
         prev_embed: Embed = None,  # type: ignore
         prev_view: View = None,  # type: ignore
         prev_select: Select[Any] = None,  # type: ignore
+        items: List[Button] = [],
         meta: Dict[str, Any] = {},
     ):
         self.service = service
@@ -61,4 +62,7 @@ class CallbackBase:
 
     async def callback(self, interaction: Interaction): ...
 
-    async def send(self): ...
+    async def send(self):
+        self._message = await self.ctx.channel.send(
+            embed=self.cur_embed, view=self.cur_view
+        )

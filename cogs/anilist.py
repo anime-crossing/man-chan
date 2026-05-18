@@ -12,6 +12,7 @@ from disnake.ui import Button, Modal, Select, TextInput, View
 from db.anilist_users import AnilistUsers
 from main import ManChanBot
 from models.anilist_queries import AnilistQueries
+from service.anilist.interaction import AnilistInteraction
 from utils.context import get_member
 from utils.distyping import Context
 
@@ -65,122 +66,7 @@ class Anilist(CommandBase):
         if "errors" not in json_response:
             return json_response["data"]["MediaList"]
 
-    # Creates Account Setup Embed, Sends Modal for username entry
-    async def create_setup_embed(self, ctx: Context):
-        account_embed = Embed(
-            title="Anilist Account Setup",
-            description="Please use the button below to enter your Anilist Username",
-            color=Color.blue(),
-        )
-
-        answer = TextInput(
-            label="username", custom_id=f"anilist-username-input{ctx.author.id}"
-        )
-        prompt = Modal(title="Enter Anilist Username", components=[answer])
-
-        async def modal_callback(interaction: Interaction):  # type: ignore - Interaction Exists
-            await self.profile_query(ctx, interaction, answer)
-
-        prompt.callback = modal_callback
-
-        async def entry_callback(interaction: Interaction):  # type: ignore - Interaction Exists
-            await interaction.response.send_modal(prompt)
-
-        answer_button = Button(emoji="✏️")
-        answer_button.callback = entry_callback
-
-        view = View()
-        view.add_item(answer_button)
-
-        if AnilistUsers.get_anilist_id(ctx.author.id) is None:
-            await ctx.send(embed=account_embed, view=view)  # type: ignore - view Exists
-            return
-
-        already_registered = Embed(
-            title="Account already registered",
-            description="To bypass and link a new account, please use the button below.",
-            color=Color.blue(),
-        )
-
-        async def remove_callback(interaction: Interaction):  # type: ignore - Interaction Exists
-            already_registered.title = "Account Info Removed"
-            already_registered.description = "Account Info has been removed from bot database, please re-run `!acc` to setup your account."
-            already_registered.color = Color.red()
-
-            await self.remove_anilist_id(ctx)
-            await interaction.response.edit_message(embed=already_registered, view=None)  # type: ignore - View Exists
-
-        repeat_button = Button(emoji="🔁")
-        repeat_button.callback = entry_callback
-        remove_button = Button(
-            label="Remove Account", emoji="🗑️", style=ButtonStyle.danger
-        )
-        remove_button.callback = remove_callback
-        registered_view = View()
-        registered_view.add_item(repeat_button)
-        registered_view.add_item(remove_button)
-
-        await ctx.send(embed=already_registered, view=registered_view)  # type: ignore - view Exists
-
     # Used by Account Setup to obtain initial profile information
-    async def profile_query(self, ctx: Context, interaction: Interaction, anilist_id: TextInput):  # type: ignore - Interaction Exists
-        anilist_url = self.configs["ANILIST_URL"]
-        query = AnilistQueries.account
-
-        variables = {"name": str(anilist_id)}
-
-        json_response = requests.post(
-            url=anilist_url, json={"query": query, "variables": variables}
-        ).json()
-
-        if "errors" in json_response:
-            not_found = Embed(
-                title="User not found",
-                description="Please re-run the command and be aware of any spelling mistakes.  Enter username as seen on Anilist",
-                color=Color.red(),
-            )
-            await interaction.response.send_message(embed=not_found)
-            return
-
-        account_info = json_response["data"]["User"]
-
-        profile_embed = Embed(
-            title="User Found",
-            description=f"Is this your account: {account_info['name']}",
-            color=Color.blue(),
-            url=account_info["siteUrl"],
-        )
-        profile_embed.set_thumbnail(url=account_info["avatar"]["large"])
-
-        no_button = Button(emoji="❌")
-        yes_button = Button(emoji="✅")
-
-        async def no_callback(interaction: Interaction):  # type: ignore - Interaction Exists
-            profile_embed.title = "User Not Found"
-            profile_embed.url = None  # type: ignore - Takes Optional[str]
-            profile_embed.color = Color.red()
-            profile_embed.description = "Account not Linked, please be more specific with name when re-running `!acc`"
-
-            profile_embed.set_thumbnail(url=None)  # type: ignore - Takes Optional[str]
-
-            await interaction.response.edit_message(embed=profile_embed, view=None)
-
-        async def yes_callback(interaction: Interaction):  # type: ignore - Interaction Exists
-            profile_embed.title = "Profiles Linked"
-            profile_embed.color = Color.green()
-            profile_embed.description = "Account Info Saved to Bot."
-
-            await interaction.response.edit_message(embed=profile_embed, view=None)
-            await self.save_anilist_id(ctx, account_info["id"])
-
-        no_button.callback = no_callback
-        yes_button.callback = yes_callback
-
-        view = View()
-        view.add_item(no_button)
-        view.add_item(yes_button)
-
-        await interaction.response.edit_message(embed=profile_embed, view=view)
 
     # If empty, create table entry then save anilist_id to row
     async def save_anilist_id(self, ctx: Context, anilist_id: int):
@@ -410,28 +296,28 @@ class Anilist(CommandBase):
         await ctx.send(embed=lb)
 
     @commands.command(aliases=["ani"])
-    async def anime(self, ctx: Context, *, arg: str = None):  # type: ignore - yes i can
+    async def anime(self, ctx: Context, *, arg: Optional[str] = None):
         if arg is None:
             await ctx.reply("Please provide search for command")
         else:
             await self.search_embed(ctx, "ANIME", arg, None)
 
     @commands.command(aliases=["man"])
-    async def manga(self, ctx: Context, *, arg: str = None):  # type: ignore - yes i can
+    async def manga(self, ctx: Context, *, arg: Optional[str] = None):
         if arg is None:
             await ctx.reply("Please provide search for command")
         else:
             await self.search_embed(ctx, "MANGA", arg, "MANGA")
 
     @commands.command(aliases=["nov"])
-    async def novel(self, ctx: Context, *, arg: str = None):  # type: ignore - yes i can
+    async def novel(self, ctx: Context, *, arg: Optional[str] = None):
         if arg is None:
             await ctx.reply("Please provide search for command")
         else:
             await self.search_embed(ctx, "MANGA", arg, "NOVEL")
 
-    @commands.command(aliases=["acc"])
-    async def account(self, ctx: Context):
+    @commands.command(aliases=["aniacc"])
+    async def aniaccount(self, ctx: Context):
         await self.create_setup_embed(ctx)
 
     @commands.command(aliases=["anilb", "alb"])

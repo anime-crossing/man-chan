@@ -20,7 +20,7 @@ class MediaConverter(CommandBase):
 
         if not (link_type and link_url):
             return
-        
+
         if link_type == LinkType.TWITTER:
             return await self.mark_post_emoji(message)
 

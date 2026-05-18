@@ -1,8 +1,11 @@
 alembic==1.18.4
+black==26.3.1
 disnake==2.12.0
 dateparser==1.4.0
+isort==8.0.1
 psycopg2-binary==2.9.12
 PyNaCl==1.6.2
+pyright==1.1.409
 PyYAML==6.0.3
 requests==2.34.0
 SQLAlchemy==2.0.49

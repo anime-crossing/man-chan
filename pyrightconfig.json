@@ -9,11 +9,10 @@
     ],
     
     "exclude": [
-        "**/__pycache__",
-        "service/__init__.py"
+        "**/__pycache__"
     ],
 
-    "venv": "env",
+    "venv": "venv",
     "venvPath": "./",
 
     "typeCheckingMode": "basic", 
@@ -31,9 +30,8 @@
     "reportOptionalIterable": "warning",
     "reportOptionalContextManager": "warning",
 
-    "pythonVersion": "3.11",
+    "pythonVersion": "3.14",
     "pythonPlatform": "Linux",
-
 
     "executionEnvironments": [
         {"root": "."}

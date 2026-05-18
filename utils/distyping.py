@@ -1,11 +1,18 @@
-from typing import Any, Callable, Coroutine, Dict
+from typing import TYPE_CHECKING, TypeAlias
 
-from disnake import Interaction
-from disnake.ext import commands
+if TYPE_CHECKING:
+    from typing import Any, Callable, Coroutine, Dict, List
 
-from main import ManChanBot
+    from disnake import Interaction
+    from disnake.ext import commands
+    from disnake.ui import UIComponent
+
+    from main import ManChanBot
 
 # For typing
-Context = commands.Context[ManChanBot]
-Config = Dict[str, Any]
-Callback = Callable[[Interaction], Coroutine[Any, Any, None]]
+Context: TypeAlias = commands.Context[ManChanBot]
+Config: TypeAlias = Dict[str, Any]
+Callback: TypeAlias = Callable[[Interaction[Any]], Coroutine[Any, Any, None]]
+ModalCallback: TypeAlias = Callable[
+    [Interaction[Any], List[UIComponent]], Coroutine[Any, Any, None]
+]
