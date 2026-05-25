@@ -5,7 +5,7 @@ from disnake import Message, Reaction, User
 from disnake.ext.commands import Cog
 
 from main import ManChanBot
-from utils import LinkType, MediaLinkFormatter
+from utils.medialinkformatter import LinkType, MediaLinkFormatter
 
 from .commandbase import CommandBase
 
@@ -20,7 +20,7 @@ class MediaConverter(CommandBase):
 
         if not (link_type and link_url):
             return
-        
+
         if link_type == LinkType.TWITTER:
             return await self.mark_post_emoji(message)
 

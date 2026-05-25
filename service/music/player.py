@@ -1,11 +1,17 @@
+from __future__ import annotations
+
 import logging
-from typing import Optional
+from typing import TYPE_CHECKING
 
 import disnake
 from disnake import Message, VoiceClient
+
 from models import Song
 
 from .queue import Queue
+
+if TYPE_CHECKING:
+    from typing import Optional
 
 
 class Player:
@@ -63,12 +69,12 @@ class Player:
     def get_player_ui(self) -> Optional[Message]:
         return self.player_ui
 
-    async def set_voice_client(self, inter : disnake.Interaction):
+    async def set_voice_client(self, inter: disnake.Interaction):
         if not isinstance(inter.author, disnake.Member) or inter.author.voice is None:
             await inter.send("Connect to a voice channel!", delete_after=5)
             return
         if not self.is_connected and inter.author.voice.channel is not None:
-            self.voice_client = await inter.author.voice.channel.connect() 
+            self.voice_client = await inter.author.voice.channel.connect()
             self.is_connected = True
             await inter.send("Connected", delete_after=5)
 
@@ -116,9 +122,13 @@ class Player:
         embed.description = "Please run !lvc to stop radio"
         embed.add_field("Paused:", str(self.is_paused))
         embed.add_field("Loop:", str(self.loop))
-        embed.add_field("Now Playing:", self.current_song.title if self.current_song else "Empty", inline=False)
+        embed.add_field(
+            "Now Playing:",
+            self.current_song.title if self.current_song else "Empty",
+            inline=False,
+        )
         embed.add_field("Queue:", self.queue_to_string(), inline=False)
         embed.set_image(None)
         if self.current_song:
-            embed.set_image(self.current_song.thumbnail_url) 
+            embed.set_image(self.current_song.thumbnail_url)
         return embed

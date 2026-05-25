@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 import logging
 from os import listdir
 from os.path import isdir

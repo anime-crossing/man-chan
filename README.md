@@ -1,85 +1,107 @@
 <h3 align="center">Man-chan Discord Bot</h3>
 
 
-Manchan is a discord bot made by three friends intended to be used by a small group of friends or users in a server.
+Manchan is a discord bot made by four friends intended to be used for small servers -- such as small friend groups or communities.
 
-This bot is not hosted and cannot be added to a server. It is intended to be self-hosted with whatever method by cloning this repo.
+This bot is not hosted and cannot be added to a server. It is intended to be self-hosted with whatever method by cloning this repo or to be used as a framework for your own bot.
 
 ## Features:
+These features can be enabled and disabled via a `configs.yaml`. A sample file is included in the repo and a the bottom of this page.
 
 ### **Shared Login**
-If you share accounts between others in the server, Manchan offers a way to list all the shared accounts usernames/password discreetly via command. (*Note: Currently no way to blacklist/whitelist users*). A `login.json` file is needed to store the login information, the structure on how is at the bottom of the page.
+If you share accounts between others in the server, Manchan offers a way to list all the shared accounts usernames/password discreetly via command. (*Note: Currently no way to blacklist/whitelist users*). A `login.json` file is needed to store the login information. A sample file structure is given at the bottom of this page.
 
-`!login` - Starts login sharing.
+Auth info is shared through an ephemeral message. It is only visible to the user and is deleted after a timeout.
+
+**Command:**
+- `!login` - Starts login sharing.
+
+**Config Variables:**
+- `ENABLE_LOGIN` - true/false
+- `LOGIN_FILE_PATH` - Default `login.json`.
+- `LOGIN_INFO_TIMEOUT` - Default 15. Seconds before login info is removed.
 
 ### **Social Credit**
+A joke way to build a social credit score in your server.
+
 By providing emoji names representing upvotes/downvotes, users that react with corresponding emoji to a message will influence the sender's social score. Leaderboard included.
 
-`!score` - Displays self score.
+Database required.
 
-`!score @username` - Displays score of user.
+**Commands:**
+- `!score` - Displays self score.
+- `!score @username` - Displays score of user.
+- `!leaderboard` || `!lb` - Displays leaderboard of all users in server.
 
-`!leaderboard` || `!lb` - Displays leaderboard of all users in server.
+**Config Variables:**
+- `ENABLE_SOCIAL_CREDIT` - true/false
+- `UPVOTE_EMOJI_NAME` - Put the emoji name without colons. Custom guild emojis can work too.
+- `DOWNVOTE_EMOJI_NAME` - Same as above.
+- `SOCIAL_CREDIT_WHITELIST` - Guild IDs to enable this feature on.
+- `SOCIAL_CREDIT_TIME_LIMIT` - Time in seconds before a message is no longer counted as social credit. You probably want this on. Default is `86400` (24h).
 
 ### **Anilist Integration**
-Uses Anilist API to search for anime for sharing info. Register your anilist account (only username needed) and you can display your anime ratings as well.
+For sharing anime recommendations and ratings.
 
-`!anime <title>` || `!ani`: Searches for an anime.
+Uses the Anilist API. To show recommendations, you must first "link" your Discord with Anilist. All this does is save your Anilist user to the database and associate it with your Discord ID (no login needed).
 
-`!manga <title>` || `!man`: Searches for a manga.
+Database required for connecting accounts. But not for fetching anime info.
 
-`!novel <title>` || `!nov`: Searches for a novel.
+**Commands:**
+- `!anime <title>` || `!ani`: Searches for an anime.
+- `!manga <title>` || `!man`: Searches for a manga.
+- `!novel <title>` || `!nov`: Searches for a novel.
 
-```
-Example: !ani one piece
-```
+  ```
+  Example: !ani one piece
+  ```
 
-`!account` || `!acc`: Creates an embed where you provide your Anilist username. Database must be enabled.
+- `!account` || `!acc`: Creates an embed where you provide your Anilist username. Database must be enabled.
 
-`!anilb` || `!alb`: Displays leaderboard of most view time and read amount for all registered users.
+- `!anilb` || `!alb`: Displays leaderboard of most view time and read amount for all registered users.
 
-### **Spotify Share Link**
-Share a song from spotify.
+**Config Variables:**
+- `ENABLE_ANILIST` - true/false
 
-`!track`: Share track via search keywords.
 
-`!album`: Share album via album name.
-
-```
-Examples:
-!track magnolia playboi carti
-!album whole lotta red
-```
-
-### Twitter and Instagram Video Embed
-Can automatically detect if a message is a link for a Twitter post or Instagram post.
+### Twitter/X and Instagram Video Embed
+Can automatically detect if a message is a link for a Twitter post or Instagram post and create an embed within the message, making it easy to share videos.
 
 For Twitter, a camera reaction emoji will appear where by clicking it, it will convert the message to an embed. This is because not every post needs to automatically embedded.
 
-For Instagram, this is automatic.
+For Instagram, this is automatic. The API used is unstable however and may not always work.
 
-For TikTok, this is automatic. It uses QuickVids API: https://github.com/quickvids
+Tiktok used to be supported, but due to the difficulty of finding a right API provider and Discord already supporting embeds, this is disabled.
+Add the QuickVids bot instead: https://github.com/quickvids
 
-### **Fun**
+**Config Variables:**
+- `ENABLE_MEDIA_LINK_CONVERTER` - true/false
+
+### **Fun Commands**
 Random commands.
 
+#### Randomly Choose
 `!choose`: Randomly choose one of the options. Delimited by commas.
 ```
 Example: !choose pizza, chicken and waffles, burger
-> chicken and waffles
+Manchan > chicken and waffles
 ```
 
+#### Magic Conch Shell
 `!conch` or `!8ball`: Ask a question, get an answer!
-Inspired by Spongebob's magic conch shell. But it is not mandatory to use the
-conch as part of this command. Supply an image url in the config mapper to
-send a custom image, including a conch if you desire.
+
+Inspired by Spongebob's magic conch shell. You can include an image response with whatever image you want, so include an image url of the magic conch shell in the configs.
+
+**Config Variables:**
+- `CONCH_URL` - Url to image for the conch message.
+
 ```
 Example: !conch Can I have something to drink?
 > No.
 ```
 
 ### **Plugins**
-Allows you to load exterior commands outside of the main functionality.
+Allows you to load exterior commands outside of the main functionality and program your own commands.
 List these under a `/plugins` folder.
 
 For example, let's say you have two github repos with sets of commands that are compatible with ManChan bot: `images` and `encoder`.
@@ -91,6 +113,9 @@ Add those to the plugins folder like so:
 
 Each of those modules will be loaded like any other Cog.
 
+If a database is required, its own separate `alembic.ini` is required and must be manually managed. This is to avoid revision conflicts with the main features.
+
+
 ## Coming soon:
 ### **Money Ledger**
 Keep track of what each person owes money too. Useful for social events where one person pays for everyone and stuff.
@@ -101,64 +126,133 @@ Same as Anilist, but movies.
 ### **Backloggd Integration**
 Same as Anilist and Letterbox, but games.
 
-### **Youtube Music Streaming**
-Listen to music while in voice chat.
-
 # Setup
-
-## Virtual Environment
-Use your favorite method to setup the virtual environment. Here will be a quick rundown using the `virtualenv` package.
-
-1. `pip install virtualenv`
-2. `python -m virtualenv venv`
-
-3. If on Windows:
-
-    `.\venv\Scripts\activate`
-    
-    Note that if using powershell, you may have to enable scripts to be runnable.
-
-    If on Linux:
-
-    `source ./venv/bin/activate`
-
-    If you are using VsCode, you will be prompted if you want to enable this virtual environment as default. Click yes so you do not run above every time.
-
-4. `pip install -r requirements.txt`
-
-
-## Database
-You need to specify the database location in the configs file (more detail below).
-
-Run this to update the current db. <u>**Do this every time you pull to keep the database updated**</u>:
-
-`alembic upgrade head`
-
-Run this to create a new revision on changes:
-
-`alembic revision --autogenerate -m "revision name"`
-
-
-# Usage
-
-### How to create your own discord bot
-Read any tutorial on making your own discord bot with its keys.
+## How to create your own discord bot
+Read any tutorial on making your own discord bot and get a discord token.
 https://discordpy.readthedocs.io/en/stable/discord.html
 
-### Configuration
-Create a file called `configs.yaml` and place it at the root of the directory. This is needed to disable or enable features you want to use as well as provide API keys and Discord tokens. The template is at the bottom of this page; copy its contents and paste it into `configs.yaml` and change the variables as you wish.
 
-The following commands/cogs need the following configs or jsons setup (structure at bottom of the page):
-- `login`: Needs `login.json` file at the root directory.
+## Configure Settings
+Create a file called `configs.yaml` and place it at the root of the directory. Use the `configs-sample.yaml` in this github as an example.
 
-### Run bot
-With a terminal or as execution for docker:
+This config file lets you enable/disable features and customize several settings. This is also where you put your Discord tokens.
+
+If you want to use a database, you can use the database that comes from the docker setup (below) or supply your own. Currently only postgres is configured to work.
+
+
+A `login.json` file is needed at the root of the directory if you want to use the shared login feature. An example structure is provided at the bottom of this page.
+
+### Docker Setup (Recommended)
+The easiest way to run Manchan is using docker. However it requires setting up a few config files.
+
+Docker needs to be installed in your machine.
+
+Then do the following steps.
+
+1. Git clone this project
+2. Run the following:
+
+    ```
+    docker build . -t manchan
+    ```
+
+
+3. In another directory, create a `docker-compose.yaml` file. A sample file is provided in `compose-sample.yaml`
+4. Create a `.env` file. This will contain your database configurations. Right now, only postgres is supported.
+
+    Use the `env-sample` file for reference. You can keep everything but change the password.
+
+5. Create the additional config files. For any optional files you dont want, remove those paths from the `docker-compose.yaml` file to prevent errors:
+    - `configs.yaml` (required)
+    - `login.json` (optional)
+    - `plugins/` (optional - if you are adding plugin commands)
+      - A sqllite database (optional - for plugins usage)
+
+6. Run the following:
+
+    ```
+    docker compose up
+    ```
+
+    Add a `-d` at the end if you want to run it detached (async and independent from the terminal).
+
+
+NOTE: If you are on SELinux (like Fedora), put a `,Z` at the end of any paths for the volumes in docker compose. Example: `:ro,Z`. Or if no `ro/rw` exists, just `:Z`.
+
+NOTE: If you get permission errors because you are on linux, run these:
 ```
-python main.py
+sudo chown -R 999:999 ./dockerdb
+sudo chmod -R 700 ./dockerdb
+```
+
+NOTE: If you have plugins and they require extra python libraries, create a `plugin-requirements.txt` file at the root of the directory (where docker build is being run)
+
+Anytime a new version of Manchan is released, pull the latest version from GitHub and rerun the second step. Check if any new features were added that may need additional config variables.
+
+To shut down Manchan:
+```
+docker compose down
+```
+
+
+
+# Login format
+When adding a source to the `login.json` be sure to follow this format:
+```json
+  {
+    "Site-Name" : {
+      "email": "johnwick@gmail.com",
+      "password": "password1234",
+      "emoji_text": ":emoji_name",
+      "emoji" : "🟠",
+      "description" : "Description of Streaming Service",
+      "link" : "Link to Streaming Service",
+      "hex" : "Site Color in Hex Form #111111",
+      "provider" : "Person providing this"
+    },
+    "Site-Name2" : {
+      ...
+    }
+  }
 ```
 
 # Development Guide
 Manchan uses the [Disnake](https://docs.disnake.dev/en/stable/) library for development.
+
+
+The following upgrades the database to latest revisions:
+
+```
+alembic upgrade head
+```
+
+Run this to create a new revision for a database migration:
+
+```
+alembic revision --autogenerate -m "revision name"
+```
+
+Create a postgres database for development:
+```
+services:
+  postgres:
+    image: postgres
+    container_name: postgres
+    environment:
+      POSTGRES_USER: manchandb
+      POSTGRES_DB: manchandb
+      POSTGRES_PASSWORD: 123test
+      POSTGRES_HOST: postgres
+    volumes:
+      - ./dockerdb:/var/lib/postgresql
+    ports:
+      - 5432:5432
+```
+
+And run using
+```
+python main.py
+```
 
 ## Directory Structure
 The Manchan system is separated to the following structured
@@ -225,63 +319,9 @@ A formatting python script has been added to keep formatting consistent. Before 
 
 and fix any typing errors that it throws at you.
 
-# Config File
-ManChan will read from a provided `configs.yaml` in the root folder that you must fill out yourself. Recommended structure is below:
 
-```yaml
-# Discord Bot Settings
-DISCORD_TOKEN: "Provide your own"
-COMMAND_PREFIX: "!"
-PRESENCE_TEXT: "" # The text shown when online: 'Playing xxx'
-DATABASE_URL: "sqlite:///test_magi.db" # Change this as needed
-FORCE_DATABASE: true # if true, won't start without a database. Disable if you don't need one.
-ADMIN_USERS:
-  - Add User Discord ID Here
+# Why the name "Manchan"
+We are uncreative and merged all our names together to somehow create this.
 
-# Anilist Settings
-ENABLE_ANILIST: true
 
-# Social Credit Settings
-ENABLE_SOCIAL_CREDIT: true
-UPVOTE_EMOJI_NAME: "" # Can use custom guild emojis. Put the name without the colons
-DOWNVOTE_EMOJI_NAME: "" # But both must be provided
-SOCIAL_CREDIT_WHITELIST: # Guilds to enable this function
-  - Add Guild ID Here
-SOCIAL_CREDIT_TIME_LIMIT: 86400 # In seconds, 24hr. Won't accept reactions after that time limit
-
-# Login Settings
-ENABLE_LOGIN: true
-LOGIN_FILE_PATH: "login.json"
-LOGIN_INFO_TIMEOUT: 15 # In seconds
-
-#Spotify API Tokens
-ENABLE_SHARE_LINK: true
-SPOTIFY_CLIENT_ID: "Provide Own"
-SPOTIFY_CLIENT_SECRET: "Provide Own"
-
-# Converter Settings
-ENABLE_MEDIA_LINK_CONVERTER: true
-
-# Misc Settings
-CONCH_URL: ""
-```
-
-# Login format
-When adding a source to the `login.json` be sure to follow this format:
-```json
-  {
-    "Site-Name" : {
-      "email": "johnwick@gmail.com",
-      "password": "password1234",
-      "emoji_text": ":emoji_name",
-      "emoji" : "🟠",
-      "description" : "Description of Streaming Service",
-      "link" : "Link to Streaming Service",
-      "hex" : "Site Color in Hex Form #111111",
-      "provider" : "Person providing this"
-    },
-    "Site-Name2" : {
-      ...
-    }
-  }
-```
+https://discord.com/developers/home

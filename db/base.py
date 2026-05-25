@@ -11,18 +11,16 @@ from .connection import get_session
 class Base(object):
     id = Column(Integer, autoincrement=True, primary_key=True)
 
-    def __init__(self, **kwargs: Any):
-        ...
+    def __init__(self, **kwargs: Any): ...
 
     @classmethod
-    @property
     def _session(cls) -> Session:
         return get_session()
 
     @classmethod
     def _create(cls, **kwargs: Any):
         base = cls(**kwargs)
-        session = cls._session
+        session = cls._session()
 
         try:
             session.add(base)
@@ -34,7 +32,7 @@ class Base(object):
 
     @classmethod
     def _delete(cls, **filter: Any):
-        session = cls._session
+        session = cls._session()
 
         try:
             session.query(cls).filter_by(**filter).delete()
@@ -56,7 +54,7 @@ class Base(object):
         if not entities:
             entities = [cls]
 
-        return cls._session.query(*entities)
+        return cls._session().query(*entities)
 
     @classmethod
     def _list(cls, **filter: Dict[str, Any]):
@@ -69,10 +67,10 @@ class Base(object):
         Returns:
         [Class, Class, ...]
         """
-        return cls._session.query(cls).filter_by(**filter).all()
+        return cls._session().query(cls).filter_by(**filter).all()
 
     def _save(self):
-        session = self._session
+        session = self._session()
 
         try:
             session.commit()
