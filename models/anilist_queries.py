@@ -90,7 +90,7 @@ class AnilistQueries:
         }
     }
     """
-    leaderboard = """
+    user_info = """
     query($id: Int){
         User(id: $id){
             statistics{

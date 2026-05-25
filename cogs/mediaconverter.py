@@ -5,7 +5,7 @@ from disnake import Message, Reaction, User
 from disnake.ext.commands import Cog
 
 from main import ManChanBot
-from utils import LinkType, MediaLinkFormatter
+from utils.medialinkformatter import LinkType, MediaLinkFormatter
 
 from .commandbase import CommandBase
 

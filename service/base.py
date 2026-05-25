@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 from typing import TYPE_CHECKING, Any, Dict, List, Union
 
 from disnake import Embed, Interaction, Member, User
@@ -22,6 +24,8 @@ class CallbackBase:
     CallbackBase acts as a linked list of history of interactions
     a user would do as they interact with discord ui. That way
     interactions can be backtracked when needed.
+
+    Deprecated
     """
 
     def __init__(
@@ -33,7 +37,7 @@ class CallbackBase:
         prev_embed: Embed = None,  # type: ignore
         prev_view: View = None,  # type: ignore
         prev_select: Select[Any] = None,  # type: ignore
-        items: List[Button] = [],
+        items: List[Button[Any]] = [],
         meta: Dict[str, Any] = {},
     ):
         self.service = service
@@ -60,7 +64,7 @@ class CallbackBase:
     def configs(self) -> "Config":
         return self.service.configs
 
-    async def callback(self, interaction: Interaction): ...
+    async def callback(self, interaction: Interaction[Any]): ...
 
     async def send(self):
         self._message = await self.ctx.channel.send(

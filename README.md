@@ -185,6 +185,7 @@ sudo chown -R 999:999 ./dockerdb
 sudo chmod -R 700 ./dockerdb
 ```
 
+NOTE: If you have plugins and they require extra python libraries, create a `plugin-requirements.txt` file at the root of the directory (where docker build is being run)
 
 Anytime a new version of Manchan is released, pull the latest version from GitHub and rerun the second step. Check if any new features were added that may need additional config variables.
 
@@ -229,6 +230,28 @@ Run this to create a new revision for a database migration:
 
 ```
 alembic revision --autogenerate -m "revision name"
+```
+
+Create a postgres database for development:
+```
+services:
+  postgres:
+    image: postgres
+    container_name: postgres
+    environment:
+      POSTGRES_USER: manchandb
+      POSTGRES_DB: manchandb
+      POSTGRES_PASSWORD: 123test
+      POSTGRES_HOST: postgres
+    volumes:
+      - ./dockerdb:/var/lib/postgresql
+    ports:
+      - 5432:5432
+```
+
+And run using
+```
+python main.py
 ```
 
 ## Directory Structure

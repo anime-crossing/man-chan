@@ -1,0 +1,15 @@
+[project]
+name = "ManchanBot"
+version = "0.3.0"
+authors = [
+  { name="furlongi", email="ivan.furlong@proton.me" },
+  { name="manuelgavino16", email="" },
+  { name="ssumachai", email="" },
+  { name="Dvega0xE", email="" },
+]
+description = "A discord bot for small groups and communities"
+requires-python = ">=3.14"
+
+[pytest]
+addopts = ["--import-mode=importlib"]
+pythonpath = ["utils", "db", "cogs", "models", "cogs"]

@@ -70,7 +70,7 @@ class Base(object):
         return cls._session().query(cls).filter_by(**filter).all()
 
     def _save(self):
-        session = self._session
+        session = self._session()
 
         try:
             session.commit()
