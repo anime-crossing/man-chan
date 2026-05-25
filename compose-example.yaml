@@ -12,6 +12,7 @@ services:
     depends_on:
       database:
         condition: service_healthy
+    restart: always
 
   database:
     image: postgres
@@ -28,6 +29,7 @@ services:
     hostname: manchandb
     ports:
       - PORT:5432
+    restart: always
 
     healthcheck:
       test: ["CMD-SHELL", "pg_isready -U manchandb"]
