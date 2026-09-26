@@ -176,10 +176,12 @@ class _AniSelected(MessageBase):
             )
 
             if score_status == AnilistStatus.SUCCESS and score_response is not None:
-                ani_name = dig(score_response, "user", "name")
-                ani_status = dig(score_response, "status")
-                ani_progress = dig(score_response, "progress")
-                ani_score = dig(score_response, "score")
+                score_data = dig(score_response, "data", "MediaList")
+
+                ani_name = dig(score_data, "user", "name")
+                ani_status = dig(score_data, "status")
+                ani_progress = dig(score_data, "progress")
+                ani_score = dig(score_data, "score")
                 embed.add_score(
                     discord_name=self.author_name,
                     anilist_name=ani_name,  # type: ignore
