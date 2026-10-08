@@ -19,7 +19,7 @@ def hex_to_rgb(hex: str) -> Optional[Tuple[int, ...]]:
 
 
 def dig(
-    collection: Dict[Any, Any] | List[Any], *args: str | int
+    collection: Dict[Any, Any] | List[Any] | None, *args: str | int
 ) -> Optional[Dict[Any, Any] | List[Any] | Any]:
     if collection is None:
         return None
