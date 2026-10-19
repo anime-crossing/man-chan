@@ -1,0 +1,37 @@
+openapi-python-client generate --path petstore.yaml
+
+
+
+from pet_store_client import Client
+from pet_store_client.api.pets import get_pet, list_pets, create_pet
+from pet_store_client.models.new_pet import NewPet
+
+client = Client(base_url="https://api.example.com/v1")
+
+pets  = list_pets.sync(client=client)                  # -> list[Pet]
+pet   = get_pet.sync(pet_id=42, client=client)         # -> Optional[Pet]
+new   = create_pet.sync(client=client, body=NewPet(name="Rex"))
+
+# Need status code / headers?
+resp = get_pet.sync_detailed(pet_id=42, client=client)
+print(resp.status_code, resp.parsed)
+
+
+openapi-python-client generate \
+  --path /api/pet-store-api-client/openapi.yaml \
+  --output-path /api/pet-store-api-client \
+  --overwrite
+
+
+This is better
+  cd /api
+openapi-python-client generate --path specs/pet-store.yaml      # -> ./pet-store-api-client/
+openapi-python-client generate --path specs/billing.yaml 
+
+
+/api/
+├── specs/
+│   ├── pet-store.yaml
+│   └── billing.yaml
+├── pet-store-api-client/        <- created by the tool
+└── billing-api-client/          <- created by the tool
